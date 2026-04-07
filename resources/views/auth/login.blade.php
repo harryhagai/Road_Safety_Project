@@ -8,26 +8,22 @@
             <div class="auth-login-shell">
                 <aside class="auth-login-brand-panel">
                     <a href="{{ route('home') }}" class="auth-login-brand">
-                        <img src="{{ asset('img/hg-logo.png') }}" alt="HGSS Logo">
+                        <i class="bi bi-cone-striped auth-login-brand-icon" aria-hidden="true"></i>
                         <span>
-                            <strong>Henry Gogarty Secondary School</strong>
-                            <small>HGSS Student Information Management System</small>
+                            <strong>Road Safety Reporting System</strong>
+                            <small>Authorized officer portal</small>
                         </span>
                     </a>
 
-                    <div class="auth-login-pill">Secure Access</div>
-
                     <div class="auth-login-copy">
-                        <h1>Welcome Back</h1>
-                        <p>Sign in to continue with secure access to HGSS services.</p>
+                        <h1>Secure officer access for road safety operations</h1>
                     </div>
 
                     <div class="auth-login-guide">
-                        <h3>How to fill this form</h3>
                         <ul>
-                            <li>Use your registered email address and password.</li>
-                            <li>Keep your account active with role-based protected sessions.</li>
-                            <li>Reset your password quickly if you lose access.</li>
+                            <li>Protected dashboard access for authorized officers</li>
+                            <li>Incident review, verification, and status management</li>
+                            <li>Support for safer roads through secure reporting workflows</li>
                         </ul>
                     </div>
 
@@ -40,12 +36,12 @@
                     <div class="auth-login-form-card">
                         <div class="auth-login-title-row">
                             <h2 class="auth-login-title">
-                                <i class="bi bi-box-arrow-in-right"></i>
+                                <i class="bi bi-shield-lock"></i>
                                 <span>Login</span>
                             </h2>
                         </div>
 
-                        <p class="auth-login-subtitle">Enter your credentials to access your account.</p>
+                        <p class="auth-login-subtitle">Use your authorized officer account to access dashboard tools and incident management.</p>
 
                         @include('auth.partials.feedback')
 
@@ -53,10 +49,9 @@
                             @csrf
 
                             <div class="auth-input-group">
-                                <label for="email">Email Address</label>
+                                <label for="email">Email address</label>
                                 <div class="auth-input-wrap auth-login-input @error('email') is-invalid @enderror">
-                                    <i class="bi bi-envelope auth-input-icon"></i>
-                                    <input id="email" type="email" name="email" value="{{ old('email') }}" placeholder="name@school.com" required autocomplete="email">
+                                    <input id="email" type="email" name="email" value="{{ old('email') }}" placeholder="officer@roadsafety.test" required autocomplete="email">
                                 </div>
                                 @error('email')
                                     <div class="auth-field-error">{{ $message }}</div>
@@ -66,8 +61,7 @@
                             <div class="auth-input-group">
                                 <label for="password">Password</label>
                                 <div class="auth-input-wrap auth-login-input @error('password') is-invalid @enderror">
-                                    <i class="bi bi-lock auth-input-icon"></i>
-                                    <input id="password" type="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+                                    <input id="password" type="password" name="password" placeholder="........" required autocomplete="current-password">
                                     <button type="button" class="auth-password-toggle" data-password-toggle="password" aria-label="Toggle password visibility">
                                         <i class="bi bi-eye"></i>
                                     </button>
@@ -86,7 +80,6 @@
                             </div>
 
                             <button type="submit" class="btn-brand auth-login-button auth-forgot-button" data-auth-submit data-loading-text="Logging in...">
-                                <i class="bi bi-box-arrow-in-right"></i>
                                 <span data-auth-submit-label>Login</span>
                             </button>
 

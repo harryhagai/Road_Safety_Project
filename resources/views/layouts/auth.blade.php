@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,6 +10,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link href="{{ asset('css/login.css') }}" rel="stylesheet">
 </head>
+
 <body data-disable-navigation-overlay="1" data-inline-spinner-links="1">
     @yield('content')
 
@@ -16,4 +18,5 @@
     <script src="{{ asset('js/buttonSpinner.js') }}"></script>
     @yield('scripts')
 </body>
+
 </html>
