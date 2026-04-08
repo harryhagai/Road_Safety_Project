@@ -10,7 +10,7 @@
     ];
 @endphp
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/academicDashboard.css') }}">
+<link rel="stylesheet" href="{{ asset('css/rsrsOfficerDashboard.css') }}">
 @endpush
 
 <div class="container-fluid academic-dashboard-page px-3 px-lg-4 py-4" data-endpoint="{{ url('/road-officer/dashboard/data') }}">
@@ -158,5 +158,5 @@
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="{{ asset('js/academicDashboard.js') }}"></script>
+<script src="{{ asset('js/rsrsOfficerDashboard.js') }}"></script>
 @endsection

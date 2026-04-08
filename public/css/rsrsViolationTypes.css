@@ -1,0 +1,190 @@
+.violation-shell {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    border: 1px solid rgba(31, 49, 79, 0.08);
+    border-radius: 24px;
+    box-shadow: 0 18px 40px rgba(31, 49, 79, 0.08);
+    overflow: hidden;
+}
+
+.violation-shell__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.2rem;
+    border-bottom: 1px solid rgba(31, 49, 79, 0.08);
+}
+
+.violation-shell__title {
+    margin: 0;
+    color: #1f314f;
+    font-size: 1.05rem;
+    font-weight: 500;
+}
+
+.violation-shell__subtitle {
+    margin: 0.3rem 0 0;
+    color: #617089;
+    font-size: 0.88rem;
+}
+
+.violation-shell__stats {
+    display: flex;
+    align-items: stretch;
+    gap: 0.75rem;
+}
+
+.violation-stat {
+    min-width: 90px;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid rgba(31, 49, 79, 0.08);
+    border-radius: 16px;
+    background: #fff;
+    text-align: center;
+}
+
+.violation-stat__label {
+    display: block;
+    color: #6a778d;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.violation-stat__value {
+    display: block;
+    margin-top: 0.25rem;
+    color: #1f314f;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.violation-table-wrap {
+    overflow-x: auto;
+}
+
+.violation-table {
+    --bs-table-bg: transparent;
+    --bs-table-border-color: rgba(31, 49, 79, 0.08);
+}
+
+.violation-table thead th {
+    padding: 1rem 1.1rem;
+    color: #6a778d;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: rgba(248, 251, 255, 0.85);
+    border-bottom-width: 1px;
+}
+
+.violation-table tbody td {
+    padding: 1rem 1.1rem;
+    color: #31445f;
+    vertical-align: middle;
+}
+
+.violation-name {
+    color: #1f314f;
+    font-weight: 500;
+}
+
+.violation-description {
+    color: #607089;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    max-width: 420px;
+}
+
+.violation-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.42rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
+.violation-status.is-active {
+    background: rgba(25, 135, 84, 0.1);
+    color: #1f7a51;
+}
+
+.violation-status.is-inactive {
+    background: rgba(108, 117, 125, 0.12);
+    color: #5d6675;
+}
+
+.violation-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.violation-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.8rem;
+    border-radius: 12px;
+    border: 1px solid rgba(31, 49, 79, 0.12);
+    background: #fff;
+    color: #1f314f;
+    font-weight: 400;
+}
+
+.violation-action-btn:hover,
+.violation-action-btn:focus {
+    background: #f6f8fb;
+    color: #1f314f;
+}
+
+.violation-action-btn--danger {
+    color: #b5475b;
+    border-color: rgba(181, 71, 91, 0.16);
+}
+
+.violation-action-btn--danger:hover,
+.violation-action-btn--danger:focus {
+    background: rgba(181, 71, 91, 0.06);
+    color: #a3394e;
+}
+
+.violation-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    min-height: 180px;
+    color: #6a778d;
+}
+
+.violation-delete-btn {
+    border-color: #b5475b;
+    background: #b5475b;
+}
+
+.violation-delete-btn:hover,
+.violation-delete-btn:focus {
+    background: #9f364b;
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+    .violation-shell__header {
+        flex-direction: column;
+    }
+
+    .violation-shell__stats {
+        width: 100%;
+    }
+
+    .violation-stat {
+        flex: 1 1 auto;
+    }
+}

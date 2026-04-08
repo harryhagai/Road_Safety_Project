@@ -9,9 +9,9 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('img/road-safety-favicon.svg') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="{{ asset('css/aHeader.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/aSidebar.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/aDashboardLayout.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/rsrsOfficerHeader.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/rsrsOfficerSidebar.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/rsrsOfficerLayout.css') }}" rel="stylesheet">
     @stack('styles')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -159,9 +159,9 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('js/officerSidebarToggler.js') }}"></script>
-    <script src="{{ asset('js/buttonSpinner.js') }}"></script>
-    <script src="{{ asset('js/academicAlertTheme.js') }}"></script>
+    <script src="{{ asset('js/rsrsOfficerSidebar.js') }}"></script>
+    <script src="{{ asset('js/rsrsButtonSpinner.js') }}"></script>
+    <script src="{{ asset('js/rsrsOfficerAlerts.js') }}"></script>
     @yield('scripts')
 
     @if (session('success') && ! View::hasSection('disable_success_swal'))
@@ -189,6 +189,5 @@
     @endif
 
     @stack('scripts')
-    <script src="/teacherClassAssignment.js"></script>
 </body>
 </html>

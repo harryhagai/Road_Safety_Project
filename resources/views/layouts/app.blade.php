@@ -19,10 +19,10 @@
 
 
     <!-- Custom CSS -->
-    <link href="{{ asset('css/header.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/home.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/login.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/rsrsPublicHeader.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/rsrsPublicFooter.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/rsrsHome.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/rsrsAuth.css') }}" rel="stylesheet">
     <style>
         :root {
             --font-heading: "Segoe UI", "Trebuchet MS", Verdana, sans-serif;
@@ -64,8 +64,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Custom JS -->
-    <script src="{{ asset('js/header.js') }}"></script>
-    <script src="{{ asset('js/buttonSpinner.js') }}"></script>
+    <script src="{{ asset('js/rsrsPublicHeader.js') }}"></script>
+    <script src="{{ asset('js/rsrsButtonSpinner.js') }}"></script>
     @yield('scripts')
 
 </body>
