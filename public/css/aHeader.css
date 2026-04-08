@@ -1,11 +1,11 @@
 #main-header {
-    --header-primary: #1098d4;
-    --header-primary-dark: #0d6f9b;
-    --header-primary-soft: #f3fbff;
-    --header-primary-soft-alt: #e4f5ff;
-    --header-text: #102f45;
-    --header-muted: #516d80;
-    --header-border: rgba(16, 152, 212, 0.18);
+    --header-primary: #232c3a;
+    --header-primary-dark: #1b2230;
+    --header-primary-soft: rgba(35, 44, 58, 0.08);
+    --header-primary-soft-alt: rgba(27, 34, 48, 0.12);
+    --header-text: #232c3a;
+    --header-muted: #5d6675;
+    --header-border: rgba(35, 44, 58, 0.14);
     height: 60px;
     background: rgba(255, 255, 255, 0.98);
     position: fixed;
@@ -19,7 +19,7 @@
     justify-content: space-between;
     padding: 0 1rem;
     border-bottom: 1px solid var(--header-border);
-    box-shadow: 0 8px 24px rgba(13, 111, 155, 0.08);
+    box-shadow: 0 8px 24px rgba(27, 34, 48, 0.08);
     transition: all 0.3s ease;
 }
 
@@ -41,7 +41,7 @@ body.sidebar-collapsed #main-header {
     border: 1px solid var(--header-border);
     border-radius: 999px;
     background: #ffffff;
-    box-shadow: 0 6px 16px rgba(13, 111, 155, 0.06);
+    box-shadow: 0 6px 16px rgba(27, 34, 48, 0.06);
 }
 
 .header-page-dot {
@@ -50,7 +50,7 @@ body.sidebar-collapsed #main-header {
     flex: 0 0 10px;
     border-radius: 50%;
     background: var(--header-primary);
-    box-shadow: 0 0 0 4px rgba(16, 152, 212, 0.16);
+    box-shadow: 0 0 0 4px rgba(35, 44, 58, 0.14);
 }
 
 .header-page-label {
@@ -72,16 +72,16 @@ body.sidebar-collapsed #main-header {
     height: 44px;
     border: 1px solid var(--header-border);
     border-radius: 50%;
-    background: rgba(243, 251, 255, 0.88);
+    background: rgba(35, 44, 58, 0.06);
     color: var(--header-text);
-    box-shadow: 0 6px 16px rgba(13, 111, 155, 0.08);
+    box-shadow: 0 6px 16px rgba(27, 34, 48, 0.08);
     transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
 
 #sidebarToggle:hover {
     transform: translateY(-1px);
-    border-color: rgba(16, 152, 212, 0.3);
-    box-shadow: 0 8px 20px rgba(13, 111, 155, 0.12);
+    border-color: rgba(35, 44, 58, 0.24);
+    box-shadow: 0 8px 20px rgba(27, 34, 48, 0.12);
     color: var(--header-primary-dark);
 }
 
@@ -89,8 +89,8 @@ body.sidebar-collapsed #main-header {
 #sidebarToggle:active {
     color: var(--header-primary-dark);
     background: #fff;
-    border-color: rgba(16, 152, 212, 0.34);
-    box-shadow: 0 0 0 0.2rem rgba(16, 152, 212, 0.12);
+    border-color: rgba(35, 44, 58, 0.28);
+    box-shadow: 0 0 0 0.2rem rgba(35, 44, 58, 0.12);
 }
 
 #sidebarToggleIcon {
@@ -107,28 +107,28 @@ body.sidebar-collapsed #sidebarToggleIcon {
     padding: 0;
     border-color: var(--header-border);
     background: rgba(255, 255, 255, 0.94);
-    box-shadow: 0 6px 16px rgba(13, 111, 155, 0.06);
+    box-shadow: 0 6px 16px rgba(27, 34, 48, 0.06);
     transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .header-action-btn:hover {
     transform: translateY(-1px);
-    border-color: rgba(16, 152, 212, 0.3);
-    box-shadow: 0 10px 22px rgba(13, 111, 155, 0.12);
+    border-color: rgba(35, 44, 58, 0.24);
+    box-shadow: 0 10px 22px rgba(27, 34, 48, 0.12);
 }
 
 .notification-trigger {
     position: relative;
     isolation: isolate;
     overflow: visible;
-    border-color: rgba(16, 152, 212, 0.22);
+    border-color: rgba(35, 44, 58, 0.18);
     background: #ffffff;
-    box-shadow: 0 10px 24px rgba(13, 111, 155, 0.1);
+    box-shadow: 0 10px 24px rgba(27, 34, 48, 0.1);
 }
 
 .notification-trigger:hover {
-    border-color: rgba(16, 152, 212, 0.32);
-    box-shadow: 0 14px 28px rgba(13, 111, 155, 0.14);
+    border-color: rgba(35, 44, 58, 0.24);
+    box-shadow: 0 14px 28px rgba(27, 34, 48, 0.14);
 }
 
 .notification-trigger::before {
@@ -137,7 +137,7 @@ body.sidebar-collapsed #sidebarToggleIcon {
     inset: 4px;
     border-radius: 50%;
     background: linear-gradient(180deg, var(--header-primary-soft) 0%, var(--header-primary-soft-alt) 100%);
-    border: 1px solid rgba(16, 152, 212, 0.18);
+    border: 1px solid rgba(35, 44, 58, 0.14);
     z-index: 0;
 }
 
@@ -178,7 +178,7 @@ body.sidebar-collapsed #sidebarToggleIcon {
     max-width: 92vw;
     border: 1px solid var(--header-border);
     border-radius: 1rem;
-    box-shadow: 0 18px 42px rgba(13, 111, 155, 0.12) !important;
+    box-shadow: 0 18px 42px rgba(27, 34, 48, 0.12) !important;
 }
 
 .notification-menu {
@@ -188,7 +188,7 @@ body.sidebar-collapsed #sidebarToggleIcon {
     border: 1px solid var(--header-border);
     border-radius: 1.1rem;
     overflow: hidden;
-    box-shadow: 0 20px 46px rgba(13, 111, 155, 0.14) !important;
+    box-shadow: 0 20px 46px rgba(27, 34, 48, 0.14) !important;
 }
 
 .notification-menu-header {
@@ -209,7 +209,7 @@ body.sidebar-collapsed #sidebarToggleIcon {
 }
 
 .notification-item-unread {
-    background: rgba(16, 152, 212, 0.08);
+    background: rgba(35, 44, 58, 0.08);
 }
 
 .notification-copy {
@@ -239,13 +239,13 @@ body.sidebar-collapsed #sidebarToggleIcon {
 .notification-status-unread {
     background: var(--header-primary) !important;
     color: #ffffff !important;
-    border-color: rgba(16, 152, 212, 0.2);
+    border-color: rgba(35, 44, 58, 0.16);
 }
 
 .notification-status-read {
-    background: rgba(16, 152, 212, 0.1) !important;
+    background: rgba(35, 44, 58, 0.1) !important;
     color: var(--header-primary-dark) !important;
-    border-color: rgba(16, 152, 212, 0.18);
+    border-color: rgba(35, 44, 58, 0.14);
 }
 
 .notification-empty-state {
@@ -266,7 +266,7 @@ body.sidebar-collapsed #sidebarToggleIcon {
     height: 36px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid rgba(16, 152, 212, 0.24);
+    border: 2px solid rgba(35, 44, 58, 0.18);
 }
 
 .header-theme-icon {
@@ -274,16 +274,16 @@ body.sidebar-collapsed #sidebarToggleIcon {
 }
 
 .notification-view-all-btn {
-    border: 1px solid rgba(16, 152, 212, 0.24);
+    border: 1px solid rgba(35, 44, 58, 0.18);
     color: var(--header-primary-dark);
     background: var(--header-primary-soft);
 }
 
 .notification-view-all-btn:hover,
 .notification-view-all-btn:focus {
-    border-color: rgba(16, 152, 212, 0.34);
+    border-color: rgba(35, 44, 58, 0.24);
     color: #ffffff;
-    background: var(--header-primary);
+    background: var(--header-primary-dark);
 }
 
 /* Responsive header */

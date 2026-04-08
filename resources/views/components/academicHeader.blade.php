@@ -123,7 +123,7 @@
                 @if(!empty($currentOfficer?->passport))
                     <img src="{{ asset('storage/' . $currentOfficer->passport) }}" alt="Profile Picture" class="profile-avatar" />
                 @else
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode($officerDisplayName) }}&background=1098d4&color=fff&size=40" alt="Profile Picture" class="profile-avatar" />
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode($officerDisplayName) }}&background=232c3a&color=fff&size=40" alt="Profile Picture" class="profile-avatar" />
                 @endif
                 <span class="ms-2 d-none d-md-inline fw-normal">{{ $officerDisplayName }}</span>
             </a>

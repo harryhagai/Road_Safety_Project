@@ -74,16 +74,16 @@
     @endphp
 
     @include('components.academicHeader')
-    @include('components.academicSidebar')
+    @include('components.officerSidebar')
 
-    <div class="academic-page-content pb-5" @if($academicPageHeader) data-academic-page-header="true" @endif>
+    <div class="officer-page-content pb-5" @if($academicPageHeader) data-officer-page-header="true" @endif>
         @if ($academicPageHeader)
             <div class="px-3 px-lg-4 pt-4">
-                <x-academic-page-header :title="$academicPageHeader['title']" :subtitle="$academicPageHeader['subtitle']" />
+                <x-officer-page-header :title="$academicPageHeader['title']" :subtitle="$academicPageHeader['subtitle']" />
             </div>
         @endif
 
-        <div class="academic-page-body">
+        <div class="officer-page-body">
             @yield('content')
         </div>
     </div>
@@ -93,35 +93,35 @@
     </footer>
 
     <style>
-        .academic-shared-page-header {
+        .officer-shared-page-header {
             display: flex;
             align-items: center;
             justify-content: flex-start;
             gap: 1rem;
             padding: 0.25rem 0 1.1rem;
             margin-bottom: 1.2rem;
-            border-bottom: 1px solid #e6eefb;
+            border-bottom: 1px solid rgba(35, 44, 58, 0.14);
         }
-        .academic-shared-page-header__title {
+        .officer-shared-page-header__title {
             margin: 0;
             font-size: clamp(1.35rem, 1.5vw, 1.8rem);
             line-height: 1.2;
             font-weight: 700;
-            color: #0d6efd;
+            color: #232c3a;
         }
-        .academic-shared-page-header__subtitle {
+        .officer-shared-page-header__subtitle {
             max-width: 720px;
             margin: 0.35rem 0 0;
-            color: #5f7698;
+            color: #4f5a6b;
             font-size: 0.95rem;
             line-height: 1.6;
         }
-        .academic-page-content[data-academic-page-header="true"] .academic-page-body > .container:first-child > :is(h1, h2, h3, h4):first-child,
-        .academic-page-content[data-academic-page-header="true"] .academic-page-body > .container-fluid:first-child > :is(h1, h2, h3, h4):first-child {
+        .officer-page-content[data-officer-page-header="true"] .officer-page-body > .container:first-child > :is(h1, h2, h3, h4):first-child,
+        .officer-page-content[data-officer-page-header="true"] .officer-page-body > .container-fluid:first-child > :is(h1, h2, h3, h4):first-child {
             display: none !important;
         }
-        .academic-page-content[data-academic-page-header="true"] .academic-page-body > .container:first-child > .d-flex:first-child > :is(h1, h2, h3, h4):first-child,
-        .academic-page-content[data-academic-page-header="true"] .academic-page-body > .container-fluid:first-child > .d-flex:first-child > :is(h1, h2, h3, h4):first-child {
+        .officer-page-content[data-officer-page-header="true"] .officer-page-body > .container:first-child > .d-flex:first-child > :is(h1, h2, h3, h4):first-child,
+        .officer-page-content[data-officer-page-header="true"] .officer-page-body > .container-fluid:first-child > .d-flex:first-child > :is(h1, h2, h3, h4):first-child {
             display: none !important;
         }
         #dashboardFooter {
@@ -134,10 +134,10 @@
             width: calc(100% - var(--sidebar-collapsed-width));
         }
         @media (max-width: 768px) {
-            .academic-shared-page-header {
+            .officer-shared-page-header {
                 padding-bottom: 1rem;
             }
-            .academic-shared-page-header__subtitle {
+            .officer-shared-page-header__subtitle {
                 font-size: 0.92rem;
             }
             #dashboardFooter {
@@ -151,7 +151,7 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('js/academicSidebarToggler.js') }}"></script>
+    <script src="{{ asset('js/officerSidebarToggler.js') }}"></script>
     <script src="{{ asset('js/buttonSpinner.js') }}"></script>
     <script src="{{ asset('js/academicAlertTheme.js') }}"></script>
     @yield('scripts')

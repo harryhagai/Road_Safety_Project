@@ -1,27 +1,26 @@
-/* Ensure all sidebar nav-items share the auth/login palette */
 :root {
   --sidebar-width: 210px;
   --sidebar-collapsed-width: 82px;
   --header-height: 60px;
   --transition-speed: 0.3s;
-  --sidebar-primary: #1098d4;
-  --sidebar-primary-dark: #0d6f9b;
-  --sidebar-primary-soft: #f3fbff;
-  --sidebar-primary-soft-alt: #e4f5ff;
-  --sidebar-text: #102f45;
-  --sidebar-muted: #516d80;
+  --sidebar-primary: #232c3a;
+  --sidebar-primary-dark: #1b2230;
+  --sidebar-primary-soft: rgba(35, 44, 58, 0.08);
+  --sidebar-primary-soft-alt: rgba(27, 34, 48, 0.12);
+  --sidebar-text: #232c3a;
+  --sidebar-muted: #5d6675;
   --sidebar-bg: rgba(255, 255, 255, 0.96);
-  --sidebar-border: rgba(16, 152, 212, 0.18);
-  --sidebar-shadow: 10px 0 28px rgba(13, 111, 155, 0.1);
-  --active-shadow: 0 12px 24px rgba(13, 111, 155, 0.14);
-  --nav-item-hover: rgba(16, 152, 212, 0.08);
+  --sidebar-border: rgba(35, 44, 58, 0.14);
+  --sidebar-shadow: 10px 0 28px rgba(27, 34, 48, 0.1);
+  --active-shadow: 0 12px 24px rgba(27, 34, 48, 0.14);
+  --nav-item-hover: rgba(35, 44, 58, 0.08);
 }
 
 #sidebar .nav-item .nav-link.active {
   background: var(--sidebar-primary-soft) !important;
   color: var(--sidebar-primary-dark) !important;
-  border: 1px solid rgba(16, 152, 212, 0.28);
-  box-shadow: 0 8px 18px rgba(13, 111, 155, 0.12);
+  border: 1px solid rgba(35, 44, 58, 0.18);
+  box-shadow: 0 8px 18px rgba(27, 34, 48, 0.12);
 }
 /* Sidebar icon colors */
 #sidebar .nav-link .bi { color: var(--sidebar-primary); }
@@ -71,7 +70,7 @@
   font-weight: 600;
 }
 
-.academic-sidebar-brand {
+.officer-sidebar-brand {
   display: flex;
   align-items: center;
   gap: 0.55rem;
@@ -80,18 +79,26 @@
   border-bottom: 1px solid var(--sidebar-border);
 }
 
-.academic-sidebar-logo {
+.officer-sidebar-logo {
   width: 58px;
   height: 58px;
-  object-fit: contain;
   border-radius: 50%;
-  background-color: #fff;
-  border: 2px solid rgba(16, 152, 212, 0.24);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(35, 44, 58, 0.06);
+  border: 2px solid rgba(35, 44, 58, 0.18);
   padding: 6px;
-  box-shadow: 0 8px 18px rgba(13, 111, 155, 0.12);
+  box-shadow: 0 8px 18px rgba(27, 34, 48, 0.12);
 }
 
-.academic-sidebar-brand-text {
+.officer-sidebar-logo-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--sidebar-primary);
+}
+
+.officer-sidebar-brand-text {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -99,7 +106,7 @@
   line-height: 1.05;
 }
 
-.academic-sidebar-brand-title {
+.officer-sidebar-brand-title {
   font-size: 1.12rem;
   font-weight: 700;
   color: var(--sidebar-primary);
@@ -107,7 +114,7 @@
   white-space: nowrap;
 }
 
-.academic-sidebar-brand-subtitle {
+.officer-sidebar-brand-subtitle {
   font-size: 0.86rem;
   font-weight: 400;
   color: var(--sidebar-muted);
@@ -177,30 +184,30 @@
   overflow: hidden;
 }
 
-#sidebar .academic-sidebar-toggle {
+#sidebar .officer-sidebar-toggle {
   justify-content: space-between;
 }
 
-#sidebar .academic-sidebar-caret {
+#sidebar .officer-sidebar-caret {
   min-width: 16px;
   font-size: 0.95rem;
-  color: rgba(16, 152, 212, 0.72);
+  color: rgba(35, 44, 58, 0.72);
   transition: transform var(--transition-speed) ease, color var(--transition-speed) ease;
 }
 
-#sidebar .academic-sidebar-toggle[aria-expanded="true"] .academic-sidebar-caret {
+#sidebar .officer-sidebar-toggle[aria-expanded="true"] .officer-sidebar-caret {
   transform: rotate(90deg);
   color: var(--sidebar-primary-dark);
 }
 
-#sidebar .academic-sidebar-link-content {
+#sidebar .officer-sidebar-link-content {
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
   min-width: 0;
 }
 
-#sidebar .academic-sidebar-link-label {
+#sidebar .officer-sidebar-link-label {
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -263,7 +270,7 @@
 #sidebar .nav-link.active.is-current {
   background: var(--sidebar-primary-soft) !important;
   color: var(--sidebar-primary-dark) !important;
-  border-color: rgba(16, 152, 212, 0.28) !important;
+  border-color: rgba(35, 44, 58, 0.18) !important;
 }
 
 #sidebar .nav-link.active .bi {
@@ -276,13 +283,13 @@
   transform: translateX(0);
 }
 
-#sidebar .academic-sidebar-sub-link {
-  background: rgba(16, 152, 212, 0.03);
+#sidebar .officer-sidebar-sub-link {
+  background: rgba(35, 44, 58, 0.03);
   border: 1px solid transparent;
 }
 
-#sidebar .academic-sidebar-sub-link:hover {
-  background: rgba(16, 152, 212, 0.08);
+#sidebar .officer-sidebar-sub-link:hover {
+  background: rgba(35, 44, 58, 0.08);
 }
 
 
@@ -320,20 +327,20 @@ body.sidebar-collapsed #sidebar .p-3 {
   padding-right: 0.65rem !important;
 }
 
-body.sidebar-collapsed #sidebar .academic-sidebar-brand {
+body.sidebar-collapsed #sidebar .officer-sidebar-brand {
   justify-content: center;
   gap: 0;
 }
 
-body.sidebar-collapsed #sidebar .academic-sidebar-logo {
+body.sidebar-collapsed #sidebar .officer-sidebar-logo {
   width: 50px;
   height: 50px;
   padding: 5px;
 }
 
-body.sidebar-collapsed #sidebar .academic-sidebar-brand-text,
+body.sidebar-collapsed #sidebar .officer-sidebar-brand-text,
 body.sidebar-collapsed #sidebar h6,
-body.sidebar-collapsed #sidebar .academic-sidebar-caret,
+body.sidebar-collapsed #sidebar .officer-sidebar-caret,
 body.sidebar-collapsed #sidebar .collapse {
   display: none !important;
 }
@@ -363,18 +370,18 @@ body.sidebar-collapsed #sidebar .nav-link {
   font-size: 0;
 }
 
-body.sidebar-collapsed #sidebar .academic-sidebar-toggle {
+body.sidebar-collapsed #sidebar .officer-sidebar-toggle {
   justify-content: center !important;
 }
 
-body.sidebar-collapsed #sidebar .academic-sidebar-link-content {
+body.sidebar-collapsed #sidebar .officer-sidebar-link-content {
   justify-content: center;
   gap: 0;
   width: 100%;
 }
 
-body.sidebar-collapsed #sidebar .academic-sidebar-link-label,
-body.sidebar-collapsed #sidebar .academic-sidebar-caret {
+body.sidebar-collapsed #sidebar .officer-sidebar-link-label,
+body.sidebar-collapsed #sidebar .officer-sidebar-caret {
   display: none !important;
 }
 
@@ -391,7 +398,7 @@ body.sidebar-collapsed #sidebar .nav-link:hover {
 }
 
 body.sidebar-collapsed #sidebar .nav-link.active {
-  box-shadow: 0 10px 24px rgba(13, 110, 253, 0.18);
+  box-shadow: 0 10px 24px rgba(27, 34, 48, 0.18);
 }
 
 /* HIDE ON PRINT */
