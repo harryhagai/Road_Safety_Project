@@ -1,13 +1,25 @@
+.geo-workspace {
+    min-height: calc(100vh - var(--header-height) - 0.35rem);
+}
+
+.geo-workspace__grid {
+    min-height: inherit;
+}
+
 .geo-card {
+    display: flex;
+    flex-direction: column;
     background: linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
     border: 1px solid rgba(32, 51, 84, 0.1);
     border-radius: 24px;
     box-shadow: 0 18px 40px rgba(31, 49, 79, 0.08);
     overflow: hidden;
+    height: 100%;
+    min-height: 0;
 }
 
 .geo-card__header {
-    padding: 1.5rem 1.5rem 0;
+    padding: 1rem 1rem 0;
 }
 
 .geo-card__eyebrow {
@@ -25,19 +37,24 @@
 }
 
 .geo-card__title {
-    margin: 0.95rem 0 0.45rem;
+    margin: 0.6rem 0 0.25rem;
     color: #1b2a40;
-    font-size: clamp(1.2rem, 2vw, 1.6rem);
+    font-size: clamp(1.05rem, 1.5vw, 1.35rem);
     font-weight: 700;
 }
 
 .geo-card__text {
     color: #526176;
-    line-height: 1.65;
+    line-height: 1.45;
+    font-size: 0.92rem;
 }
 
 .geo-map-shell {
-    padding: 1.5rem;
+    padding: 1rem;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .geo-map-toolbar {
@@ -45,8 +62,8 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 1rem;
-    padding: 0.9rem 1rem;
+    margin-bottom: 0.75rem;
+    padding: 0.7rem 0.85rem;
     border: 1px solid rgba(31, 49, 79, 0.08);
     border-radius: 18px;
     background: #fff;
@@ -68,6 +85,7 @@
 
 .geo-map-canvas {
     width: 100%;
+    min-height: 580px;
     border-radius: 20px;
     overflow: hidden;
     border: 1px solid rgba(31, 49, 79, 0.1);
@@ -75,14 +93,21 @@
 }
 
 .geo-card__meta {
-    padding: 1.4rem 1.5rem 0;
+    padding: 1rem 1rem 0;
+}
+
+.geo-card--inspector .geo-payload-panel {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .geo-meta-row {
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.8rem 0;
+    padding: 0.65rem 0;
     border-bottom: 1px solid rgba(31, 49, 79, 0.08);
 }
 
@@ -103,7 +128,7 @@
 
 .geo-payload-panel,
 .geo-location-panel {
-    margin: 1.5rem;
+    margin: 1rem;
     border: 1px solid rgba(31, 49, 79, 0.08);
     border-radius: 18px;
     background: #fff;
@@ -111,7 +136,7 @@
 
 .geo-payload-panel__header,
 .geo-location-panel__label {
-    padding: 0.9rem 1rem;
+    padding: 0.75rem 0.9rem;
     border-bottom: 1px solid rgba(31, 49, 79, 0.08);
     color: #66758b;
     font-size: 0.78rem;
@@ -122,9 +147,10 @@
 
 .geo-payload-panel__content {
     margin: 0;
-    padding: 1rem;
-    min-height: 220px;
-    max-height: 320px;
+    padding: 0.9rem;
+    min-height: 260px;
+    max-height: none;
+    flex: 1 1 auto;
     overflow: auto;
     background: #f8fbff;
     color: #173153;
@@ -133,16 +159,25 @@
 }
 
 .geo-location-panel__value {
-    padding: 1rem;
+    padding: 0.9rem;
     color: #1f314f;
-    line-height: 1.7;
+    line-height: 1.6;
 }
 
 .leaflet-container {
     font: inherit;
 }
 
+.geo-card--map .geo-card__header,
+.geo-card--inspector .geo-card__header {
+    flex-shrink: 0;
+}
+
 @media (max-width: 768px) {
+    .geo-workspace {
+        min-height: auto;
+    }
+
     .geo-map-shell,
     .geo-card__header,
     .geo-card__meta,
@@ -160,5 +195,9 @@
     .geo-map-toolbar {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .geo-map-canvas {
+        min-height: 460px;
     }
 }

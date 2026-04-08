@@ -10,6 +10,7 @@ body {
     min-height: 100vh;
     padding-top: var(--header-height);
     padding-left: var(--sidebar-width);
+    overflow-x: hidden;
     transition: padding-left 0.3s ease;
 }
 
@@ -17,8 +18,47 @@ body.sidebar-collapsed {
     padding-left: var(--sidebar-collapsed-width);
 }
 
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+.officer-page-content {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.officer-page-body {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding: 0 0 1.5rem;
+}
+
+.officer-page-body > .container,
+.officer-page-body > .container-fluid {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.officer-page-body .row {
+    min-width: 0;
+}
+
+.officer-page-body [class*="col-"] {
+    min-width: 0;
+}
+
 @media (max-width: 768px) {
     body {
         padding-left: 0;
+    }
+
+    .officer-page-body {
+        padding-bottom: 1rem;
     }
 }

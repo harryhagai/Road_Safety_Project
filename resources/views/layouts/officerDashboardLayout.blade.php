@@ -77,7 +77,7 @@
     @include('components.academicHeader')
     @include('components.officerSidebar')
 
-    <div class="officer-page-content" @if($academicPageHeader) data-officer-page-header="true" @endif>
+    <main class="officer-page-content" @if($academicPageHeader) data-officer-page-header="true" @endif>
         @if ($academicPageHeader)
             <div class="px-3 px-lg-4 pt-4">
                 <x-officer-page-header :title="$academicPageHeader['title']" :subtitle="$academicPageHeader['subtitle']" />
@@ -87,7 +87,7 @@
         <div class="officer-page-body">
             @yield('content')
         </div>
-    </div>
+    </main>
 
     <style>
         .officer-shared-page-header {

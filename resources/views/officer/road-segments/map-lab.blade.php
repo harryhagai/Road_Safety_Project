@@ -1,35 +1,29 @@
 @extends('layouts.officerDashboardLayout')
 
 @section('content')
-    <div class="container-fluid px-3 px-lg-4 py-4">
-        <div class="row g-4">
+    <div class="container-fluid geo-workspace px-1 px-lg-2 py-2">
+        <div class="row g-2 geo-workspace__grid">
             <div class="col-12 col-xl-8">
-                <section class="geo-card">
+                <section class="geo-card geo-card--fill geo-card--map">
                     <div class="geo-card__header">
                         <div>
                             <span class="geo-card__eyebrow">Phase 1</span>
                             <h2 class="geo-card__title">Geospatial foundation lab</h2>
-                            <p class="geo-card__text mb-0">
-                                This screen validates the free map stack, coordinate picking, reverse geocoding,
-                                and the shared payload format we will reuse in road segmentation and rule mapping.
-                            </p>
+                            <p class="geo-card__text mb-0">Map stack, point picking, and reverse geocoding preview.</p>
                         </div>
                     </div>
 
-                    <x-map.canvas id="roadSegmentMapLab" :config="$mapConfig" height="500px" />
+                    <x-map.canvas id="roadSegmentMapLab" :config="$mapConfig" height="calc(100vh - 235px)" />
                 </section>
             </div>
 
             <div class="col-12 col-xl-4">
-                <section class="geo-card">
+                <section class="geo-card geo-card--fill geo-card--inspector">
                     <div class="geo-card__header">
                         <div>
                             <span class="geo-card__eyebrow">Inspector</span>
                             <h2 class="geo-card__title">Map payload preview</h2>
-                            <p class="geo-card__text mb-0">
-                                The selected point is normalized into a GeoJSON-style object so the next phases can
-                                store segments, rules, and report coordinates consistently.
-                            </p>
+                            <p class="geo-card__text mb-0">Live payload and resolved address for the selected point.</p>
                         </div>
                     </div>
 
