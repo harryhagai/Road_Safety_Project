@@ -8,26 +8,24 @@
             <div class="auth-login-shell">
                 <aside class="auth-login-brand-panel">
                     <a href="{{ route('home') }}" class="auth-login-brand">
-                        <img src="{{ asset('img/hg-logo.png') }}" alt="HGSS Logo">
+                        <i class="bi bi-cone-striped auth-login-brand-icon" aria-hidden="true"></i>
                         <span>
-                            <strong>Henry Gogarty Secondary School</strong>
-                            <small>HGSS Student Information Management System</small>
+                            <strong>Road Safety Reporting System</strong>
+                            <small>Authorized officer portal</small>
                         </span>
                     </a>
 
-                    <div class="auth-login-pill">Password Recovery</div>
-
                     <div class="auth-login-copy">
-                        <h1>Forgot Password</h1>
-                        <p>Enter your registered email address and we will send a secure password reset link to that inbox.</p>
+                        <h1>Recover officer account access</h1>
+                        <p>Enter your authorized email address and we will send a secure password reset link to restore access to the road safety system.</p>
                     </div>
 
                     <div class="auth-login-guide">
                         <h3>How this works</h3>
                         <ul>
-                            <li>Enter the email address linked to your HGSS account.</li>
-                            <li>The system checks whether that email exists in the users table.</li>
-                            <li>If it exists, a password reset link is sent to that same email address.</li>
+                            <li>Enter the officer email address linked to your account.</li>
+                            <li>The system checks whether that email exists in the authorized users list.</li>
+                            <li>If it exists, a reset link is sent to that same email for secure recovery.</li>
                         </ul>
                     </div>
 
@@ -41,11 +39,11 @@
                         <div class="auth-login-title-row">
                             <h2 class="auth-login-title">
                                 <i class="bi bi-envelope-paper"></i>
-                                <span>Request Reset Link</span>
+                                <span>Request Password Reset</span>
                             </h2>
                         </div>
 
-                        <p class="auth-login-subtitle">Use your email only. If the account exists, we will email a password reset link for secure access recovery.</p>
+                        <p class="auth-login-subtitle">Use your officer email only. If the account exists, we will email a password reset link for secure access recovery.</p>
 
                         @include('auth.partials.feedback')
 
@@ -56,7 +54,7 @@
                                 <label for="email">Email Address</label>
                                 <div class="auth-input-wrap auth-login-input @error('email') is-invalid @enderror">
                                     <i class="bi bi-envelope auth-input-icon"></i>
-                                    <input id="email" type="email" name="email" value="{{ old('email') }}" placeholder="name@school.com" required autocomplete="email">
+                                    <input id="email" type="email" name="email" value="{{ old('email') }}" placeholder="officer@roadsafety.test" required autocomplete="email">
                                 </div>
                                 @error('email')
                                     <div class="auth-field-error">{{ $message }}</div>
@@ -71,7 +69,7 @@
                             <div class="auth-login-back-wrap">
                                 <a href="{{ route('login') }}" class="auth-login-back-link">
                                     <i class="bi bi-arrow-left"></i>
-                                    <span>Back to Login</span>
+                                    <span>Back to Officer Login</span>
                                 </a>
                             </div>
                         </form>

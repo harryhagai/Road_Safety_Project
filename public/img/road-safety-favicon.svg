@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Road Safety Icon">
+  <rect width="64" height="64" rx="18" fill="#232c3a"/>
+  <path d="M32 12 45 48H19L32 12Z" fill="#ffffff"/>
+  <path d="M25.2 28h13.6l2.2 6H23z" fill="#232c3a"/>
+  <path d="M22 52h20" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+</svg>

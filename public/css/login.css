@@ -1713,6 +1713,14 @@
     font-size: 0.9rem;
 }
 
+.auth-login-input .auth-input-icon + input {
+    padding-left: 2.85rem;
+}
+
+.auth-login-input:has(.auth-password-toggle) input {
+    padding-right: 2.9rem;
+}
+
 .auth-login-input input::placeholder {
     color: #7a89a1;
 }
