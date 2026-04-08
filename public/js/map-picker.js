@@ -1,17 +1,4 @@
 (function () {
-    function normalizePayload(lat, lng, locationName) {
-        return {
-            type: 'Feature',
-            geometry: {
-                type: 'Point',
-                coordinates: [lng, lat],
-            },
-            properties: {
-                location_name: locationName || null,
-            },
-        };
-    }
-
     function bindMap(root) {
         const config = JSON.parse(root.dataset.mapConfig || '{}');
         const shell = root.closest('[data-map-shell]');
@@ -33,10 +20,22 @@
 
         function updateCoordinateText(lat, lng) {
             if (!coordinatesLabel) {
+                const coordinatesPanel = document.getElementById('selectedCoordinatesPanel');
+
+                if (coordinatesPanel) {
+                    coordinatesPanel.textContent = `${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}`;
+                }
+
                 return;
             }
 
             coordinatesLabel.textContent = `${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}`;
+
+            const coordinatesPanel = document.getElementById('selectedCoordinatesPanel');
+
+            if (coordinatesPanel) {
+                coordinatesPanel.textContent = `${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}`;
+            }
         }
 
         async function resolveLocation(lat, lng) {
@@ -66,28 +65,16 @@
             updateCoordinateText(lat, lng);
 
             const locationTarget = document.getElementById('mapResolvedLocation');
-            const payloadTarget = document.getElementById('mapPayloadPreview');
 
             if (locationTarget) {
                 locationTarget.textContent = 'Resolving location name...';
             }
 
-            const basePayload = normalizePayload(lat, lng, null);
-
-            if (payloadTarget) {
-                payloadTarget.textContent = JSON.stringify(basePayload, null, 2);
-            }
-
             try {
                 const result = await resolveLocation(lat, lng);
-                const payload = normalizePayload(lat, lng, result.display_name || null);
 
                 if (locationTarget) {
                     locationTarget.textContent = result.display_name || 'No address description returned.';
-                }
-
-                if (payloadTarget) {
-                    payloadTarget.textContent = JSON.stringify(payload, null, 2);
                 }
             } catch (error) {
                 if (locationTarget) {

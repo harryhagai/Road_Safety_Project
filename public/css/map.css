@@ -22,31 +22,18 @@
     padding: 1rem 1rem 0;
 }
 
-.geo-card__eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.3rem 0.7rem;
-    border-radius: 999px;
-    background: rgba(13, 110, 253, 0.08);
-    color: #0d6efd;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
 .geo-card__title {
     margin: 0.6rem 0 0.25rem;
     color: #1b2a40;
-    font-size: clamp(1.05rem, 1.5vw, 1.35rem);
-    font-weight: 700;
+    font-size: clamp(0.95rem, 1.15vw, 1.12rem);
+    font-weight: 500;
 }
 
 .geo-card__text {
     color: #526176;
     line-height: 1.45;
-    font-size: 0.92rem;
+    font-size: 0.84rem;
+    font-weight: 400;
 }
 
 .geo-map-shell {
@@ -71,7 +58,7 @@
 
 .geo-map-toolbar__label {
     font-size: 0.78rem;
-    font-weight: 700;
+    font-weight: 500;
     color: #6d7990;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -80,7 +67,7 @@
 .geo-map-toolbar__coords {
     margin-top: 0.25rem;
     color: #1f314f;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .geo-map-canvas {
@@ -92,38 +79,11 @@
     background: #e8eef6;
 }
 
-.geo-card__meta {
-    padding: 1rem 1rem 0;
-}
-
 .geo-card--inspector .geo-payload-panel {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     min-height: 0;
-}
-
-.geo-meta-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.65rem 0;
-    border-bottom: 1px solid rgba(31, 49, 79, 0.08);
-}
-
-.geo-meta-row:first-child {
-    padding-top: 0;
-}
-
-.geo-meta-row__label {
-    color: #6b778c;
-    font-weight: 600;
-}
-
-.geo-meta-row__value {
-    color: #1f314f;
-    font-weight: 700;
-    text-align: right;
 }
 
 .geo-payload-panel,
@@ -140,7 +100,7 @@
     border-bottom: 1px solid rgba(31, 49, 79, 0.08);
     color: #66758b;
     font-size: 0.78rem;
-    font-weight: 700;
+    font-weight: 500;
     letter-spacing: 0.04em;
     text-transform: uppercase;
 }
@@ -162,6 +122,10 @@
     padding: 0.9rem;
     color: #1f314f;
     line-height: 1.6;
+}
+
+.geo-location-panel--compact {
+    margin-bottom: 0;
 }
 
 .leaflet-container {

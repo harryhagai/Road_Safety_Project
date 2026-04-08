@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\MapController;
+use App\Http\Controllers\OfficerNotificationController;
 use App\Http\Controllers\OfficerProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +40,10 @@ Route::get('/maps/reverse-geocode', [MapController::class, 'reverseGeocode'])
     ->name('maps.reverse-geocode');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/road-officer/notifications', [OfficerNotificationController::class, 'index'])->name('officer.notifications.index');
+    Route::get('/road-officer/notifications/dropdown-data', [OfficerNotificationController::class, 'dropdownData'])->name('officer.notifications.dropdown-data');
+    Route::post('/road-officer/notifications/mark-all-read', [OfficerNotificationController::class, 'markAllRead'])->name('officer.notifications.mark-all-read');
+    Route::get('/road-officer/notifications/{notificationId}', [OfficerNotificationController::class, 'show'])->name('officer.notifications.show');
     Route::get('/road-officer/road-segments', [MapController::class, 'lab'])->name('officer.road-segments.index');
     Route::get('/road-officer/road-segments/map-lab', [MapController::class, 'lab'])->name('officer.road-segments.map-lab');
     Route::get('/road-officer/profile', [OfficerProfileController::class, 'show'])->name('officer.profile.show');

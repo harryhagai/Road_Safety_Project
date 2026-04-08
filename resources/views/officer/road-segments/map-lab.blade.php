@@ -7,13 +7,12 @@
                 <section class="geo-card geo-card--fill geo-card--map">
                     <div class="geo-card__header">
                         <div>
-                            <span class="geo-card__eyebrow">Phase 1</span>
-                            <h2 class="geo-card__title">Geospatial foundation lab</h2>
-                            <p class="geo-card__text mb-0">Map stack, point picking, and reverse geocoding preview.</p>
+                            <h2 class="geo-card__title">Road segment mapping</h2>
+                            <p class="geo-card__text mb-0">Select a location and review the mapped coordinates.</p>
                         </div>
                     </div>
 
-                    <x-map.canvas id="roadSegmentMapLab" :config="$mapConfig" height="calc(100vh - 235px)" />
+                    <x-map.canvas id="roadSegmentMapLab" :config="$mapConfig" height="calc(100vh - 235px)" :show-toolbar="false" />
                 </section>
             </div>
 
@@ -21,34 +20,16 @@
                 <section class="geo-card geo-card--fill geo-card--inspector">
                     <div class="geo-card__header">
                         <div>
-                            <span class="geo-card__eyebrow">Inspector</span>
-                            <h2 class="geo-card__title">Map payload preview</h2>
-                            <p class="geo-card__text mb-0">Live payload and resolved address for the selected point.</p>
+                            <h2 class="geo-card__title">Location details</h2>
+                            <p class="geo-card__text mb-0">Coordinates, payload, and resolved address.</p>
                         </div>
                     </div>
 
-                    <div class="geo-card__meta">
-                        <div class="geo-meta-row">
-                            <span class="geo-meta-row__label">Provider</span>
-                            <span class="geo-meta-row__value">{{ $mapConfig['provider'] }}</span>
+                    <div class="geo-location-panel geo-location-panel--compact">
+                        <div class="geo-location-panel__label">Selected coordinates</div>
+                        <div id="selectedCoordinatesPanel" class="geo-location-panel__value">
+                            Click on the map to choose a location.
                         </div>
-                        <div class="geo-meta-row">
-                            <span class="geo-meta-row__label">Tile source</span>
-                            <span class="geo-meta-row__value">OpenStreetMap</span>
-                        </div>
-                        <div class="geo-meta-row">
-                            <span class="geo-meta-row__label">Default center</span>
-                            <span class="geo-meta-row__value">
-                                {{ $mapConfig['defaultCenter']['lat'] }}, {{ $mapConfig['defaultCenter']['lng'] }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="geo-payload-panel">
-                        <div class="geo-payload-panel__header">
-                            <span>Current payload</span>
-                        </div>
-                        <pre id="mapPayloadPreview" class="geo-payload-panel__content">No point selected yet.</pre>
                     </div>
 
                     <div class="geo-location-panel">

@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Services\MapConfigService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\View\View;
 
@@ -45,14 +45,24 @@ class MapController extends Controller
                 ]);
         } catch (ConnectionException) {
             return response()->json([
+                'display_name' => null,
+                'address' => [],
+                'lat' => $validated['lat'],
+                'lng' => $validated['lng'],
+                'provider' => config('map.geocoder.provider'),
                 'message' => 'Reverse geocoding service could not be reached from this environment.',
-            ], 502);
+            ]);
         }
 
         if ($response->failed()) {
             return response()->json([
+                'display_name' => null,
+                'address' => [],
+                'lat' => $validated['lat'],
+                'lng' => $validated['lng'],
+                'provider' => config('map.geocoder.provider'),
                 'message' => 'Reverse geocoding service is currently unavailable.',
-            ], 502);
+            ]);
         }
 
         $payload = $response->json();
