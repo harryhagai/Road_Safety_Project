@@ -12,13 +12,6 @@
         <div class="row g-2 g-md-3 geo-workspace__grid">
             <div class="col-12">
                 <section class="geo-card geo-card--fill geo-card--map home-geo-card">
-                    <div class="geo-card__header">
-                        <div>
-                            <h2 class="geo-card__title">Live Road Network</h2>
-                            <p class="geo-card__text mb-0">Explore active road segments, monitoring zones, and reported incidents across the map.</p>
-                        </div>
-                    </div>
-
                     <x-map.canvas id="mainPublicMap" :config="$mapConfig" height="100%" :show-toolbar="false" mode="viewer" />
                 </section>
             </div>
