@@ -50,9 +50,19 @@
         }
     </style>
 
+    <style>
+        body.has-fixed-footer {
+            padding-bottom: 56px; /* Space for the footer */
+        }
+        @media (max-width: 768px) {
+            body.has-fixed-footer {
+                padding-bottom: 80px; /* Taller footer on mobile */
+            }
+        }
+    </style>
 </head>
 
-<body class="d-flex flex-column min-vh-100" data-disable-navigation-overlay="1" data-inline-spinner-links="1" data-inline-spinner-theme="blue">
+<body class="has-fixed-footer d-flex flex-column min-vh-100" data-disable-navigation-overlay="1" data-inline-spinner-links="1" data-inline-spinner-theme="blue">
     @include('components.header')
 
     <main class="flex-grow-1">

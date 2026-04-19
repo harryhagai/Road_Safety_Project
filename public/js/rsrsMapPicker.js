@@ -15,10 +15,21 @@
         const coordinatesLabel = shell?.querySelector('[data-map-coordinates]');
         const recenterButton = shell?.querySelector('[data-map-recenter]');
 
-        const map = L.map(root).setView(
+        const map = L.map(root, {
+            zoomControl: false,
+            fadeAnimation: true,
+            markerZoomAnimation: true
+        }).setView(
             [config.defaultCenter.lat, config.defaultCenter.lng],
             config.defaultZoom
         );
+
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        // Fix for grey boxes/sizing issues in dynamic containers
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 300);
 
         L.tileLayer(config.tiles.url, {
             minZoom: config.minZoom,

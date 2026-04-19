@@ -3,8 +3,12 @@
     backdrop-filter: blur(10px);
     border-top: 1px solid rgba(16, 152, 212, 0.12);
     padding: 0.85rem 1rem;
-    position: relative;
-    z-index: 100;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1050;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.03);
 }
 
 .footer-container {
