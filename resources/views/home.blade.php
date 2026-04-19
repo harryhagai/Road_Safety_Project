@@ -86,6 +86,38 @@
             border-radius: 18px;
         }
 
+        .home-location-control__button {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            background: #ffffff;
+            color: #1f314f;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .home-location-control__button:hover {
+            background: #f3f7ff;
+            color: #0d4eb3;
+        }
+
+        .home-location-control__button.is-locating {
+            color: #0d6efd;
+            animation: homeLocPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes homeLocPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.08);
+            }
+        }
+
         @media (min-width: 768px) {
             :root {
                 --home-header-height: 86px;
@@ -132,6 +164,44 @@
             let userHasAdjustedView = false;
             let lastTrackedPoint = null;
             let lastTrackTimestamp = 0;
+            let locationButton = null;
+
+            function setLocatingState(isLocating) {
+                if (!locationButton) return;
+
+                locationButton.disabled = isLocating;
+                locationButton.classList.toggle('is-locating', isLocating);
+                locationButton.title = isLocating ? 'Finding your current position...' : 'Use my current location';
+            }
+
+            function createLocationControl() {
+                if (!mapInterface?.map || locationButton) return;
+
+                const LocationControl = L.Control.extend({
+                    options: { position: 'topright' },
+                    onAdd: function () {
+                        const container = L.DomUtil.create('div', 'leaflet-bar home-location-control');
+                        const button = L.DomUtil.create('button', 'home-location-control__button', container);
+                        button.type = 'button';
+                        button.title = 'Use my current location';
+                        button.innerHTML = '<i class="bi bi-geo-alt-fill" aria-hidden="true"></i>';
+                        locationButton = button;
+
+                        L.DomEvent.disableClickPropagation(container);
+                        L.DomEvent.disableScrollPropagation(container);
+
+                        L.DomEvent.on(button, 'click', function (event) {
+                            L.DomEvent.preventDefault(event);
+                            L.DomEvent.stopPropagation(event);
+                            bootstrapGps(true);
+                        });
+
+                        return container;
+                    },
+                });
+
+                mapInterface.map.addControl(new LocationControl());
+            }
 
             function distanceInMeters(a, b) {
                 const toRad = (value) => (value * Math.PI) / 180;
@@ -152,6 +222,7 @@
 
                 const latitude = Number(position.coords.latitude);
                 const longitude = Number(position.coords.longitude);
+                const accuracy = Number(position.coords.accuracy);
                 const now = Date.now();
                 const currentPoint = { lat: latitude, lng: longitude };
 
@@ -166,6 +237,8 @@
                 lastTrackTimestamp = now;
 
                 mapInterface.selectPoint(latitude, longitude, { resolveLocation: false });
+                mapInterface.setUserLocation?.(latitude, longitude, { accuracy });
+                setLocatingState(false);
 
                 if (!hasCentered) {
                     mapInterface.map.panTo([latitude, longitude], { animate: false });
@@ -187,7 +260,10 @@
                     (error) => {
                         if (highAccuracy && (error.code === 2 || error.code === 3)) {
                             startWatch(false);
+                            return;
                         }
+
+                        setLocatingState(false);
                     },
                     {
                         enableHighAccuracy: highAccuracy,
@@ -197,8 +273,11 @@
                 );
             }
 
-            function bootstrapGps() {
+            function bootstrapGps(force = false) {
                 if (!navigator.geolocation || !mapInterface) return;
+                if (!force && watchId !== null) return;
+
+                setLocatingState(true);
 
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
@@ -211,7 +290,10 @@
                                 applyPosition(position);
                                 startWatch(false);
                             },
-                            () => startWatch(false),
+                            () => {
+                                setLocatingState(false);
+                                startWatch(false);
+                            },
                             { enableHighAccuracy: false, timeout: 8000, maximumAge: 15000 }
                         );
                     },
@@ -227,6 +309,7 @@
                     if (!mapEl.mapApi) return;
                     mapInterface = mapEl.mapApi;
                     mapInterface.ensureSize();
+                    createLocationControl();
 
                     const markUserAdjusted = () => {
                         if (hasCentered) {

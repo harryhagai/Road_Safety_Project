@@ -363,6 +363,45 @@
     border: 0;
 }
 
+.geo-map-selection-marker,
+.geo-map-user-marker {
+    background: transparent;
+    border: 0;
+}
+
+.geo-map-selection-marker__pin {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    display: block;
+    border-radius: 999px 999px 999px 0;
+    background: #d9485f;
+    border: 2px solid #ffffff;
+    transform: rotate(-45deg);
+    box-shadow: 0 8px 16px rgba(217, 72, 95, 0.3);
+}
+
+.geo-map-selection-marker__pin::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #ffffff;
+    top: 5px;
+    left: 5px;
+}
+
+.geo-map-user-marker__dot {
+    width: 14px;
+    height: 14px;
+    display: block;
+    border-radius: 999px;
+    background: #1f70ff;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 6px rgba(31, 112, 255, 0.2), 0 5px 12px rgba(22, 74, 166, 0.26);
+}
+
 .geo-point-marker__pin {
     position: relative;
     width: 28px;

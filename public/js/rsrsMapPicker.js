@@ -23,6 +23,24 @@
         return 2 * earthRadius * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
     }
 
+    function createSelectionIcon() {
+        return L.divIcon({
+            className: 'geo-map-selection-marker',
+            html: '<span class="geo-map-selection-marker__pin"></span>',
+            iconSize: [26, 26],
+            iconAnchor: [13, 26],
+        });
+    }
+
+    function createUserLocationIcon() {
+        return L.divIcon({
+            className: 'geo-map-user-marker',
+            html: '<span class="geo-map-user-marker__dot"></span>',
+            iconSize: [18, 18],
+            iconAnchor: [9, 9],
+        });
+    }
+
     function bindMap(root) {
         const config = JSON.parse(root.dataset.mapConfig || '{}');
         const mode = root.dataset.mapMode || 'picker';
@@ -57,6 +75,8 @@
         }).addTo(map);
 
         let marker = null;
+        let userLocationMarker = null;
+        let userAccuracyCircle = null;
         let reverseGeocodeController = null;
         let lastReverseGeocodePoint = null;
 
@@ -133,7 +153,7 @@
 
             if (mode !== 'segment-builder') {
                 if (!marker) {
-                    marker = L.marker([lat, lng]).addTo(map);
+                    marker = L.marker([lat, lng], { icon: createSelectionIcon() }).addTo(map);
                 } else {
                     marker.setLatLng([lat, lng]);
                 }
@@ -195,6 +215,38 @@
             }
         }
 
+        function setUserLocation(lat, lng, options = {}) {
+            const accuracy = Number(options.accuracy);
+
+            if (!userLocationMarker) {
+                userLocationMarker = L.marker([lat, lng], {
+                    icon: createUserLocationIcon(),
+                    interactive: false,
+                    keyboard: false,
+                    zIndexOffset: 1000,
+                }).addTo(map);
+            } else {
+                userLocationMarker.setLatLng([lat, lng]);
+            }
+
+            if (Number.isFinite(accuracy) && accuracy > 0) {
+                const clampedAccuracy = Math.min(Math.max(accuracy, 6), 150);
+
+                if (!userAccuracyCircle) {
+                    userAccuracyCircle = L.circle([lat, lng], {
+                        radius: clampedAccuracy,
+                        stroke: false,
+                        fillColor: '#1f70ff',
+                        fillOpacity: 0.16,
+                        interactive: false,
+                    }).addTo(map);
+                } else {
+                    userAccuracyCircle.setLatLng([lat, lng]);
+                    userAccuracyCircle.setRadius(clampedAccuracy);
+                }
+            }
+        }
+
         map.on('click', function (event) {
             handleSelection(event.latlng.lat, event.latlng.lng);
             map.fire('rsrs:point-selected', {
@@ -211,6 +263,7 @@
             map,
             ensureSize,
             selectPoint: handleSelection,
+            setUserLocation,
             centerOn(lat, lng, zoom = map.getZoom(), animate = true) {
                 map.setView([lat, lng], zoom, { animate });
             },
