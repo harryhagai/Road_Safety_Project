@@ -392,14 +392,22 @@
     left: 5px;
 }
 
-.geo-map-user-marker__dot {
-    width: 14px;
-    height: 14px;
-    display: block;
+.geo-map-user-marker__pin {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 999px;
-    background: #1f70ff;
+    background: #0d6efd;
+    color: #ffffff;
     border: 2px solid #ffffff;
-    box-shadow: 0 0 0 6px rgba(31, 112, 255, 0.2), 0 5px 12px rgba(22, 74, 166, 0.26);
+    box-shadow: 0 0 0 9px rgba(31, 112, 255, 0.16), 0 8px 14px rgba(22, 74, 166, 0.28);
+}
+
+.geo-map-user-marker__pin .bi {
+    font-size: 0.9rem;
+    line-height: 1;
 }
 
 .geo-point-marker__pin {

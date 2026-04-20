@@ -3,6 +3,10 @@
     --home-footer-height: 80px;
 }
 
+body.home-loader-active {
+    overflow: hidden;
+}
+
 .header-wrapper {
     position: fixed;
     top: 0;
@@ -46,11 +50,182 @@ main.flex-grow-1 {
     padding: 0.75rem 1rem 1rem;
 }
 
+.home-map-stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+}
+
 .home-geo-card #mainPublicMap,
 .home-geo-card .geo-map-canvas {
     height: 100% !important;
     min-height: 320px;
     border-radius: 18px;
+}
+
+.home-page-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 2500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    overflow: hidden;
+    background: linear-gradient(160deg, rgba(244, 250, 255, 0.94), rgba(224, 238, 255, 0.92));
+    backdrop-filter: blur(14px);
+    transition: opacity 280ms ease, visibility 280ms ease;
+}
+
+.home-page-loader.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.home-page-loader__backdrop {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.home-page-loader__glow {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(10px);
+    opacity: 0.9;
+}
+
+.home-page-loader__glow--one {
+    width: min(48vw, 560px);
+    height: min(48vw, 560px);
+    top: -12%;
+    left: -8%;
+    background: radial-gradient(circle, rgba(94, 196, 238, 0.36), rgba(94, 196, 238, 0.02) 68%);
+    animation: homeLoaderFloat 8s ease-in-out infinite;
+}
+
+.home-page-loader__glow--two {
+    width: min(42vw, 480px);
+    height: min(42vw, 480px);
+    right: -10%;
+    bottom: -16%;
+    background: radial-gradient(circle, rgba(31, 112, 255, 0.28), rgba(31, 112, 255, 0.02) 70%);
+    animation: homeLoaderFloat 10s ease-in-out infinite reverse;
+}
+
+.home-page-loader__grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(31, 79, 167, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(31, 79, 167, 0.05) 1px, transparent 1px);
+    background-size: 34px 34px;
+    mask-image: radial-gradient(circle at center, black 34%, transparent 88%);
+}
+
+.home-page-loader__panel {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: center;
+    gap: 1.15rem;
+    width: min(100%, 460px);
+    padding: 2rem 1.6rem;
+    border: 1px solid rgba(31, 79, 167, 0.12);
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.62);
+    box-shadow: 0 30px 80px rgba(31, 79, 167, 0.18);
+}
+
+.home-page-loader__brand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 74px;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.84);
+    border: 1px solid rgba(31, 112, 255, 0.15);
+    color: #1557c2;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-indent: 0.22em;
+}
+
+.home-page-loader__visual {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    display: grid;
+    place-items: center;
+}
+
+.home-page-loader__ring,
+.home-page-loader__core {
+    position: absolute;
+    border-radius: 50%;
+}
+
+.home-page-loader__ring--outer {
+    inset: 0;
+    border: 2px solid rgba(31, 112, 255, 0.16);
+    animation: homePageLoaderSpin 3.8s linear infinite;
+}
+
+.home-page-loader__ring--middle {
+    inset: 16px;
+    border: 3px solid transparent;
+    border-top-color: #1f70ff;
+    border-right-color: rgba(94, 196, 238, 0.95);
+    animation: homePageLoaderSpin 1.25s linear infinite;
+}
+
+.home-page-loader__ring--inner {
+    inset: 34px;
+    border: 2px dashed rgba(21, 87, 194, 0.38);
+    animation: homePageLoaderSpinReverse 2s linear infinite;
+}
+
+.home-page-loader__core {
+    inset: 49px;
+    display: block;
+    background:
+        radial-gradient(circle at 30% 30%, #ffffff, #8ed7f5 54%, #1f70ff 100%);
+    box-shadow:
+        0 0 0 10px rgba(31, 112, 255, 0.08),
+        0 18px 28px rgba(31, 79, 167, 0.2);
+    animation: homeLoaderPulse 1.5s ease-in-out infinite;
+}
+
+.home-page-loader__content {
+    display: grid;
+    gap: 0.45rem;
+    color: #173153;
+    text-align: center;
+    max-width: 30rem;
+}
+
+.home-page-loader__eyebrow {
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #1557c2;
+}
+
+.home-page-loader__content strong {
+    font-size: clamp(1.25rem, 2.8vw, 2rem);
+    line-height: 1.15;
+}
+
+.home-page-loader__content span:last-child {
+    color: #58708f;
+    font-size: 0.98rem;
+    line-height: 1.5;
 }
 
 .home-location-control__button {
@@ -117,6 +292,38 @@ main.flex-grow-1 {
     }
 }
 
+@keyframes homePageLoaderSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes homePageLoaderSpinReverse {
+    to {
+        transform: rotate(-360deg);
+    }
+}
+
+@keyframes homeLoaderPulse {
+    0%,
+    100% {
+        transform: scale(0.96);
+    }
+    50% {
+        transform: scale(1.04);
+    }
+}
+
+@keyframes homeLoaderFloat {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+    50% {
+        transform: translate3d(0, 18px, 0);
+    }
+}
+
 @media (min-width: 768px) {
     :root {
         --home-header-height: 86px;
@@ -147,5 +354,33 @@ main.flex-grow-1 {
 @media (min-width: 992px) {
     .home-geo-card {
         max-width: 1200px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .home-page-loader {
+        padding: 1rem;
+    }
+
+    .home-page-loader__panel {
+        padding: 1.5rem 1.15rem;
+        border-radius: 24px;
+    }
+
+    .home-page-loader__visual {
+        width: 118px;
+        height: 118px;
+    }
+
+    .home-page-loader__ring--middle {
+        inset: 14px;
+    }
+
+    .home-page-loader__ring--inner {
+        inset: 28px;
+    }
+
+    .home-page-loader__core {
+        inset: 40px;
     }
 }

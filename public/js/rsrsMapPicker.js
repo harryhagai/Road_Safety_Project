@@ -35,9 +35,9 @@
     function createUserLocationIcon() {
         return L.divIcon({
             className: 'geo-map-user-marker',
-            html: '<span class="geo-map-user-marker__dot"></span>',
-            iconSize: [18, 18],
-            iconAnchor: [9, 9],
+            html: '<span class="geo-map-user-marker__pin"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i></span>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 30],
         });
     }
 
@@ -151,7 +151,7 @@
         async function handleSelection(lat, lng, options = {}) {
             const shouldResolveLocation = options.resolveLocation !== false;
 
-            if (mode !== 'segment-builder') {
+            if (mode === 'picker') {
                 if (!marker) {
                     marker = L.marker([lat, lng], { icon: createSelectionIcon() }).addTo(map);
                 } else {

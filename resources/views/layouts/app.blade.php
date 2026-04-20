@@ -23,6 +23,7 @@
     <link href="{{ asset('css/rsrsPublicFooter.css') }}" rel="stylesheet">
     <link href="{{ asset('css/rsrsHome.css') }}" rel="stylesheet">
     <link href="{{ asset('css/rsrsAuth.css') }}" rel="stylesheet">
+    @stack('critical-head')
     @stack('styles')
     <style>
         :root {
@@ -64,6 +65,7 @@
 </head>
 
 <body class="has-fixed-footer d-flex flex-column min-vh-100" data-disable-navigation-overlay="1" data-inline-spinner-links="1" data-inline-spinner-theme="blue">
+    @stack('page_loader')
     @include('components.header')
 
     <main class="flex-grow-1">
