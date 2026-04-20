@@ -1,6 +1,6 @@
 (function () {
     const LOADER_MIN_VISIBLE_MS = 1400;
-    const LOADER_TIMEOUT_MS = 5000;
+    const LOADER_TIMEOUT_MS = 9000;
 
     function initHomeLoader() {
         const loader = document.querySelector('[data-home-map-loader]');
@@ -44,14 +44,8 @@
             finalizeHide();
         };
 
-        if (mapRoot.mapApi) {
-            hideLoader();
-            return;
-        }
-
         document.body.classList.add('home-loader-active');
-        mapRoot.addEventListener('rsrs:map-ready', hideLoader, { once: true });
-        window.addEventListener('load', hideLoader, { once: true });
+        document.addEventListener('rsrs:home-location-ready', hideLoader, { once: true });
         window.setTimeout(hideLoader, LOADER_TIMEOUT_MS);
     }
 

@@ -19,6 +19,7 @@
     let speedWidget = null;
     let speedValueEl = null;
     let speedStatusEl = null;
+    let hasPublishedLocationReady = false;
 
     function cacheSpeedWidget() {
         if (speedWidget) return;
@@ -56,6 +57,26 @@
         }
 
         return (movedMeters / elapsedSeconds) * 3.6;
+    }
+
+    function publishLocationReady(position, speedKmh) {
+        if (hasPublishedLocationReady) return;
+
+        const accuracy = Number(position.coords.accuracy);
+        const hasUsableAccuracy = Number.isFinite(accuracy) && accuracy > 0 && accuracy <= 120;
+        const hasUsableSpeed = Number.isFinite(speedKmh) && speedKmh >= 0;
+
+        if (!hasUsableAccuracy || !hasUsableSpeed) {
+            return;
+        }
+
+        hasPublishedLocationReady = true;
+        document.dispatchEvent(new CustomEvent('rsrs:home-location-ready', {
+            detail: {
+                accuracy,
+                speedKmh,
+            },
+        }));
     }
 
     function setLocationButtonMode(mode) {
@@ -173,6 +194,7 @@
         mapInterface.setUserLocation?.(latitude, longitude, { accuracy });
         setLocatingState(false);
         updateSpeedDisplay(speedKmh, isMoving ? 'Live movement detected' : 'You look stationary', isMoving);
+        publishLocationReady(position, speedKmh);
 
         if (zoomToUserOnNextFix) {
             flyToUser(latitude, longitude, locationViewMode);

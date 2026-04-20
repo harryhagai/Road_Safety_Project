@@ -18,16 +18,17 @@
 
 .footer-line {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     gap: 1.5rem;
-    color: #516d80; /* auth-muted from login page */
+    color: #6a778b;
     font-family: "Manrope", "Segoe UI", sans-serif;
     font-size: 0.88rem;
+    text-align: center;
 }
 
 .footer-school-name {
-    color: #1098d4; /* auth-primary */
+    color: #232c3a;
     font-weight: 700;
 }
 
