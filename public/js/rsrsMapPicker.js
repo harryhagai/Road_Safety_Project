@@ -41,6 +41,15 @@
         });
     }
 
+    function createPreviewLocationIcon() {
+        return L.divIcon({
+            className: 'geo-map-preview-marker',
+            html: '<span class="geo-map-preview-marker__pin"><i class="bi bi-search" aria-hidden="true"></i></span>',
+            iconSize: [34, 34],
+            iconAnchor: [17, 17],
+        });
+    }
+
     function bindMap(root) {
         const config = JSON.parse(root.dataset.mapConfig || '{}');
         const mode = root.dataset.mapMode || 'picker';
@@ -77,6 +86,7 @@
         let marker = null;
         let userLocationMarker = null;
         let userAccuracyCircle = null;
+        let previewMarker = null;
         let reverseGeocodeController = null;
         let lastReverseGeocodePoint = null;
 
@@ -247,6 +257,37 @@
             }
         }
 
+        function previewLocation(lat, lng, options = {}) {
+            const zoom = Number(options.zoom);
+            const shouldAnimate = options.animate !== false;
+            const currentZoom = map.getZoom();
+            const targetZoom = Number.isFinite(zoom) ? zoom : currentZoom;
+
+            if (!previewMarker) {
+                previewMarker = L.marker([lat, lng], {
+                    icon: createPreviewLocationIcon(),
+                    interactive: false,
+                    keyboard: false,
+                    zIndexOffset: 850,
+                }).addTo(map);
+            } else {
+                previewMarker.setLatLng([lat, lng]);
+            }
+
+            map.flyTo([lat, lng], targetZoom, {
+                animate: shouldAnimate,
+                duration: shouldAnimate ? 1.15 : 0,
+                easeLinearity: 0.18,
+            });
+        }
+
+        function clearPreviewLocation() {
+            if (previewMarker) {
+                map.removeLayer(previewMarker);
+                previewMarker = null;
+            }
+        }
+
         map.on('click', function (event) {
             handleSelection(event.latlng.lat, event.latlng.lng);
             map.fire('rsrs:point-selected', {
@@ -265,8 +306,14 @@
             ensureSize,
             selectPoint: handleSelection,
             setUserLocation,
+            previewLocation,
+            clearPreviewLocation,
             centerOn(lat, lng, zoom = map.getZoom(), animate = true) {
-                map.setView([lat, lng], zoom, { animate });
+                map.flyTo([lat, lng], zoom, {
+                    animate,
+                    duration: animate ? 1.2 : 0,
+                    easeLinearity: 0.18,
+                });
             },
         };
     }

@@ -364,7 +364,8 @@
 }
 
 .geo-map-selection-marker,
-.geo-map-user-marker {
+.geo-map-user-marker,
+.geo-map-preview-marker {
     background: transparent;
     border: 0;
 }
@@ -407,6 +408,24 @@
 
 .geo-map-user-marker__pin .bi {
     font-size: 0.9rem;
+    line-height: 1;
+}
+
+.geo-map-preview-marker__pin {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #0d6efd, #2aa6ff);
+    color: #ffffff;
+    border: 3px solid rgba(255, 255, 255, 0.96);
+    box-shadow: 0 0 0 10px rgba(13, 110, 253, 0.12), 0 10px 18px rgba(22, 74, 166, 0.22);
+}
+
+.geo-map-preview-marker__pin .bi {
+    font-size: 0.95rem;
     line-height: 1;
 }
 

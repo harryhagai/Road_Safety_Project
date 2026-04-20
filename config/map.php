@@ -19,13 +19,20 @@ return [
     ],
 
     'geocoder' => [
-        'provider' => env('MAP_GEOCODER_PROVIDER', 'nominatim'),
+        'provider' => env('MAP_GEOCODER_PROVIDER', 'locationiq'),
         'base_url' => env('MAP_GEOCODER_BASE_URL', 'https://nominatim.openstreetmap.org'),
         'email' => env('MAP_GEOCODER_EMAIL'),
         'language' => env('MAP_GEOCODER_LANGUAGE', 'en'),
         'timeout' => (int) env('MAP_GEOCODER_TIMEOUT', 8),
         'search_limit' => (int) env('MAP_GEOCODER_SEARCH_LIMIT', 5),
+        'cache_ttl_minutes' => (int) env('MAP_GEOCODER_CACHE_TTL_MINUTES', 15),
         'verify_ssl' => filter_var(env('MAP_GEOCODER_VERIFY_SSL', true), FILTER_VALIDATE_BOOL),
         'user_agent' => env('MAP_GEOCODER_USER_AGENT', env('APP_NAME', 'RSRS') . '/1.0'),
+        'autocomplete' => [
+            'provider' => env('MAP_AUTOCOMPLETE_PROVIDER', env('MAP_GEOCODER_PROVIDER', 'locationiq')),
+            'base_url' => env('MAP_AUTOCOMPLETE_BASE_URL', 'https://api.locationiq.com/v1'),
+            'api_key' => env('MAP_AUTOCOMPLETE_API_KEY'),
+            'countrycodes' => env('MAP_AUTOCOMPLETE_COUNTRYCODES', 'tz'),
+        ],
     ],
 ];
