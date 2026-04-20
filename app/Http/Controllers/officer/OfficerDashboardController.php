@@ -107,6 +107,7 @@ class OfficerDashboardController extends Controller
             ->get();
 
         $recentSegments = RoadSegment::query()
+            ->with('segmentType:id,name')
             ->withCount('roadRules')
             ->latest('id')
             ->limit(5)

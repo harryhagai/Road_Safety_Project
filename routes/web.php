@@ -6,6 +6,7 @@ use App\Http\Controllers\officer\OfficerNotificationController;
 use App\Http\Controllers\officer\OfficerProfileController;
 use App\Http\Controllers\officer\RoadSegmentController;
 use App\Http\Controllers\officer\RoadRuleController;
+use App\Http\Controllers\officer\SegmentTypeController;
 use App\Http\Controllers\officer\ViolationTypeController;
 use Illuminate\Support\Facades\Route;
 
@@ -56,6 +57,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/road-officer/road-rules', [RoadRuleController::class, 'store'])->name('officer.road-rules.store');
     Route::get('/road-officer/road-segments', [RoadSegmentController::class, 'index'])->name('officer.road-segments.index');
     Route::post('/road-officer/road-segments', [RoadSegmentController::class, 'store'])->name('officer.road-segments.store');
+    Route::get('/road-officer/segment-types', [SegmentTypeController::class, 'index'])->name('officer.segment-types.index');
+    Route::post('/road-officer/segment-types', [SegmentTypeController::class, 'store'])->name('officer.segment-types.store');
+    Route::put('/road-officer/segment-types/{segmentType}', [SegmentTypeController::class, 'update'])->name('officer.segment-types.update');
+    Route::delete('/road-officer/segment-types/{segmentType}', [SegmentTypeController::class, 'destroy'])->name('officer.segment-types.destroy');
     Route::get('/road-officer/violation-types', [ViolationTypeController::class, 'index'])->name('officer.violation-types.index');
     Route::post('/road-officer/violation-types', [ViolationTypeController::class, 'store'])->name('officer.violation-types.store');
     Route::put('/road-officer/violation-types/{violationType}', [ViolationTypeController::class, 'update'])->name('officer.violation-types.update');

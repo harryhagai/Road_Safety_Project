@@ -145,14 +145,14 @@
                                     required>
                             </div>
                             <div class="col-12 col-md-6">
-                                <label for="segment_type" class="form-label">Segment type</label>
-                                <select class="form-select" id="segment_type" name="segment_type">
+                                <label for="segment_type_id" class="form-label">Segment type</label>
+                                <select class="form-select" id="segment_type_id" name="segment_type_id">
                                     <option value="">Select type</option>
-                                    <option value="urban" @selected(old('segment_type') === 'urban')>Urban road</option>
-                                    <option value="highway" @selected(old('segment_type') === 'highway')>Highway</option>
-                                    <option value="junction" @selected(old('segment_type') === 'junction')>Junction</option>
-                                    <option value="school_zone" @selected(old('segment_type') === 'school_zone')>School zone</option>
-                                    <option value="market_area" @selected(old('segment_type') === 'market_area')>Market area</option>
+                                    @foreach ($segmentTypes as $segmentType)
+                                        <option value="{{ $segmentType->id }}" @selected((string) old('segment_type_id') === (string) $segmentType->id)>
+                                            {{ $segmentType->name }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-12">

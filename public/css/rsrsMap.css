@@ -657,6 +657,34 @@
     font-size: 0.86rem;
 }
 
+.geo-map-search__status-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.geo-map-search__spinner {
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    background:
+        radial-gradient(circle at 50% 0%, #0d6efd 16%, transparent 18%),
+        radial-gradient(circle at 100% 50%, rgba(13, 110, 253, 0.78) 16%, transparent 18%),
+        radial-gradient(circle at 50% 100%, rgba(13, 110, 253, 0.48) 16%, transparent 18%),
+        radial-gradient(circle at 0% 50%, rgba(13, 110, 253, 0.24) 16%, transparent 18%);
+    animation: geoMapSearchSpin 0.85s linear infinite;
+}
+
+@keyframes geoMapSearchSpin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .geo-map-search__results {
     position: absolute;
     z-index: 500;

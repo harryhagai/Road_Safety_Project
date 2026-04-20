@@ -4,6 +4,7 @@ namespace App\Http\Controllers\officer;
 
 use App\Http\Controllers\Controller;
 use App\Models\RoadSegment;
+use App\Models\SegmentType;
 use App\Services\MapConfigService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,13 +16,14 @@ class RoadSegmentController extends Controller
     public function index(MapConfigService $mapConfigService): View
     {
         $segments = RoadSegment::query()
+            ->with('segmentType:id,name')
             ->latest()
             ->get()
             ->map(function (RoadSegment $segment) {
                 return [
                     'id' => $segment->id,
                     'segment_name' => $segment->segment_name,
-                    'segment_type' => $segment->segment_type,
+                    'segment_type' => $segment->segment_type_name,
                     'description' => $segment->description,
                     'length_km' => $segment->length_km,
                     'boundary_coordinates' => $segment->boundary_coordinates,
@@ -32,6 +34,10 @@ class RoadSegmentController extends Controller
         return view('officer.road-segments.index', [
             'mapConfig' => $mapConfigService->forFrontend(),
             'segments' => $segments,
+            'segmentTypes' => SegmentType::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name']),
         ]);
     }
 
@@ -39,7 +45,7 @@ class RoadSegmentController extends Controller
     {
         $validated = $request->validate([
             'segment_name' => ['required', 'string', 'max:255'],
-            'segment_type' => ['nullable', 'string', 'max:100'],
+            'segment_type_id' => ['nullable', 'exists:segment_types,id'],
             'description' => ['nullable', 'string', 'max:2000'],
             'length_km' => ['nullable', 'numeric', 'min:0'],
             'boundary_coordinates' => ['required', 'json'],
@@ -62,10 +68,14 @@ class RoadSegmentController extends Controller
         }
 
         $segmentName = $this->generateUniqueSegmentName($validated['segment_name']);
+        $segmentType = ! empty($validated['segment_type_id'])
+            ? SegmentType::query()->find($validated['segment_type_id'])
+            : null;
 
         RoadSegment::create([
             'segment_name' => $segmentName,
-            'segment_type' => $validated['segment_type'] ?: null,
+            'segment_type' => $segmentType?->name,
+            'segment_type_id' => $segmentType?->id,
             'description' => $validated['description'] ?: null,
             'length_km' => $validated['length_km'] ?: null,
             'boundary_coordinates' => $geometry,

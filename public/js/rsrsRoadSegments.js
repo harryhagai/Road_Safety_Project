@@ -289,8 +289,18 @@
             }
         }
 
-        function setSearchStatus(message) {
+        function setSearchStatus(message, options = {}) {
             if (locationSearchStatus) {
+                if (options.loading) {
+                    locationSearchStatus.innerHTML = `
+                        <span class="geo-map-search__status-inline">
+                            <span class="geo-map-search__spinner" aria-hidden="true"></span>
+                            <span>${escapeHtml(message)}</span>
+                        </span>
+                    `;
+                    return;
+                }
+
                 locationSearchStatus.textContent = message;
             }
         }
@@ -445,7 +455,7 @@
             searchSequence += 1;
             const currentSequence = searchSequence;
 
-            setSearchStatus('Searching locations...');
+            setSearchStatus('Searching locations...', { loading: true });
 
             try {
                 const response = await fetch(

@@ -1,6 +1,7 @@
 @php
     $isOperationsMenuOpen = request()->is('road-officer/road-rules*') ||
         request()->is('road-officer/road-segments*') ||
+        request()->is('road-officer/segment-types*') ||
         request()->is('road-officer/violation-types*');
     $isReportsMenuOpen = request()->is('road-officer/reports*') ||
         request()->is('road-officer/evidence-files*') ||
@@ -54,6 +55,12 @@
                             <a href="{{ route('officer.road-segments.index') }}"
                                 class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/road-segments*') ? 'active is-current fw-bold shadow-sm' : '' }}">
                                 <i class="bi bi-signpost-split"></i> Road Segments
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a href="{{ route('officer.segment-types.index') }}"
+                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/segment-types*') ? 'active is-current fw-bold shadow-sm' : '' }}">
+                                <i class="bi bi-diagram-3"></i> Segment Types
                             </a>
                         </li>
                         <li class="nav-item mb-1">

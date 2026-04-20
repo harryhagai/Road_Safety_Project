@@ -189,7 +189,7 @@
                             @forelse ($recentSegments as $segment)
                                 <tr>
                                     <td>{{ $segment->segment_name }}</td>
-                                    <td>{{ str($segment->segment_type ?: 'general')->replace('_', ' ')->title() }}</td>
+                                    <td>{{ $segment->segment_type_name ?: 'General' }}</td>
                                     <td>{{ $segment->length_km ? number_format((float) $segment->length_km, 2) . ' km' : 'N/A' }}</td>
                                     <td>{{ number_format($segment->road_rules_count) }}</td>
                                 </tr>

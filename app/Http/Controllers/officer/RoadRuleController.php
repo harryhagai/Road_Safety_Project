@@ -118,6 +118,7 @@ class RoadRuleController extends Controller
     {
         return RoadSegment::query()
             ->with([
+                'segmentType:id,name',
                 'roadRules' => function ($query) {
                     $query->latest()->select([
                         'id',
@@ -141,6 +142,9 @@ class RoadRuleController extends Controller
                         ->where('segment_name', 'like', $like)
                         ->orWhere('segment_type', 'like', $like)
                         ->orWhere('description', 'like', $like)
+                        ->orWhereHas('segmentType', function ($segmentTypeQuery) use ($like) {
+                            $segmentTypeQuery->where('name', 'like', $like);
+                        })
                         ->orWhereHas('roadRules', function ($ruleQuery) use ($like) {
                             $ruleQuery
                                 ->where('rule_name', 'like', $like)
@@ -159,7 +163,7 @@ class RoadRuleController extends Controller
         return [
             'id' => $segment->id,
             'segment_name' => $segment->segment_name,
-            'segment_type' => $segment->segment_type,
+            'segment_type' => $segment->segment_type_name,
             'description' => $segment->description,
             'length_km' => $segment->length_km,
             'boundary_coordinates' => $segment->boundary_coordinates,

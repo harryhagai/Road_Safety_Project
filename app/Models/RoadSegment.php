@@ -19,6 +19,7 @@ class RoadSegment extends Model
     protected $fillable = [
         'segment_name',
         'segment_type',
+        'segment_type_id',
         'boundary_coordinates',
         'length_km',
         'description',
@@ -43,8 +44,18 @@ class RoadSegment extends Model
         return $this->belongsTo(Officer::class, 'created_by');
     }
 
+    public function segmentType(): BelongsTo
+    {
+        return $this->belongsTo(SegmentType::class, 'segment_type_id');
+    }
+
     public function roadRules(): HasMany
     {
         return $this->hasMany(RoadRule::class, 'segment_id');
+    }
+
+    public function getSegmentTypeNameAttribute(): ?string
+    {
+        return $this->segmentType?->name ?: $this->segment_type;
     }
 }
