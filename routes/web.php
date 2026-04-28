@@ -10,6 +10,7 @@ use App\Http\Controllers\officer\RoadSegmentController;
 use App\Http\Controllers\officer\RoadRuleController;
 use App\Http\Controllers\officer\SegmentTypeController;
 use App\Http\Controllers\officer\ViolationTypeController;
+use App\Http\Controllers\PublicHotspotController;
 use Illuminate\Support\Facades\Route;
 
 $routeFiles = [
@@ -19,7 +20,7 @@ $routeFiles = [
     'registrator.php',
     'admin.php',
     'accountant.php',
-    'academic.php',
+    'roadofficer.php',
     'teacher.php',
     'head_of_school.php',
     'asset_manager.php',
@@ -42,9 +43,10 @@ Route::post('/contact', [ContactMessageController::class, 'store'])
     ->name('contact.store');
 Route::view('/departments', 'departments')->name('departments');
 Route::view('/developer', 'developer')->name('developer');
-Route::view('/news-events', 'news_events')->name('news-events');
+Route::get('/hotspots', [PublicHotspotController::class, 'index'])->name('hotspots.index');
+Route::redirect('/news-events', '/hotspots')->name('news-events');
 Route::get('/road-officer/dashboard', [OfficerDashboardController::class, 'index'])->middleware('auth')->name('officer.dashboard');
-Route::get('/academic/dashboard', [OfficerDashboardController::class, 'index'])->middleware('auth')->name('academic.dashboard');
+Route::get('/roadofficer/dashboard', [OfficerDashboardController::class, 'index'])->middleware('auth')->name('roadofficer.dashboard');
 Route::get('/maps/reverse-geocode', [MapController::class, 'reverseGeocode'])
     ->middleware('throttle:30,1')
     ->name('maps.reverse-geocode');

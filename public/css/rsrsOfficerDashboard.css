@@ -1,6 +1,6 @@
 @import url('./themeColor.css');
 
-.academic-dashboard-page {
+.roadofficer-dashboard-page {
     --dashboard-primary: #1456c4;
     --dashboard-primary-dark: #1d4f91;
     --dashboard-soft: #f4f8ff;
@@ -14,7 +14,7 @@
     color: #183153;
 }
 
-.academic-dashboard-hero {
+.roadofficer-dashboard-hero {
     padding: 1.15rem 1.25rem;
     margin-bottom: 1.2rem;
     border: 1px solid var(--dashboard-border);
@@ -23,7 +23,7 @@
     box-shadow: var(--dashboard-card-shadow);
 }
 
-.academic-dashboard-heading {
+.roadofficer-dashboard-heading {
     margin: 0;
     font-size: clamp(1.35rem, 1.5vw, 1.8rem);
     line-height: 1.2;
@@ -31,7 +31,7 @@
     color: var(--dashboard-primary);
 }
 
-.academic-dashboard-subtitle {
+.roadofficer-dashboard-subtitle {
     max-width: 680px;
     margin: 0.35rem 0 0;
     color: var(--dashboard-muted);
@@ -39,14 +39,14 @@
     line-height: 1.6;
 }
 
-.academic-dashboard-stats {
+.roadofficer-dashboard-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
 
-.academic-stat-card {
+.roadofficer-stat-card {
     display: flex;
     align-items: center;
     gap: 0.8rem;
@@ -59,13 +59,13 @@
     transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
-.academic-stat-card:hover {
+.roadofficer-stat-card:hover {
     transform: translateY(-2px);
     border-color: #d2e2fb;
     box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
 }
 
-.academic-stat-icon {
+.roadofficer-stat-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -79,13 +79,13 @@
     border: 1px solid #dbe8ff;
 }
 
-.academic-stat-card.tone-2 .academic-stat-icon { color: #1864d6; }
-.academic-stat-card.tone-3 .academic-stat-icon { color: #2754c5; }
-.academic-stat-card.tone-4 .academic-stat-icon { color: #0f5cc0; }
-.academic-stat-card.tone-5 .academic-stat-icon { color: #244aa5; }
-.academic-stat-card.tone-6 .academic-stat-icon { color: #315fcf; }
+.roadofficer-stat-card.tone-2 .roadofficer-stat-icon { color: #1864d6; }
+.roadofficer-stat-card.tone-3 .roadofficer-stat-icon { color: #2754c5; }
+.roadofficer-stat-card.tone-4 .roadofficer-stat-icon { color: #0f5cc0; }
+.roadofficer-stat-card.tone-5 .roadofficer-stat-icon { color: #244aa5; }
+.roadofficer-stat-card.tone-6 .roadofficer-stat-icon { color: #315fcf; }
 
-.academic-stat-label {
+.roadofficer-stat-label {
     margin-bottom: 0.2rem;
     color: var(--dashboard-muted);
     font-size: 0.87rem;
@@ -93,7 +93,7 @@
     line-height: 1.45;
 }
 
-.academic-stat-value {
+.roadofficer-stat-value {
     color: #12325f;
     font-size: 1.45rem;
     font-weight: 500;
@@ -101,7 +101,7 @@
     letter-spacing: -0.02em;
 }
 
-.academic-dashboard-alert {
+.roadofficer-dashboard-alert {
     display: none;
     margin-bottom: 1rem;
     padding: 0.95rem 1rem;
@@ -112,18 +112,18 @@
     font-weight: 600;
 }
 
-.academic-dashboard-alert.is-visible {
+.roadofficer-dashboard-alert.is-visible {
     display: block;
 }
 
-.academic-dashboard-panels {
+.roadofficer-dashboard-panels {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 1rem;
     align-items: stretch;
 }
 
-.academic-dashboard-panel {
+.roadofficer-dashboard-panel {
     min-width: 0;
     height: 100%;
     border: 1px solid var(--dashboard-border);
@@ -133,12 +133,12 @@
     overflow: hidden;
 }
 
-.academic-dashboard-panel.wide,
-.academic-dashboard-panel.full {
+.roadofficer-dashboard-panel.wide,
+.roadofficer-dashboard-panel.full {
     grid-column: 1 / -1;
 }
 
-.academic-panel-head {
+.roadofficer-panel-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -148,7 +148,7 @@
     border-bottom: 1px solid var(--dashboard-border);
 }
 
-.academic-panel-kicker {
+.roadofficer-panel-kicker {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
@@ -160,21 +160,21 @@
     letter-spacing: 0.05em;
 }
 
-.academic-panel-title {
+.roadofficer-panel-title {
     margin: 0;
     color: #133567;
     font-size: 1.08rem;
     font-weight: 600;
 }
 
-.academic-panel-description {
+.roadofficer-panel-description {
     margin: 0.35rem 0 0;
     color: var(--dashboard-muted);
     font-size: 0.92rem;
     line-height: 1.6;
 }
 
-.academic-panel-badge {
+.roadofficer-panel-badge {
     align-self: center;
     padding: 0.45rem 0.72rem;
     border-radius: 999px;
@@ -186,18 +186,18 @@
     white-space: nowrap;
 }
 
-.academic-panel-body {
+.roadofficer-panel-body {
     position: relative;
     min-height: 340px;
     padding: 1rem 1.15rem 1.2rem;
     background: #ffffff;
 }
 
-.academic-panel-body.compact {
+.roadofficer-panel-body.compact {
     min-height: 320px;
 }
 
-.academic-chart-empty {
+.roadofficer-chart-empty {
     position: absolute;
     inset: 1rem 1.15rem 1.2rem;
     display: none;
@@ -212,47 +212,47 @@
     padding: 1rem;
 }
 
-.academic-chart-empty.is-visible {
+.roadofficer-chart-empty.is-visible {
     display: flex;
 }
 
 @media (max-width: 767.98px) {
-    .academic-dashboard-page {
+    .roadofficer-dashboard-page {
         padding-inline: 1rem !important;
     }
 
-    .academic-dashboard-hero {
+    .roadofficer-dashboard-hero {
         padding: 1rem;
     }
 
-    .academic-dashboard-subtitle {
+    .roadofficer-dashboard-subtitle {
         font-size: 0.95rem;
     }
 
-    .academic-dashboard-stats {
+    .roadofficer-dashboard-stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 575.98px) {
-    .academic-dashboard-stats {
+    .roadofficer-dashboard-stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .academic-stat-card {
+    .roadofficer-stat-card {
         min-height: 96px;
         padding: 0.85rem 0.9rem;
     }
 
-    .academic-stat-value {
+    .roadofficer-stat-value {
         font-size: 1.25rem;
     }
 
-    .academic-panel-head {
+    .roadofficer-panel-head {
         padding: 0.95rem 1rem;
     }
 
-    .academic-panel-body {
+    .roadofficer-panel-body {
         padding: 0.95rem 1rem 1.05rem;
     }
 }

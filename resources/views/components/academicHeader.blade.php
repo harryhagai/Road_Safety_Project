@@ -227,7 +227,7 @@
             }
         };
 
-        window.refreshAcademicNotifications = refreshNotifications;
+        window.refreshroadofficerNotifications = refreshNotifications;
         window.setInterval(refreshNotifications, 15000);
 
         document.getElementById('notificationDropdown')?.addEventListener('show.bs.dropdown', refreshNotifications);

@@ -26,7 +26,7 @@
                 <li><a href="/" class="{{ $currentPath === '' ? 'active' : '' }}"><i class="bi bi-house-door"></i> Home</a></li>
                 <li><a href="/about" class="{{ $currentPath === 'about' ? 'active' : '' }}"><i class="bi bi-info-circle"></i> About us</a></li>
                 <li><a href="{{ route('contact') }}" class="{{ $currentPath === 'contact' ? 'active' : '' }}"><i class="bi bi-envelope-paper"></i> Contact</a></li>
-                <li><a href="/news-events" class="{{ $currentPath === 'news-events' ? 'active' : '' }}"><i class="bi bi-megaphone"></i> News</a></li>
+                <li><a href="{{ route('hotspots.index') }}" class="{{ $currentPath === 'hotspots' ? 'active' : '' }}"><i class="bi bi-geo-alt"></i> Hotspots</a></li>
                 <li><a href="{{ route('developer') }}" class="{{ $currentPath === 'developers' ? 'active' : '' }}"><i class="bi bi-code-slash"></i> Developers</a></li>
                 <li><a href="/login" class="{{ $currentPath === 'login' ? 'active' : '' }}"><i class="bi bi-person-circle"></i> Login</a></li>
             </ul>

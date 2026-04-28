@@ -164,7 +164,7 @@ Citizens and road users will have a secure and anonymous platform to report viol
 Transport authorities and road officers will have real-time information to aid in decision-making from a secure administrative interface. They will be able to identify and efficiently utilize information based on accurate location data.
 Law enforcement agencies will have violation information to aid in enforcement and prosecution, and will be able to verify violations based on evidence provided.
 The general public will benefit from safe roads as a result of the prevention and reduction of accidents arising from the early detection of dangerous practices and risky areas. 
-Researchers and academics will benefit as the system will serve as a foundation for other studies on citizen-based road safety systems, anonymous reporting systems, and geospatial technology applications in public safety. 
+Researchers and roadofficers will benefit as the system will serve as a foundation for other studies on citizen-based road safety systems, anonymous reporting systems, and geospatial technology applications in public safety. 
 Government institutions will benefit as the system will contribute to the achievement of the nation's road safety and sustainable development goals and targets, as espoused by the Government of Tanzania in its efforts to reduce road traffic fatalities. 
 System developers will benefit as the system will serve as a reference for developing similar anonymous reporting systems in other areas such as crime reporting systems, public service complaints, and environmental monitoring.
 
@@ -543,7 +543,7 @@ User Acceptance Testing	Test with 5 anonymous reporters and 3 road officers to e
 Ethical Considerations
 I.	Informed consent will be obtained from the participants of the interview and questionnaire study
 II.	Reporters remain anonymous; no personal details will be collected
-III.	The data will be used for academic purposes only; it will be stored safely
+III.	The data will be used for roadofficer purposes only; it will be stored safely
 
 
 

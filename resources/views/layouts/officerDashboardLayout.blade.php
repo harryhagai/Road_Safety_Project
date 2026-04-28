@@ -19,24 +19,24 @@
 
 <body data-disable-navigation-overlay="1">
     @php
-        $academicPageHeader = match (true) {
-            request()->is('road-officer/dashboard') || request()->is('academic/dashboard') => [
+        $roadofficerPageHeader = match (true) {
+            request()->is('road-officer/dashboard') || request()->is('roadofficer/dashboard') => [
                 'title' => 'Road Officer Dashboard',
                 'subtitle' => 'Monitor reports, violations, rules, and hotspot activity from one workspace.',
             ],
-            request()->is('road-officer/reports*') || request()->is('academic/results-overview') => [
+            request()->is('road-officer/reports*') || request()->is('roadofficer/results-overview') => [
                 'title' => 'Incident Reports',
                 'subtitle' => 'Review submitted cases, progress updates, and field reporting activity.',
             ],
-            request()->is('road-officer/road-rules*') || request()->is('academic/examinations*') => [
+            request()->is('road-officer/road-rules*') || request()->is('roadofficer/examinations*') => [
                 'title' => 'Road Rules',
                 'subtitle' => 'Manage active road rules, enforcement details, and effective periods.',
             ],
-            request()->is('road-officer/road-segments*') || request()->is('academic/classes*') => [
+            request()->is('road-officer/road-segments*') || request()->is('roadofficer/classes*') => [
                 'title' => 'Road Segments',
                 'subtitle' => 'Maintain mapped road segments, boundary details, and segment descriptions.',
             ],
-            request()->is('road-officer/violation-types*') || request()->is('academic/olevel-subject-management*') || request()->is('academic/alevel-subjects*') => [
+            request()->is('road-officer/violation-types*') || request()->is('roadofficer/olevel-subject-management*') || request()->is('roadofficer/alevel-subjects*') => [
                 'title' => 'Violation Types',
                 'subtitle' => 'Manage report categories used for road incidents and traffic violations.',
             ],
@@ -48,7 +48,7 @@
                 'title' => 'Rule Violations',
                 'subtitle' => 'Match reports to rules, review verification status, and confirm enforcement actions.',
             ],
-            request()->is('road-officer/hotspots*') || request()->is('academic/consolidated/results*') => [
+            request()->is('road-officer/hotspots*') || request()->is('roadofficer/consolidated/results*') => [
                 'title' => 'Hotspots',
                 'subtitle' => 'Track dangerous areas, severity trends, and recurring incident locations.',
             ],
@@ -56,19 +56,19 @@
                 'title' => 'Contact Messages',
                 'subtitle' => 'Review public enquiries, update response progress, and keep support history organised.',
             ],
-            request()->is('road-officer/officers*') || request()->is('academic/teachers*') => [
+            request()->is('road-officer/officers*') || request()->is('roadofficer/teachers*') => [
                 'title' => 'Officers',
                 'subtitle' => 'Manage officer accounts, roles, and operational access across the system.',
             ],
-            request()->is('road-officer/notifications*') || request()->is('academic/notifications*') => [
+            request()->is('road-officer/notifications*') || request()->is('roadofficer/notifications*') => [
                 'title' => 'Notifications',
                 'subtitle' => 'Review alerts, assignment updates, and workflow messages for road officers.',
             ],
-            request()->is('road-officer/settings*') || request()->is('academic/settings*') => [
+            request()->is('road-officer/settings*') || request()->is('roadofficer/settings*') => [
                 'title' => 'Officer Settings',
                 'subtitle' => 'Adjust road safety workflow preferences, alert behavior, and dashboard settings.',
             ],
-            request()->is('road-officer/profile*') || request()->is('academic/profile*') => [
+            request()->is('road-officer/profile*') || request()->is('roadofficer/profile*') => [
                 'title' => 'Officer Profile',
                 'subtitle' => 'Manage your account information and profile details.',
             ],
@@ -82,12 +82,12 @@
     @include('components.academicHeader')
     @include('components.officerSidebar')
 
-    <main class="officer-page-content" @if($academicPageHeader) data-officer-page-header="true" @endif>
-        @if ($academicPageHeader)
+    <main class="officer-page-content" @if($roadofficerPageHeader) data-officer-page-header="true" @endif>
+        @if ($roadofficerPageHeader)
             <div class="px-3 px-lg-4 pt-4">
                 <section class="officer-shared-page-header">
                     <div class="officer-shared-page-header__content">
-                        <x-officer-page-header :title="$academicPageHeader['title']" :subtitle="$academicPageHeader['subtitle']" />
+                        <x-officer-page-header :title="$roadofficerPageHeader['title']" :subtitle="$roadofficerPageHeader['subtitle']" />
                     </div>
 
                     @hasSection('page_header_actions')
@@ -171,7 +171,7 @@
 
     @if (session('success') && ! View::hasSection('disable_success_swal'))
         <script>
-            showAcademicUiAlert({
+            showroadofficerUiAlert({
                 theme: 'success',
                 title: 'Action completed',
                 text: @js(session('success')),
@@ -183,7 +183,7 @@
 
     @if (session('error'))
         <script>
-            showAcademicUiAlert({
+            showroadofficerUiAlert({
                 theme: 'danger',
                 title: 'Something went wrong',
                 text: @js(session('error')),

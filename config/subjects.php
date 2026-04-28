@@ -17,7 +17,7 @@ return [
         'BUSINESS STUDIES' => 'BS',
         'FOOD & HUMAN NUTRITION' => 'FHN',
         'GENERAL STUDIES' => 'GS',
-        'ACADEMIC COMMUNICATION' => 'ACOM',
+        'roadofficer COMMUNICATION' => 'ACOM',
         'HISTORIA YA TANZANIA NA MAADILI' => 'HTM',
         'ECONOMICS' => 'ECO',
         'CIVICS' => 'CIV',

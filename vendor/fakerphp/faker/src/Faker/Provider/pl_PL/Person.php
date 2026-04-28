@@ -81,7 +81,7 @@ class Person extends \Faker\Provider\Person
     ];
 
     /**
-     * Unisex academic degree
+     * Unisex roadofficer degree
      *
      * @var string[]
      */

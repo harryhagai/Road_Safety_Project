@@ -134,4 +134,4 @@ Bootstrap assets are served locally from the project and combined with custom st
 
 ## License
 
-This project is protected under the terms provided in the `LICENSE` file. All rights and ownership information for the academic work are stated there.
+This project is protected under the terms provided in the `LICENSE` file. All rights and ownership information for the roadofficer work are stated there.

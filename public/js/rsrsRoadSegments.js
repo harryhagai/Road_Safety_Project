@@ -551,7 +551,7 @@
         modalElement?.addEventListener('show.bs.modal', function (event) {
             if (selectedPoints.length < 2) {
                 event.preventDefault();
-                window.showAcademicUiAlert?.({
+                window.showroadofficerUiAlert?.({
                     theme: 'warning',
                     title: 'More points needed',
                     text: 'Select at least two points on the map before saving a road segment.',

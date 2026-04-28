@@ -1,12 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const dashboardPage = document.querySelector('.academic-dashboard-page');
+    const dashboardPage = document.querySelector('.roadofficer-dashboard-page');
 
     if (!dashboardPage || typeof Chart === 'undefined') {
         return;
     }
 
     const endpoint = dashboardPage.dataset.endpoint;
-    const alertBox = document.getElementById('academicDashboardAlert');
+    const alertBox = document.getElementById('roadofficerDashboardAlert');
     const numberFormatter = new Intl.NumberFormat();
     const chartInstances = {};
 
