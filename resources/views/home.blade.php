@@ -58,7 +58,7 @@
                             <div class="home-speed-alert__body">
                                 <div class="home-speed-alert__label" data-home-speed-alert-label>Speed info</div>
                                 <div class="home-speed-alert__message" data-home-speed-alert-message>
-                                    Tunatafuta location yako na speed rule iliyo karibu.
+                                    We are checking your location and the nearest speed rule.
                                 </div>
                                 <div class="home-speed-alert__meta">
                                     <span data-home-speed-alert-location>Location: waiting...</span>

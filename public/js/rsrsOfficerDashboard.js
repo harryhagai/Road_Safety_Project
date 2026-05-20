@@ -1,213 +1,114 @@
 // Frontend helper for rsrsOfficerDashboard interactions in the RSRS interface.
 
 document.addEventListener('DOMContentLoaded', function () {
-    const dashboardPage = document.querySelector('.roadofficer-dashboard-page');
+    const mapEl = document.getElementById('officerHotspotsMap');
+    const payload = window.rsrsOfficerDashboardMap;
 
-    if (!dashboardPage || typeof Chart === 'undefined') {
+    if (!mapEl || !payload || !window.L) {
         return;
     }
 
-    const endpoint = dashboardPage.dataset.endpoint;
-    const alertBox = document.getElementById('roadofficerDashboardAlert');
-    const numberFormatter = new Intl.NumberFormat();
-    const chartInstances = {};
+    const mapConfig = payload.mapConfig || {};
+    const hotspots = Array.isArray(payload.hotspots) ? payload.hotspots : [];
 
-    Chart.defaults.font.family = "'Segoe UI', sans-serif";
-    Chart.defaults.color = '#5f7698';
+    if (hotspots.length === 0) {
+        return;
+    }
+
+    const map = L.map(mapEl, {
+        zoomControl: true,
+        scrollWheelZoom: true,
+    }).setView(
+        [
+            Number(mapConfig?.defaultCenter?.lat || -6.8),
+            Number(mapConfig?.defaultCenter?.lng || 39.28),
+        ],
+        Number(mapConfig.defaultZoom || 12)
+    );
+
+    L.tileLayer(mapConfig?.tiles?.url, {
+        attribution: mapConfig?.tiles?.attribution,
+        minZoom: Number(mapConfig.minZoom || 3),
+        maxZoom: Number(mapConfig.maxZoom || 19),
+    }).addTo(map);
+
+    const severityColors = {
+        critical: '#991b1b',
+        high: '#b91c1c',
+        medium: '#d97706',
+        low: '#166534',
+    };
+
+    const bounds = [];
+    const markersById = {};
 
     // Encapsulate one UI behavior so the page stays easier to maintain.
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
 
-    function showAlert(message) {
-        if (!alertBox) {
+    hotspots.forEach(function (hotspot) {
+        const point = [Number(hotspot.lat), Number(hotspot.lng)];
+        const color = severityColors[hotspot.severity] || severityColors.medium;
+
+        bounds.push(point);
+
+        const marker = L.circleMarker(point, {
+            radius: 8,
+            color: color,
+            weight: 2,
+            fillColor: color,
+            fillOpacity: 0.92,
+        }).addTo(map);
+
+        L.circle(point, {
+            radius: Number(hotspot.radius || 100),
+            color: color,
+            weight: 1,
+            fillColor: color,
+            fillOpacity: 0.12,
+        }).addTo(map);
+
+        marker.bindPopup(
+            '<div class=\"roadofficer-hotspot-popup\">' +
+                '<h6>' + escapeHtml(hotspot.name || 'Unnamed hotspot') + '</h6>' +
+                '<p><strong>Severity:</strong> ' + escapeHtml(hotspot.severity || 'medium') + '</p>' +
+                '<p><strong>Frequency:</strong> ' + escapeHtml(hotspot.frequency || 0) + '</p>' +
+                '<p><strong>Rule:</strong> ' + escapeHtml(hotspot.rule || 'Not linked') + '</p>' +
+                '<p><strong>Updated:</strong> ' + escapeHtml(hotspot.updated || 'N/A') + '</p>' +
+            '</div>'
+        );
+
+        markersById[String(hotspot.id)] = marker;
+    });
+
+    if (bounds.length > 0) {
+        map.fitBounds(bounds, { padding: [32, 32], maxZoom: 15 });
+    }
+
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('[data-hotspot-focus]');
+        if (!button) {
             return;
         }
 
-        alertBox.textContent = message;
-        alertBox.classList.add('is-visible');
-    }
-
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
-    function setStatValues(stats) {
-        document.querySelectorAll('[data-stat]').forEach(function (element) {
-            const key = element.dataset.stat;
-            const value = Number(stats?.[key] ?? 0);
-            element.textContent = numberFormatter.format(value);
-        });
-    }
-
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
-    function toggleEmptyState(emptyStateId, hasData) {
-        const emptyState = document.getElementById(emptyStateId);
-
-        if (!emptyState) {
+        const marker = markersById[button.getAttribute('data-hotspot-focus')];
+        if (!marker) {
             return;
         }
 
-        emptyState.classList.toggle('is-visible', !hasData);
-    }
+        const point = marker.getLatLng();
+        map.flyTo(point, Math.max(map.getZoom(), 16), { animate: true, duration: 0.8 });
+        marker.openPopup();
+        mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
-    function createOrReplaceChart(canvasId, emptyStateId, config) {
-        const canvas = document.getElementById(canvasId);
-        const labels = config?.data?.labels ?? [];
-        const datasets = config?.data?.datasets ?? [];
-        const hasData = labels.length > 0 && datasets.length > 0 && datasets.some(function (dataset) {
-            return Array.isArray(dataset.data) && dataset.data.length > 0;
-        });
-
-        toggleEmptyState(emptyStateId, hasData);
-
-        if (!canvas || !hasData) {
-            return;
-        }
-
-        if (chartInstances[canvasId]) {
-            chartInstances[canvasId].destroy();
-        }
-
-        chartInstances[canvasId] = new Chart(canvas, config);
-    }
-
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
-    function buildBarOptions() {
-        return {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                x: {
-                    grid: {
-                        display: false
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Average score'
-                    },
-                    grid: {
-                        color: 'rgba(148, 163, 184, 0.18)'
-                    }
-                }
-            }
-        };
-    }
-
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
-    function buildGroupedBarOptions() {
-        return {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                    labels: {
-                        usePointStyle: true,
-                        boxWidth: 8
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    stacked: false,
-                    grid: {
-                        display: false
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    suggestedMax: 100,
-                    ticks: {
-                        callback: function (value) {
-                            return value + '%';
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: 'Pass rate'
-                    },
-                    grid: {
-                        color: 'rgba(148, 163, 184, 0.18)'
-                    }
-                }
-            }
-        };
-    }
-
-    fetch(endpoint, {
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json'
-        }
-    })
-        .then(function (response) {
-            if (!response.ok) {
-                throw new Error('Network response was not ok: ' + response.status);
-            }
-
-            return response.json();
-        })
-        .then(function (data) {
-            setStatValues(data.stats || {});
-
-            createOrReplaceChart('olevelPerformanceTrendChart', 'olevelPerformanceTrendEmpty', {
-                type: 'bar',
-                data: data.olevelPerformanceTrend || { labels: [], datasets: [] },
-                options: buildBarOptions()
-            });
-
-            createOrReplaceChart('alevelPerformanceTrendChart', 'alevelPerformanceTrendEmpty', {
-                type: 'bar',
-                data: data.alevelPerformanceTrend || { labels: [], datasets: [] },
-                options: buildBarOptions()
-            });
-
-            createOrReplaceChart('olevelSubjectSnapshotChart', 'olevelSubjectSnapshotEmpty', {
-                type: 'bar',
-                data: data.olevelSubjectSnapshot || { labels: [], datasets: [] },
-                options: buildBarOptions()
-            });
-
-            createOrReplaceChart('alevelSubjectSnapshotChart', 'alevelSubjectSnapshotEmpty', {
-                type: 'bar',
-                data: data.alevelSubjectSnapshot || { labels: [], datasets: [] },
-                options: buildBarOptions()
-            });
-
-            createOrReplaceChart('olevelClassPassRateChart', 'olevelClassPassRateEmpty', {
-                type: 'bar',
-                data: data.olevelClassPassRate || { labels: [], datasets: [] },
-                options: buildGroupedBarOptions()
-            });
-
-            createOrReplaceChart('alevelClassPassRateChart', 'alevelClassPassRateEmpty', {
-                type: 'bar',
-                data: data.alevelClassPassRate || { labels: [], datasets: [] },
-                options: buildGroupedBarOptions()
-            });
-        })
-        .catch(function (error) {
-            console.error('Failed to load dashboard data', error);
-            document.querySelectorAll('[data-stat]').forEach(function (element) {
-                element.textContent = 'N/A';
-            });
-
-            showAlert('Dashboard data failed to load. Please refresh and try again.');
-            toggleEmptyState('olevelPerformanceTrendEmpty', false);
-            toggleEmptyState('alevelPerformanceTrendEmpty', false);
-            toggleEmptyState('olevelSubjectSnapshotEmpty', false);
-            toggleEmptyState('alevelSubjectSnapshotEmpty', false);
-            toggleEmptyState('olevelClassPassRateEmpty', false);
-            toggleEmptyState('alevelClassPassRateEmpty', false);
-        });
+    requestAnimationFrame(function () {
+        map.invalidateSize();
+    });
 });

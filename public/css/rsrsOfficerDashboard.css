@@ -1,219 +1,372 @@
 @import url('./themeColor.css');
 
 .roadofficer-dashboard-page {
-    --dashboard-primary: #1456c4;
-    --dashboard-primary-dark: #1d4f91;
-    --dashboard-soft: #f4f8ff;
-    --dashboard-soft-2: #edf4ff;
-    --dashboard-border: #e2edff;
-    --dashboard-text: #183153;
-    --dashboard-muted: #5f7698;
+    --dashboard-primary: #174ea6;
+    --dashboard-primary-soft: #eaf2ff;
+    --dashboard-border: rgba(23, 78, 166, 0.14);
+    --dashboard-text: #19324d;
+    --dashboard-muted: #5f7390;
     --dashboard-surface: #ffffff;
-    --dashboard-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
-    --dashboard-card-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-    color: #183153;
+    --dashboard-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    --dashboard-soft-bg: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+    color: var(--dashboard-text);
+}
+
+.roadofficer-dashboard-hero,
+.roadofficer-stat-card,
+.roadofficer-dashboard-panel,
+.roadofficer-summary-card,
+.roadofficer-hotspot-card {
+    border: 1px solid var(--dashboard-border);
+    background: var(--dashboard-surface);
+    box-shadow: var(--dashboard-shadow);
 }
 
 .roadofficer-dashboard-hero {
-    padding: 1.15rem 1.25rem;
-    margin-bottom: 1.2rem;
-    border: 1px solid var(--dashboard-border);
-    border-radius: 1.35rem;
-    background: var(--dashboard-surface);
-    box-shadow: var(--dashboard-card-shadow);
+    padding: 1.35rem 1.4rem;
+    border-radius: 1.5rem;
+    margin-bottom: 1.3rem;
+    background:
+        radial-gradient(circle at top right, rgba(23, 78, 166, 0.1), transparent 36%),
+        var(--dashboard-soft-bg);
+}
+
+.roadofficer-dashboard-kicker,
+.roadofficer-panel-kicker,
+.roadofficer-stat-label,
+.roadofficer-summary-label {
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    color: var(--dashboard-muted);
 }
 
 .roadofficer-dashboard-heading {
-    margin: 0;
-    font-size: clamp(1.35rem, 1.5vw, 1.8rem);
-    line-height: 1.2;
-    font-weight: 700;
-    color: var(--dashboard-primary);
+    margin: 0.35rem 0 0;
+    font-size: clamp(1.45rem, 2vw, 2rem);
+    font-weight: 500;
+    color: #12345d;
 }
 
-.roadofficer-dashboard-subtitle {
-    max-width: 680px;
-    margin: 0.35rem 0 0;
+.roadofficer-dashboard-subtitle,
+.roadofficer-panel-description,
+.roadofficer-hotspot-card__meta,
+.roadofficer-empty-state p {
+    margin: 0.45rem 0 0;
     color: var(--dashboard-muted);
-    font-size: 0.95rem;
-    line-height: 1.6;
+    line-height: 1.65;
 }
 
 .roadofficer-dashboard-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .roadofficer-stat-card {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
-    min-height: 104px;
-    padding: 0.95rem 1rem;
-    border: 1px solid var(--dashboard-border);
-    border-radius: 1.15rem;
-    background: var(--dashboard-surface);
-    box-shadow: var(--dashboard-card-shadow);
-    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    gap: 0.9rem;
+    min-height: 112px;
+    padding: 1rem 1.05rem;
+    border-radius: 1.3rem;
 }
 
-.roadofficer-stat-card:hover {
-    transform: translateY(-2px);
-    border-color: #d2e2fb;
-    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
-}
-
-.roadofficer-stat-icon {
+.roadofficer-stat-icon,
+.roadofficer-summary-icon {
+    width: 52px;
+    height: 52px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    flex: 0 0 42px;
-    font-size: 1rem;
+    border-radius: 1rem;
+    background: var(--dashboard-primary-soft);
     color: var(--dashboard-primary);
-    background: var(--dashboard-soft);
-    border: 1px solid #dbe8ff;
+    font-size: 1.2rem;
+    flex-shrink: 0;
 }
 
-.roadofficer-stat-card.tone-2 .roadofficer-stat-icon { color: #1864d6; }
-.roadofficer-stat-card.tone-3 .roadofficer-stat-icon { color: #2754c5; }
-.roadofficer-stat-card.tone-4 .roadofficer-stat-icon { color: #0f5cc0; }
-.roadofficer-stat-card.tone-5 .roadofficer-stat-icon { color: #244aa5; }
-.roadofficer-stat-card.tone-6 .roadofficer-stat-icon { color: #315fcf; }
-
-.roadofficer-stat-label {
-    margin-bottom: 0.2rem;
-    color: var(--dashboard-muted);
-    font-size: 0.87rem;
-    font-weight: 400;
-    line-height: 1.45;
-}
-
-.roadofficer-stat-value {
-    color: #12325f;
-    font-size: 1.45rem;
+.roadofficer-stat-value,
+.roadofficer-summary-value {
+    margin-top: 0.2rem;
+    color: #15345b;
+    font-size: 1.7rem;
     font-weight: 500;
     line-height: 1;
-    letter-spacing: -0.02em;
 }
 
-.roadofficer-dashboard-alert {
-    display: none;
-    margin-bottom: 1rem;
-    padding: 0.95rem 1rem;
-    border-radius: 1rem;
-    border: 1px solid #f7c7cc;
-    background: #fff5f6;
-    color: #842029;
-    font-weight: 600;
-}
-
-.roadofficer-dashboard-alert.is-visible {
-    display: block;
-}
-
-.roadofficer-dashboard-panels {
+.roadofficer-dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
-    align-items: stretch;
 }
 
 .roadofficer-dashboard-panel {
-    min-width: 0;
-    height: 100%;
-    border: 1px solid var(--dashboard-border);
-    border-radius: 1.25rem;
-    background: var(--dashboard-surface);
-    box-shadow: var(--dashboard-card-shadow);
+    border-radius: 1.5rem;
     overflow: hidden;
 }
 
-.roadofficer-dashboard-panel.wide,
-.roadofficer-dashboard-panel.full {
+.roadofficer-dashboard-panel--wide {
     grid-column: 1 / -1;
 }
 
 .roadofficer-panel-head {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 1rem 1.15rem;
-    background: var(--dashboard-soft);
-    border-bottom: 1px solid var(--dashboard-border);
+    padding: 1.1rem 1.2rem;
+    border-bottom: 1px solid rgba(23, 78, 166, 0.1);
+    background: linear-gradient(180deg, rgba(23, 78, 166, 0.05), rgba(255, 255, 255, 0.95));
 }
 
-.roadofficer-panel-kicker {
+.roadofficer-panel-head > div {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.roadofficer-panel-icon {
+    width: 42px;
+    height: 42px;
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
-    margin-bottom: 0.55rem;
-    color: var(--dashboard-primary-dark);
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    justify-content: center;
+    border-radius: 0.8rem;
+    background: var(--dashboard-primary-soft);
+    color: var(--dashboard-primary);
+    font-size: 1rem;
+    flex: 0 0 42px;
 }
 
 .roadofficer-panel-title {
     margin: 0;
-    color: #133567;
-    font-size: 1.08rem;
-    font-weight: 600;
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: #15345b;
 }
 
-.roadofficer-panel-description {
-    margin: 0.35rem 0 0;
-    color: var(--dashboard-muted);
-    font-size: 0.92rem;
-    line-height: 1.6;
-}
-
-.roadofficer-panel-badge {
+.roadofficer-panel-link {
+    display: inline-flex;
+    align-items: center;
     align-self: center;
-    padding: 0.45rem 0.72rem;
     border-radius: 999px;
-    background: #ffffff;
-    border: 1px solid #d9e7ff;
-    color: #1b57b8;
-    font-size: 0.78rem;
-    font-weight: 700;
-    white-space: nowrap;
+    padding: 0.55rem 0.9rem;
+    text-decoration: none;
+    border: 1px solid rgba(23, 78, 166, 0.16);
+    background: #fff;
+    color: #15345b;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.roadofficer-panel-link:hover,
+.roadofficer-panel-link:focus {
+    background: #15345b;
+    border-color: #15345b;
+    color: #fff;
 }
 
 .roadofficer-panel-body {
-    position: relative;
-    min-height: 340px;
-    padding: 1rem 1.15rem 1.2rem;
-    background: #ffffff;
+    padding: 1.2rem;
 }
 
-.roadofficer-panel-body.compact {
-    min-height: 320px;
+.roadofficer-panel-body--table,
+.roadofficer-panel-body--map {
+    padding-top: 1rem;
 }
 
-.roadofficer-chart-empty {
-    position: absolute;
-    inset: 1rem 1.15rem 1.2rem;
-    display: none;
+.roadofficer-status-list,
+.roadofficer-summary-list {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.roadofficer-status-item,
+.roadofficer-summary-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.9rem;
+    padding: 0.95rem 1rem;
+    border-radius: 1.1rem;
+    background: #f9fbff;
+}
+
+.roadofficer-status-item strong {
+    color: #15345b;
+    font-size: 1.05rem;
+    font-weight: 500;
+}
+
+.roadofficer-summary-card {
+    justify-content: flex-start;
+}
+
+.roadofficer-dashboard-table {
+    --bs-table-bg: transparent;
+    --bs-table-border-color: rgba(23, 78, 166, 0.1);
+}
+
+.roadofficer-dashboard-table thead th {
+    color: var(--dashboard-muted);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    border-top: 0;
+    padding-top: 0;
+}
+
+.roadofficer-dashboard-table tbody td {
+    color: var(--dashboard-text);
+    vertical-align: middle;
+}
+
+.roadofficer-table-badge,
+.roadofficer-severity-badge {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px dashed #c7daf8;
-    border-radius: 1rem;
-    background: #f8fbff;
-    color: var(--dashboard-muted);
-    font-weight: 600;
-    text-align: center;
-    padding: 1rem;
+    border-radius: 999px;
+    padding: 0.34rem 0.72rem;
+    font-size: 0.76rem;
+    font-weight: 500;
+    line-height: 1;
 }
 
-.roadofficer-chart-empty.is-visible {
+.roadofficer-table-badge {
+    background: rgba(23, 78, 166, 0.08);
+    color: var(--dashboard-primary);
+}
+
+.roadofficer-hotspot-map {
+    width: 100%;
+    min-height: 420px;
+    height: min(58vh, 520px);
+    border-radius: 1.2rem;
+    background: #eef4ff;
+}
+
+.roadofficer-hotspot-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+.roadofficer-hotspot-card {
+    padding: 1rem;
+    border-radius: 1.25rem;
+}
+
+.roadofficer-hotspot-card__top {
     display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.8rem;
+}
+
+.roadofficer-hotspot-card__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #15345b;
+}
+
+.roadofficer-hotspot-card__details {
+    display: grid;
+    gap: 0.4rem;
+    margin-top: 0.85rem;
+    color: var(--dashboard-text);
+    font-size: 0.88rem;
+}
+
+.roadofficer-focus-btn {
+    margin-top: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border: 1px solid rgba(23, 78, 166, 0.18);
+    border-radius: 999px;
+    background: #fff;
+    color: #15345b;
+    padding: 0.55rem 0.82rem;
+    font-size: 0.84rem;
+    font-weight: 500;
+}
+
+.roadofficer-focus-btn:hover,
+.roadofficer-focus-btn:focus {
+    background: #15345b;
+    border-color: #15345b;
+    color: #fff;
+}
+
+.roadofficer-severity-badge--critical,
+.roadofficer-severity-badge--high {
+    background: rgba(220, 38, 38, 0.1);
+    color: #991b1b;
+}
+
+.roadofficer-severity-badge--medium {
+    background: rgba(245, 158, 11, 0.14);
+    color: #9a6700;
+}
+
+.roadofficer-severity-badge--low {
+    background: rgba(22, 163, 74, 0.1);
+    color: #166534;
+}
+
+.roadofficer-empty-state {
+    min-height: 220px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 1.5rem;
+    border: 1px dashed rgba(23, 78, 166, 0.2);
+    border-radius: 1.2rem;
+    background: #f9fbff;
+}
+
+.roadofficer-empty-state--map {
+    min-height: 420px;
+}
+
+.roadofficer-empty-state i {
+    display: block;
+    margin-bottom: 0.7rem;
+    font-size: 2rem;
+    color: var(--dashboard-primary);
+}
+
+.roadofficer-empty-state h4 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #15345b;
+}
+
+.roadofficer-hotspot-popup h6 {
+    margin: 0 0 0.4rem;
+    color: #15345b;
+    font-weight: 500;
+}
+
+.roadofficer-hotspot-popup p {
+    margin: 0.2rem 0;
+    color: var(--dashboard-muted);
+    font-size: 0.86rem;
+}
+
+@media (max-width: 991.98px) {
+    .roadofficer-dashboard-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .roadofficer-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 767.98px) {
@@ -221,38 +374,17 @@
         padding-inline: 1rem !important;
     }
 
-    .roadofficer-dashboard-hero {
-        padding: 1rem;
-    }
-
-    .roadofficer-dashboard-subtitle {
-        font-size: 0.95rem;
-    }
-
     .roadofficer-dashboard-stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 575.98px) {
-    .roadofficer-dashboard-stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: 1fr;
     }
 
-    .roadofficer-stat-card {
-        min-height: 96px;
-        padding: 0.85rem 0.9rem;
+    .roadofficer-panel-head,
+    .roadofficer-hotspot-card__top {
+        flex-direction: column;
+        align-items: flex-start;
     }
 
-    .roadofficer-stat-value {
-        font-size: 1.25rem;
-    }
-
-    .roadofficer-panel-head {
-        padding: 0.95rem 1rem;
-    }
-
-    .roadofficer-panel-body {
-        padding: 0.95rem 1rem 1.05rem;
+    .roadofficer-hotspot-map {
+        min-height: 360px;
     }
 }
