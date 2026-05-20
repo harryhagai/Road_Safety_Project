@@ -11,8 +11,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
+/**
+ * Officer-facing controller responsible for RoadSegmentController actions inside the dashboard.
+ */
 class RoadSegmentController extends Controller
 {
+    /**
+     * Prepare the data needed to render the listing page.
+     */
     public function index(MapConfigService $mapConfigService): View
     {
         $segments = RoadSegment::query()
@@ -40,6 +46,10 @@ class RoadSegmentController extends Controller
                 ->get(['id', 'name']),
         ]);
     }
+
+    /**
+     * Validate the request and persist a new record.
+     */
 
     public function store(Request $request): RedirectResponse
     {
@@ -86,6 +96,10 @@ class RoadSegmentController extends Controller
             ->route('officer.road-segments.index')
             ->with('success', 'Road segment saved successfully.');
     }
+
+    /**
+     * Handle the generateUniqueSegmentName workflow for this class.
+     */
 
     private function generateUniqueSegmentName(string $candidate): string
     {

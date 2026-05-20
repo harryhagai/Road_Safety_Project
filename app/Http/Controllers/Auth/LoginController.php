@@ -9,8 +9,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * Auth controller that manages the LoginController flow for RSRS users.
+ */
 class LoginController extends Controller
 {
+    /**
+     * Handle the showLoginForm workflow for this class.
+     */
     public function showLoginForm(): View
     {
         return view('auth.login');
@@ -44,6 +50,10 @@ class LoginController extends Controller
         return redirect()->intended(route('officer.dashboard'))
             ->with('success', 'Welcome back, '.$request->user()->full_name.'.');
     }
+
+    /**
+     * Handle the logout workflow for this class.
+     */
 
     public function logout(Request $request): RedirectResponse
     {

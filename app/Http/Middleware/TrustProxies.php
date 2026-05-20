@@ -6,6 +6,9 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Middleware that filters requests through the TrustProxies rule.
+ */
 class TrustProxies
 {
     /**

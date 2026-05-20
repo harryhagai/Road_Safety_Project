@@ -1,3 +1,5 @@
+{{-- Blade view for the about page in the RSRS application. --}}
+
 @extends('layouts.app')
 
 @section('title', 'About RSRS')

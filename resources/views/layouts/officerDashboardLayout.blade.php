@@ -1,3 +1,5 @@
+{{-- Layout shell for officerDashboardLayout screens in the RSRS workflow. --}}
+
 <!DOCTYPE html>
 <html lang="en">
 

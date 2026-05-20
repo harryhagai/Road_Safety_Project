@@ -10,8 +10,14 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
+/**
+ * Officer-facing controller responsible for SegmentTypeController actions inside the dashboard.
+ */
 class SegmentTypeController extends Controller
 {
+    /**
+     * Prepare the data needed to render the listing page.
+     */
     public function index(): View
     {
         return view('officer.segment-types.index', [
@@ -21,6 +27,10 @@ class SegmentTypeController extends Controller
                 ->get(),
         ]);
     }
+
+    /**
+     * Validate the request and persist a new record.
+     */
 
     public function store(Request $request): RedirectResponse
     {
@@ -41,6 +51,10 @@ class SegmentTypeController extends Controller
             ->route('officer.segment-types.index')
             ->with('success', 'Segment type created successfully.');
     }
+
+    /**
+     * Apply validated changes to the selected record.
+     */
 
     public function update(Request $request, SegmentType $segmentType): RedirectResponse
     {
@@ -69,6 +83,10 @@ class SegmentTypeController extends Controller
             ->with('success', 'Segment type updated successfully.');
     }
 
+    /**
+     * Remove the selected record from storage.
+     */
+
     public function destroy(SegmentType $segmentType): RedirectResponse
     {
         if ($segmentType->roadSegments()->exists()) {
@@ -83,6 +101,10 @@ class SegmentTypeController extends Controller
             ->route('officer.segment-types.index')
             ->with('success', 'Segment type deleted successfully.');
     }
+
+    /**
+     * Handle the generateUniqueSlug workflow for this class.
+     */
 
     private function generateUniqueSlug(string $name, ?int $ignoreId = null): string
     {

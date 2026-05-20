@@ -1,3 +1,5 @@
+{{-- Authentication view for the feedback step of the access flow. --}}
+
 <div class="auth-feedback">
     @if (session('status'))
         <div class="auth-alert auth-alert-info">{{ session('status') }}</div>

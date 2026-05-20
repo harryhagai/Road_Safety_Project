@@ -1,3 +1,5 @@
+{{-- Officer module view for index within the road safety dashboard. --}}
+
 @extends('layouts.officerDashboardLayout')
 
 @php

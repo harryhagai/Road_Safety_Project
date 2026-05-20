@@ -11,8 +11,14 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * Officer-facing controller responsible for RoadRuleController actions inside the dashboard.
+ */
 class RoadRuleController extends Controller
 {
+    /**
+     * Prepare the data needed to render the listing page.
+     */
     public function index(MapConfigService $mapConfigService): View
     {
         $initialSegmentPage = $this->segmentResultsQuery()->paginate(10);
@@ -33,6 +39,10 @@ class RoadRuleController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Handle the data workflow for this class.
+     */
 
     public function data(Request $request): JsonResponse
     {
@@ -62,6 +72,10 @@ class RoadRuleController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Validate the request and persist a new record.
+     */
 
     public function store(Request $request): RedirectResponse
     {
@@ -114,6 +128,10 @@ class RoadRuleController extends Controller
             ->with('success', 'Road rule saved successfully.');
     }
 
+    /**
+     * Handle the segmentResultsQuery workflow for this class.
+     */
+
     protected function segmentResultsQuery(?string $search = null)
     {
         return RoadSegment::query()
@@ -157,6 +175,10 @@ class RoadRuleController extends Controller
             ->withCount('roadRules')
             ->orderBy('segment_name');
     }
+
+    /**
+     * Handle the formatSegment workflow for this class.
+     */
 
     protected function formatSegment(RoadSegment $segment): array
     {

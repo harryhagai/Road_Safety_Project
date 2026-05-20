@@ -1,3 +1,5 @@
+{{-- Blade view for the home page in the RSRS application. --}}
+
 @inject('mapConfigService', 'App\Services\MapConfigService')
 @extends('layouts.app')
 

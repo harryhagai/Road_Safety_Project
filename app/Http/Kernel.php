@@ -4,6 +4,9 @@ namespace App\Http;
 
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
+/**
+ * Laravel class for Kernel responsibilities in the RSRS project.
+ */
 class Kernel extends HttpKernel
 {
     /**

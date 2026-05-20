@@ -13,8 +13,14 @@ use App\Models\ViolationType;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Officer-facing controller responsible for OfficerDashboardController actions inside the dashboard.
+ */
 class OfficerDashboardController extends Controller
 {
+    /**
+     * Prepare the data needed to render the listing page.
+     */
     public function index(): View
     {
         $stats = [
@@ -131,6 +137,10 @@ class OfficerDashboardController extends Controller
             'hotspots',
         ));
     }
+
+    /**
+     * Handle the humanize workflow for this class.
+     */
 
     protected function humanize(?string $value): string
     {

@@ -1,3 +1,5 @@
+{{-- Blade view for the index page in the RSRS application. --}}
+
 @extends('layouts.app')
 
 @section('title', 'Road Hotspots - Road Safety Reporting System')

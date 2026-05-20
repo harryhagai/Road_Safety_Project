@@ -1,3 +1,5 @@
+{{-- Blade view for the developer page in the RSRS application. --}}
+
 @extends('layouts.app')
 
 @section('title', 'Project Team')

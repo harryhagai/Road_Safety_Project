@@ -1,3 +1,5 @@
+{{-- Reusable Blade component used across multiple RSRS pages. --}}
+
 @php
     $isOperationsMenuOpen = request()->is('road-officer/road-rules*') ||
         request()->is('road-officer/road-segments*') ||

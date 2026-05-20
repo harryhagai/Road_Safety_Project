@@ -1,3 +1,5 @@
+// Frontend helper for rsrsOfficerSidebar interactions in the RSRS interface.
+
 document.addEventListener('DOMContentLoaded', function () {
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('sidebarToggle');
@@ -10,12 +12,16 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function cleanLabel(text) {
         return (text || '')
             .replace(/\u00a0/g, ' ')
             .replace(/\s+/g, ' ')
             .trim();
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function getLinkLabel(link) {
         if (!link) {
@@ -29,6 +35,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         return cleanLabel(clone.textContent);
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function getActivePageLabel() {
         const activeLinks = Array.from(sidebar.querySelectorAll('.nav-link.active'));
@@ -53,6 +61,8 @@ document.addEventListener('DOMContentLoaded', function () {
         return childLabel || activePageTitle.dataset.defaultTitle || 'Officer Panel';
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function updateActivePageTitle() {
         const labelElement = activePageTitle.querySelector('.header-page-label');
         const currentLabel = getActivePageLabel();
@@ -66,6 +76,8 @@ document.addEventListener('DOMContentLoaded', function () {
         activePageTitle.setAttribute('title', currentLabel);
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function applyNavTooltips() {
         sidebar.querySelectorAll('.nav-link').forEach(function (link) {
             const label = getLinkLabel(link);
@@ -76,6 +88,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function readDesktopCollapsedState() {
         try {
             return window.localStorage.getItem(desktopCollapseKey) === 'true';
@@ -83,6 +97,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         }
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function writeDesktopCollapsedState(isCollapsed) {
         try {
@@ -92,9 +108,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function isMobileView() {
         return window.innerWidth <= 768;
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function updateToggleButtonState() {
         const sidebarVisible = isMobileView()
@@ -119,6 +139,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 : 'bi bi-layout-sidebar-inset fs-5';
         }
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function applyLayoutState() {
         if (isMobileView()) {

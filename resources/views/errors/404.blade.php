@@ -1,3 +1,5 @@
+{{-- Error page template rendered when this HTTP status is triggered. --}}
+
 @extends('layouts.auth')
 
 @section('title', '404 Not Found')

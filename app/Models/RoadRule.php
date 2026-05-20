@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Eloquent model representing the RoadRule domain record in RSRS.
+ */
 class RoadRule extends Model
 {
     use HasFactory;
@@ -51,20 +54,36 @@ class RoadRule extends Model
         ];
     }
 
+    /**
+     * Handle the segment workflow for this class.
+     */
+
     public function segment(): BelongsTo
     {
         return $this->belongsTo(RoadSegment::class, 'segment_id');
     }
+
+    /**
+     * Handle the creator workflow for this class.
+     */
 
     public function creator(): BelongsTo
     {
         return $this->belongsTo(Officer::class, 'created_by');
     }
 
+    /**
+     * Handle the ruleViolations workflow for this class.
+     */
+
     public function ruleViolations(): HasMany
     {
         return $this->hasMany(RuleViolation::class, 'rule_id');
     }
+
+    /**
+     * Handle the hotspots workflow for this class.
+     */
 
     public function hotspots(): HasMany
     {

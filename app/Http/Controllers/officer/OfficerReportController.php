@@ -10,6 +10,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
+/**
+ * Officer-facing controller responsible for OfficerReportController actions inside the dashboard.
+ */
 class OfficerReportController extends Controller
 {
     private const STATUSES = [
@@ -19,6 +22,10 @@ class OfficerReportController extends Controller
         'resolved',
         'rejected',
     ];
+
+    /**
+     * Prepare the data needed to render the listing page.
+     */
 
     public function index(Request $request): View
     {
@@ -74,6 +81,10 @@ class OfficerReportController extends Controller
         ]);
     }
 
+    /**
+     * Load and return the detailed view for the requested record.
+     */
+
     public function show(Report $report): View
     {
         $report->load([
@@ -86,6 +97,10 @@ class OfficerReportController extends Controller
             'statuses' => self::STATUSES,
         ]);
     }
+
+    /**
+     * Apply validated changes to the selected record.
+     */
 
     public function update(Request $request, Report $report): RedirectResponse
     {

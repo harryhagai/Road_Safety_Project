@@ -1,3 +1,5 @@
+{{-- Blade view for the contact page in the RSRS application. --}}
+
 @extends('layouts.app')
 
 @section('title', 'Contact Us - Road Safety Reporting System')

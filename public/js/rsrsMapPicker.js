@@ -1,3 +1,5 @@
+// Frontend helper for rsrsMapPicker interactions in the RSRS interface.
+
 (function () {
     // Fix for Leaflet default icon paths when using CDN or Proxy
     if (typeof L !== 'undefined' && L.Icon && L.Icon.Default) {
@@ -7,6 +9,8 @@
             shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
         });
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function distanceInMeters(a, b) {
         const toRad = (value) => (value * Math.PI) / 180;
@@ -23,6 +27,8 @@
         return 2 * earthRadius * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function createSelectionIcon() {
         return L.divIcon({
             className: 'geo-map-selection-marker',
@@ -31,6 +37,8 @@
             iconAnchor: [13, 26],
         });
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function createUserLocationIcon() {
         return L.divIcon({
@@ -46,6 +54,8 @@
         });
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function createPreviewLocationIcon() {
         return L.divIcon({
             className: 'geo-map-preview-marker',
@@ -54,6 +64,8 @@
             iconAnchor: [17, 17],
         });
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function bindMap(root) {
         const config = JSON.parse(root.dataset.mapConfig || '{}');
@@ -95,6 +107,8 @@
         let reverseGeocodeController = null;
         let lastReverseGeocodePoint = null;
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function ensureSize() {
             requestAnimationFrame(() => map.invalidateSize());
         }
@@ -118,6 +132,8 @@
             const observer = new ResizeObserver(ensureSize);
             observer.observe(root);
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function updateCoordinateText(lat, lng) {
             if (!coordinatesLabel) {
@@ -230,6 +246,8 @@
             }
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function setUserLocation(lat, lng, options = {}) {
             const accuracy = Number(options.accuracy);
             const heading = Number(options.heading);
@@ -274,6 +292,8 @@
             }
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function previewLocation(lat, lng, options = {}) {
             const zoom = Number(options.zoom);
             const shouldAnimate = options.animate !== false;
@@ -297,6 +317,8 @@
                 easeLinearity: 0.18,
             });
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function clearPreviewLocation() {
             if (previewMarker) {

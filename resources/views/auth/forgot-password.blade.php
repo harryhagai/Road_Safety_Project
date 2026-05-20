@@ -1,3 +1,5 @@
+{{-- Authentication view for the forgot-password step of the access flow. --}}
+
 @extends('layouts.auth')
 
 @section('title', 'Forgot Password')

@@ -36,6 +36,7 @@ foreach ($routeFiles as $routeFile) {
     }
 }
 
+// Public landing pages and contact entry points.
 Route::view('/', 'home')->name('home');
 Route::view('/home', 'home');
 Route::view('/about', 'about')->name('about');
@@ -47,6 +48,7 @@ Route::view('/departments', 'departments')->name('departments');
 Route::view('/developer', 'developer')->name('developer');
 Route::get('/hotspots', [PublicHotspotController::class, 'index'])->name('hotspots.index');
 Route::redirect('/news-events', '/hotspots')->name('news-events');
+// Officer dashboard shortcuts and data endpoints.
 Route::get('/road-officer/dashboard', [OfficerDashboardController::class, 'index'])->middleware('auth')->name('officer.dashboard');
 Route::get('/roadofficer/dashboard', [OfficerDashboardController::class, 'index'])->middleware('auth')->name('roadofficer.dashboard');
 Route::get('/maps/reverse-geocode', [MapController::class, 'reverseGeocode'])
@@ -62,6 +64,7 @@ Route::post('/auto-speed-reports', [AutoSpeedReportController::class, 'store'])
     ->middleware('throttle:12,1')
     ->name('auto-speed-reports.store');
 
+// Protected officer tools that require authentication.
 Route::middleware('auth')->group(function () {
     Route::get('/road-officer/notifications', [OfficerNotificationController::class, 'index'])->name('officer.notifications.index');
     Route::get('/road-officer/notifications/dropdown-data', [OfficerNotificationController::class, 'dropdownData'])->name('officer.notifications.dropdown-data');
@@ -90,4 +93,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/road-officer/profile', [OfficerProfileController::class, 'show'])->name('officer.profile.show');
     Route::put('/road-officer/profile', [OfficerProfileController::class, 'update'])->name('officer.profile.update');
 });
+// Legacy route alias kept for compatibility.
 Route::redirect('/e-learning', '/login')->name('e-learning');

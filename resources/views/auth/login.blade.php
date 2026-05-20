@@ -1,3 +1,5 @@
+{{-- Authentication view for the login step of the access flow. --}}
+
 @extends('layouts.auth')
 
 @section('title', 'Login')

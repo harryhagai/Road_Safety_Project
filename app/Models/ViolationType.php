@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Eloquent model representing the ViolationType domain record in RSRS.
+ */
 class ViolationType extends Model
 {
     use HasFactory;
@@ -32,6 +35,10 @@ class ViolationType extends Model
             'is_active' => 'boolean',
         ];
     }
+
+    /**
+     * Handle the reports workflow for this class.
+     */
 
     public function reports(): HasMany
     {

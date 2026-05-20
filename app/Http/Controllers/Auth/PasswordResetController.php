@@ -12,12 +12,22 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\View\View;
 
+/**
+ * Auth controller that manages the PasswordResetController flow for RSRS users.
+ */
 class PasswordResetController extends Controller
 {
+    /**
+     * Handle the showForgotForm workflow for this class.
+     */
     public function showForgotForm(): View
     {
         return view('auth.forgot-password');
     }
+
+    /**
+     * Handle the sendResetLink workflow for this class.
+     */
 
     public function sendResetLink(Request $request): RedirectResponse
     {
@@ -34,6 +44,10 @@ class PasswordResetController extends Controller
             : back()->withErrors(['email' => __($status)]);
     }
 
+    /**
+     * Handle the showResetForm workflow for this class.
+     */
+
     public function showResetForm(Request $request, string $token): View
     {
         return view('auth.reset-password', [
@@ -41,6 +55,10 @@ class PasswordResetController extends Controller
             'email' => (string) $request->query('email', ''),
         ]);
     }
+
+    /**
+     * Handle the resetPassword workflow for this class.
+     */
 
     public function resetPassword(Request $request): RedirectResponse
     {

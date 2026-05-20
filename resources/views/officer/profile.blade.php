@@ -1,3 +1,5 @@
+{{-- Officer module view for profile within the road safety dashboard. --}}
+
 @extends('layouts.officerDashboardLayout')
 
 @section('content')

@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Eloquent model representing the ContactMessage domain record in RSRS.
+ */
 class ContactMessage extends Model
 {
     use HasFactory;
@@ -61,6 +64,10 @@ class ContactMessage extends Model
             self::STATUS_ARCHIVED => 'Archived',
         ];
     }
+
+    /**
+     * Handle the officer workflow for this class.
+     */
 
     public function officer(): BelongsTo
     {

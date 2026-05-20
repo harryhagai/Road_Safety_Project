@@ -1,3 +1,5 @@
+{{-- Reusable Blade component used across multiple RSRS pages. --}}
+
 <footer class="footer-wrapper">
     <div class="footer-container">
         <div class="footer-line">

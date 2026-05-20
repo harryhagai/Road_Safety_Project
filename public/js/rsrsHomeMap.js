@@ -1,3 +1,5 @@
+// Frontend helper for rsrsHomeMap interactions in the RSRS interface.
+
 (function () {
     const LOCATION_FOCUS_ZOOM = 16;
     const LOCATION_DETAIL_ZOOM = 18;
@@ -34,6 +36,8 @@
     let lastAutoTelemetry = null;
     const reportedRuleIds = new Set();
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function cacheSpeedWidget() {
         if (speedWidget) return;
 
@@ -49,6 +53,8 @@
         speedAlertCountdownEl = document.querySelector('[data-home-speed-alert-countdown]');
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function updateSpeedDisplay(speedKmh, statusText, isLive) {
         cacheSpeedWidget();
         if (!speedWidget || !speedValueEl || !speedStatusEl) return;
@@ -61,6 +67,8 @@
         speedWidget.classList.toggle('is-live', Boolean(isLive));
         speedWidget.classList.toggle('is-idle', !isLive);
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function updateSpeedAlert(options) {
         cacheSpeedWidget();
@@ -100,6 +108,8 @@
         }
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function resolveSpeedKmh(position, now, currentPoint) {
         const directSpeed = Number(position.coords.speed);
         if (Number.isFinite(directSpeed) && directSpeed >= 0) {
@@ -118,6 +128,8 @@
 
         return (movedMeters / elapsedSeconds) * 3.6;
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function publishLocationReady(position, speedKmh) {
         if (hasPublishedLocationReady) return;
@@ -138,6 +150,8 @@
             },
         }));
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function getAutoReportingConfig() {
         const config = window.rsrsAutoSpeedReporting || {};
@@ -174,6 +188,8 @@
         return data;
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function buildAutoTelemetry(position, speedKmh) {
         const latitude = Number(position.coords.latitude);
         const longitude = Number(position.coords.longitude);
@@ -188,6 +204,8 @@
             heading: Number.isFinite(heading) && heading >= 0 ? heading : null,
         };
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function resetReportedRuleIfSafe(evaluation) {
         if (!evaluation?.matched || !evaluation?.rule?.id || evaluation.exceeded) return;
@@ -239,6 +257,8 @@
             autoReportInFlight = false;
         }
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function handleAutoEvaluation(evaluation, telemetry) {
         resetReportedRuleIfSafe(evaluation);
@@ -304,6 +324,8 @@
         submitAutoReport(evaluation, telemetry);
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function evaluateAutoReporting(position, speedKmh, now) {
         const config = getAutoReportingConfig();
 
@@ -332,6 +354,8 @@
             });
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function setLocationButtonMode(mode) {
         if (!locationButton) return;
 
@@ -342,11 +366,15 @@
         locationButton.setAttribute('aria-label', buttonTitle);
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function getNextLocationViewMode() {
         if (locationViewMode === 'idle') return 'focus';
         if (locationViewMode === 'focus') return 'detail';
         return 'focus';
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function getTargetZoom(mode) {
         if (!mapInterface?.map) return LOCATION_FOCUS_ZOOM;
@@ -354,10 +382,14 @@
         return Math.min(mode === 'detail' ? LOCATION_DETAIL_ZOOM : LOCATION_FOCUS_ZOOM, maxZoom);
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function flyToUser(lat, lng, mode) {
         if (!mapInterface?.map) return;
         mapInterface.map.flyTo([lat, lng], getTargetZoom(mode), FLY_ANIMATION);
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function setLocatingState(isLocating) {
         if (!locationButton) return;
@@ -371,6 +403,8 @@
 
         setLocationButtonMode(locationViewMode);
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function createLocationControl() {
         if (!mapInterface?.map || locationButton) return;
@@ -420,6 +454,8 @@
         setLocationButtonMode(locationViewMode);
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function distanceInMeters(a, b) {
         const toRad = (value) => (value * Math.PI) / 180;
         const earthRadius = 6371000;
@@ -434,6 +470,8 @@
         return 2 * earthRadius * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function bearingDegrees(a, b) {
         const toRad = (value) => (value * Math.PI) / 180;
         const toDeg = (value) => (value * 180) / Math.PI;
@@ -445,6 +483,8 @@
 
         return (toDeg(Math.atan2(y, x)) + 360) % 360;
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function applyPosition(position) {
         if (!mapInterface) return;
@@ -493,6 +533,8 @@
         }
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function startWatch(highAccuracy) {
         if (!navigator.geolocation || !mapInterface) return;
 
@@ -517,6 +559,8 @@
             }
         );
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function bootstrapGps(force) {
         if (!navigator.geolocation || !mapInterface) return;
@@ -563,6 +607,8 @@
             { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
         );
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function initWhenMapReady() {
         const mapEl = document.getElementById('mainPublicMap');

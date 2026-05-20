@@ -1,3 +1,5 @@
+{{-- Blade view for the reset-password-link page in the RSRS application. --}}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

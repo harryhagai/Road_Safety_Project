@@ -1,4 +1,7 @@
+// Frontend helper for rsrsOfficerAlerts interactions in the RSRS interface.
+
 (function () {
+    // Encapsulate one UI behavior so the page stays easier to maintain.
     function ensureroadofficerAlertStyles() {
         if (document.getElementById('roadofficer-alert-theme-styles')) {
             return;

@@ -1,6 +1,10 @@
+// Frontend helper for rsrsHomeLoader interactions in the RSRS interface.
+
 (function () {
     const LOADER_MIN_VISIBLE_MS = 1400;
     const LOADER_TIMEOUT_MS = 9000;
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function initHomeLoader() {
         const loader = document.querySelector('[data-home-map-loader]');
@@ -12,6 +16,8 @@
 
         let hasHiddenLoader = false;
         const loaderStartedAt = Date.now();
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         const finalizeHide = function () {
             if (hasHiddenLoader || !loader.isConnected) {
@@ -27,6 +33,8 @@
                 loader.remove();
             }, 320);
         };
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         const hideLoader = function () {
             if (hasHiddenLoader) {

@@ -1,8 +1,12 @@
+// Frontend helper for rsrsButtonSpinner interactions in the RSRS interface.
+
 (function () {
     const navigationStorageKey = 'hgss-inline-spinner-navigation';
     const disableNavigationOverlay = document.body?.dataset?.disableNavigationOverlay === '1';
     const enableLinkSpinners = document.body?.dataset?.inlineSpinnerLinks !== '0';
     const spinnerTheme = document.body?.dataset?.inlineSpinnerTheme || 'default';
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function ensureSpinnerStyles() {
         if (document.getElementById('inline-dotted-spinner-styles')) {
@@ -143,6 +147,8 @@
         document.head.appendChild(style);
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function spinnerMarkup() {
         return `
             <span class="inline-dotted-spinner" aria-hidden="true">
@@ -160,6 +166,8 @@
             </span>
         `;
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function activateButton(button) {
         if (!button || button.dataset.noSpinner !== undefined || button.dataset.spinnerActive === '1') {
@@ -191,6 +199,8 @@
             <span style="font-weight:400;">${loadingText}</span>
         `;
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function shouldHandleLink(link, event) {
         if (!link || link.dataset.noSpinner !== undefined || link.dataset.spinnerActive === '1') {
@@ -226,6 +236,8 @@
         return true;
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function activateLink(link) {
         if (!link || link.dataset.spinnerActive === '1') {
             return;
@@ -240,6 +252,8 @@
             <span style="font-weight:400;">${link.dataset.loadingText || link.textContent.trim() || 'Loading...'}</span>
         `;
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function ensureNavigationOverlay() {
         let overlay = document.getElementById('inline-spinner-navigation-overlay');
@@ -271,6 +285,8 @@
         return overlay;
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function showNavigationOverlay() {
         if (disableNavigationOverlay) {
             return;
@@ -279,12 +295,16 @@
         overlay.classList.add('is-visible');
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function hideNavigationOverlay() {
         const overlay = document.getElementById('inline-spinner-navigation-overlay');
         if (overlay) {
             overlay.classList.remove('is-visible');
         }
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function markNavigationPending() {
         if (disableNavigationOverlay) {
@@ -301,6 +321,8 @@
             showNavigationOverlay();
         }, 180);
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function clearPendingNavigation() {
         try {

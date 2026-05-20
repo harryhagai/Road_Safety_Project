@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Eloquent model representing the Report domain record in RSRS.
+ */
 class Report extends Model
 {
     use HasFactory;
@@ -47,25 +50,45 @@ class Report extends Model
         ];
     }
 
+    /**
+     * Handle the violationType workflow for this class.
+     */
+
     public function violationType(): BelongsTo
     {
         return $this->belongsTo(ViolationType::class);
     }
+
+    /**
+     * Handle the officer workflow for this class.
+     */
 
     public function officer(): BelongsTo
     {
         return $this->belongsTo(Officer::class);
     }
 
+    /**
+     * Handle the evidenceFiles workflow for this class.
+     */
+
     public function evidenceFiles(): HasMany
     {
         return $this->hasMany(EvidenceFile::class);
     }
 
+    /**
+     * Handle the ruleViolations workflow for this class.
+     */
+
     public function ruleViolations(): HasMany
     {
         return $this->hasMany(RuleViolation::class);
     }
+
+    /**
+     * Handle the violatedRules workflow for this class.
+     */
 
     public function violatedRules(): BelongsToMany
     {

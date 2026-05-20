@@ -4,6 +4,9 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
+/**
+ * Migration or seeding class that supports the DatabaseSeeder data layer.
+ */
 class DatabaseSeeder extends Seeder
 {
     /**

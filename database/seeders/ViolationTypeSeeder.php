@@ -5,6 +5,9 @@ namespace Database\Seeders;
 use App\Models\ViolationType;
 use Illuminate\Database\Seeder;
 
+/**
+ * Migration or seeding class that supports the ViolationTypeSeeder data layer.
+ */
 class ViolationTypeSeeder extends Seeder
 {
     /**

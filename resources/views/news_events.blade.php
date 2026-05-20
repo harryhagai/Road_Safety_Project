@@ -1,3 +1,5 @@
+{{-- Blade view for the news_events page in the RSRS application. --}}
+
 @extends('layouts.app')
 
 @section('title', 'News & Events - Road Safety Reporting System')

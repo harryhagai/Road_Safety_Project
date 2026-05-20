@@ -1,3 +1,5 @@
+// Frontend helper for rsrsRoadRules interactions in the RSRS interface.
+
 (function () {
     document.addEventListener('DOMContentLoaded', function () {
         const mapRoot = document.getElementById('roadRuleMap');
@@ -35,6 +37,8 @@
         let searchDebounceHandle = null;
         let requestSerial = 0;
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function escapeHtml(value) {
             return String(value || '')
                 .replace(/&/g, '&amp;')
@@ -43,6 +47,8 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function createSegmentIcon(isActive) {
             return L.divIcon({
@@ -58,6 +64,8 @@
             });
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function getSegmentLatLngs(segment) {
             const coordinates = segment.boundary_coordinates?.geometry?.coordinates || [];
 
@@ -67,6 +75,8 @@
 
             return coordinates.map((coordinate) => [coordinate[1], coordinate[0]]);
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function getSegmentSummary(segment) {
             const parts = [];
@@ -86,6 +96,8 @@
             return parts.join(' | ') || 'General segment';
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function formatRuleMeta(rule) {
             const parts = [];
 
@@ -99,6 +111,8 @@
 
             return parts.join(' | ') || 'Saved road rule';
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function buildTooltipContent(segment) {
             const description = segment.description
@@ -114,6 +128,8 @@
             `;
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function autoFillRuleForm(segment) {
             if (segmentSelect) {
                 segmentSelect.value = String(segment.id);
@@ -125,6 +141,8 @@
             }
 
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function resetStyles() {
             segmentLayer.eachLayer((layer) => {
@@ -144,6 +162,8 @@
             });
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function updateResultSelectionState() {
             document.querySelectorAll('[data-segment-id]').forEach((node) => {
                 const isSelected = Number(node.dataset.segmentId) === Number(activeSegmentId);
@@ -157,9 +177,13 @@
             });
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function clearActiveMatchLayer() {
             activeMatchLayer.clearLayers();
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function applySegmentHoverState(segmentId) {
             segmentLayer.eachLayer((layer) => {
@@ -179,11 +203,15 @@
             });
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function clearMarkerHoverState() {
             segmentMarkerLayer.eachLayer((marker) => {
                 marker.getElement()?.classList.remove('is-hovered');
             });
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function applySegmentSelectedState(segmentId) {
             segmentLayer.eachLayer((layer) => {
@@ -197,6 +225,8 @@
             });
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function restoreSegmentVisualState() {
             clearMarkerHoverState();
             resetStyles();
@@ -205,6 +235,8 @@
                 applySegmentSelectedState(activeSegmentId);
             }
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function drawMatchGlow(segment) {
             clearActiveMatchLayer();
@@ -222,6 +254,8 @@
             }).addTo(activeMatchLayer);
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function resetInspector() {
             if (selectedSegmentPanel) {
                 selectedSegmentPanel.textContent = 'No segment selected.';
@@ -236,9 +270,13 @@
             }
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function findSegment(segmentId) {
             return renderedSegments.find((item) => Number(item.id) === Number(segmentId)) || null;
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function updateInspectorForSegment(segment, customCoverage) {
             if (selectedSegmentPanel) {
@@ -255,6 +293,8 @@
                     : 'No rule selected.';
             }
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function highlightSegment(segmentId, options) {
             const settings = Object.assign({
@@ -303,6 +343,8 @@
             }
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function previewSegment(segmentId, coverageText) {
             const segment = findSegment(segmentId);
 
@@ -315,6 +357,8 @@
             drawMatchGlow(segment);
             updateInspectorForSegment(segment, coverageText);
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function clearPreview() {
             clearActiveMatchLayer();
@@ -332,6 +376,8 @@
             resetInspector();
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function safeJsonParse(value) {
             try {
                 return JSON.parse(value || '{}');
@@ -339,6 +385,8 @@
                 return null;
             }
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function bindSegmentLayerInteractions(layer, segment) {
             layer.segmentId = segment.id;
@@ -360,6 +408,8 @@
                 });
             });
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function renderSegmentsOnMap() {
             segmentLayer.clearLayers();
@@ -391,6 +441,8 @@
 
             restoreSegmentVisualState();
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function segmentMarkup(segment) {
             const rulesMarkup = Array.isArray(segment.rules) && segment.rules.length
@@ -429,6 +481,8 @@
             `;
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function renderResultsList(segments, mode) {
             if (!resultsList) {
                 return;
@@ -451,6 +505,8 @@
             updateResultSelectionState();
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function updateLoadMoreButton() {
             if (!loadMoreBtn) {
                 return;
@@ -459,6 +515,8 @@
             loadMoreBtn.disabled = !hasMorePages;
             loadMoreBtn.querySelector('span').textContent = hasMorePages ? 'Load more' : 'No more results';
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function updateResultsMeta(meta) {
             currentPage = Number(meta?.current_page || 1);
@@ -470,6 +528,8 @@
 
             updateLoadMoreButton();
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function mergeSegments(existingSegments, newSegments) {
             const merged = new Map(existingSegments.map((segment) => [Number(segment.id), segment]));
@@ -553,6 +613,8 @@
             }
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function fitMapToCurrentResults() {
             const bounds = [];
 
@@ -571,6 +633,8 @@
             }
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function handleSegmentButtonClick(button) {
             const segment = safeJsonParse(button.dataset.roadRuleSegment);
 
@@ -583,6 +647,8 @@
                 prefillForm: true,
             });
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function handleRuleButtonClick(button) {
             const rule = safeJsonParse(button.dataset.roadRule);

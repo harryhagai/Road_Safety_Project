@@ -1,3 +1,5 @@
+{{-- Reusable Blade component used across multiple RSRS pages. --}}
+
 <header class="header-wrapper">
     <div class="header-container">
         <div class="header-branding">

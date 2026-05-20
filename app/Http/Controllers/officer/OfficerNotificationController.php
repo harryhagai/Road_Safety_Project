@@ -8,14 +8,24 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * Officer-facing controller responsible for OfficerNotificationController actions inside the dashboard.
+ */
 class OfficerNotificationController extends Controller
 {
+    /**
+     * Prepare the data needed to render the listing page.
+     */
     public function index(Request $request): View
     {
         return view('officer.notifications.index', [
             'notifications' => $this->notificationSource($request)?->latest()->paginate(12) ?? collect(),
         ]);
     }
+
+    /**
+     * Handle the dropdownData workflow for this class.
+     */
 
     public function dropdownData(Request $request): JsonResponse
     {
@@ -41,6 +51,10 @@ class OfficerNotificationController extends Controller
         ]);
     }
 
+    /**
+     * Handle the markAllRead workflow for this class.
+     */
+
     public function markAllRead(Request $request): RedirectResponse
     {
         $source = $this->notificationSource($request);
@@ -51,6 +65,10 @@ class OfficerNotificationController extends Controller
 
         return back()->with('success', 'Notifications updated.');
     }
+
+    /**
+     * Load and return the detailed view for the requested record.
+     */
 
     public function show(Request $request, string $notificationId): RedirectResponse|View
     {
@@ -78,6 +96,10 @@ class OfficerNotificationController extends Controller
             'notification' => $notification,
         ]);
     }
+
+    /**
+     * Handle the notificationSource workflow for this class.
+     */
 
     private function notificationSource(Request $request): mixed
     {

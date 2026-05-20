@@ -5,6 +5,9 @@ namespace Database\Seeders;
 use App\Models\Officer;
 use Illuminate\Database\Seeder;
 
+/**
+ * Migration or seeding class that supports the OfficerSeeder data layer.
+ */
 class OfficerSeeder extends Seeder
 {
     /**

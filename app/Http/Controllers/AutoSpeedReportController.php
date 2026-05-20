@@ -11,12 +11,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
+/**
+ * Web controller that coordinates the AutoSpeedReportController request lifecycle.
+ */
 class AutoSpeedReportController extends Controller
 {
     private const REQUIRED_EXCEEDED_SECONDS = 30;
     private const DUPLICATE_WINDOW_SECONDS = 600;
     private const BASE_SEGMENT_TOLERANCE_METERS = 80;
     private const MAX_SEGMENT_TOLERANCE_METERS = 350;
+
+    /**
+     * Handle the evaluate workflow for this class.
+     */
 
     public function evaluate(Request $request): JsonResponse
     {
@@ -75,6 +82,10 @@ class AutoSpeedReportController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Validate the request and persist a new record.
+     */
 
     public function store(Request $request): JsonResponse
     {
@@ -181,6 +192,10 @@ class AutoSpeedReportController extends Controller
         ], 201);
     }
 
+    /**
+     * Handle the validateTelemetry workflow for this class.
+     */
+
     private function validateTelemetry(Request $request): array
     {
         return $request->validate([
@@ -191,6 +206,10 @@ class AutoSpeedReportController extends Controller
             'heading' => ['nullable', 'numeric', 'min:0', 'max:360'],
         ]);
     }
+
+    /**
+     * Handle the matchSpeedRule workflow for this class.
+     */
 
     private function matchSpeedRule(float $latitude, float $longitude, float $accuracy): ?array
     {
@@ -264,6 +283,10 @@ class AutoSpeedReportController extends Controller
         );
     }
 
+    /**
+     * Handle the parseSpeedLimit workflow for this class.
+     */
+
     private function parseSpeedLimit(?string $value): ?float
     {
         if (! $value || ! preg_match('/\d+(?:\.\d+)?/', $value, $matches)) {
@@ -274,6 +297,10 @@ class AutoSpeedReportController extends Controller
 
         return $speedLimit > 0 ? $speedLimit : null;
     }
+
+    /**
+     * Handle the segmentPoints workflow for this class.
+     */
 
     private function segmentPoints(?array $geometry): array
     {
@@ -291,6 +318,10 @@ class AutoSpeedReportController extends Controller
             ->values()
             ->all();
     }
+
+    /**
+     * Handle the extractCoordinates workflow for this class.
+     */
 
     private function extractCoordinates(?array $geometry): array
     {
@@ -318,6 +349,10 @@ class AutoSpeedReportController extends Controller
 
         return $geometry;
     }
+
+    /**
+     * Handle the normalizeCoordinate workflow for this class.
+     */
 
     private function normalizeCoordinate(mixed $coordinate): ?array
     {
@@ -348,6 +383,10 @@ class AutoSpeedReportController extends Controller
         return $this->validPoint($second, $first);
     }
 
+    /**
+     * Handle the validPoint workflow for this class.
+     */
+
     private function validPoint(float $latitude, float $longitude): ?array
     {
         if ($latitude < -90 || $latitude > 90 || $longitude < -180 || $longitude > 180) {
@@ -359,6 +398,10 @@ class AutoSpeedReportController extends Controller
             'lng' => $longitude,
         ];
     }
+
+    /**
+     * Handle the ruleEndpointPoints workflow for this class.
+     */
 
     private function ruleEndpointPoints(RoadRule $rule): array
     {
@@ -375,6 +418,10 @@ class AutoSpeedReportController extends Controller
             ->all();
     }
 
+    /**
+     * Handle the distanceToPolylineMeters workflow for this class.
+     */
+
     private function distanceToPolylineMeters(array $point, array $linePoints): float
     {
         $minimum = INF;
@@ -388,6 +435,10 @@ class AutoSpeedReportController extends Controller
 
         return $minimum;
     }
+
+    /**
+     * Handle the distanceToSegmentMeters workflow for this class.
+     */
 
     private function distanceToSegmentMeters(array $point, array $start, array $end): float
     {
@@ -415,10 +466,18 @@ class AutoSpeedReportController extends Controller
         return hypot($px - $closestX, $py - $closestY);
     }
 
+    /**
+     * Handle the confidenceForDistance workflow for this class.
+     */
+
     private function confidenceForDistance(float $distanceMeters): float
     {
         return round(max(55, min(99, 100 - $distanceMeters)), 2);
     }
+
+    /**
+     * Handle the priorityForSpeed workflow for this class.
+     */
 
     private function priorityForSpeed(float $speedKmh, float $limitKmh): string
     {
@@ -435,6 +494,10 @@ class AutoSpeedReportController extends Controller
         return 'normal';
     }
 
+    /**
+     * Handle the makeReferenceNumber workflow for this class.
+     */
+
     private function makeReferenceNumber(): string
     {
         do {
@@ -444,15 +507,27 @@ class AutoSpeedReportController extends Controller
         return $referenceNo;
     }
 
+    /**
+     * Handle the exceededSessionKey workflow for this class.
+     */
+
     private function exceededSessionKey(int $ruleId): string
     {
         return "auto_speed.exceeded.{$ruleId}";
     }
 
+    /**
+     * Handle the reportedSessionKey workflow for this class.
+     */
+
     private function reportedSessionKey(int $ruleId): string
     {
         return "auto_speed.reported.{$ruleId}";
     }
+
+    /**
+     * Handle the clearExceededSession workflow for this class.
+     */
 
     private function clearExceededSession(): void
     {

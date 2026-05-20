@@ -1,4 +1,7 @@
+// Frontend helper for rsrsRoadSegments interactions in the RSRS interface.
+
 (function () {
+    // Encapsulate one UI behavior so the page stays easier to maintain.
     function getDistanceInKm(pointA, pointB) {
         const toRadians = (value) => (value * Math.PI) / 180;
         const earthRadiusKm = 6371;
@@ -15,6 +18,8 @@
         return earthRadiusKm * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function createGeometry(points) {
         return {
             type: 'Feature',
@@ -27,6 +32,8 @@
             },
         };
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function createPointIcon(index, isLatest) {
         return L.divIcon({
@@ -42,6 +49,8 @@
             popupAnchor: [0, -28],
         });
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function getSegmentNameSuggestion(points) {
         if (!Array.isArray(points) || points.length === 0) {
@@ -92,6 +101,8 @@
         return '';
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function getUniqueSegmentName(candidate, existingNames) {
         const normalizedExisting = new Set(
             existingNames
@@ -120,12 +131,16 @@
         return nextCandidate;
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function isSamePoint(point, lat, lng) {
         return (
             Math.abs(Number(point.lat) - Number(lat)) < 0.000001 &&
             Math.abs(Number(point.lng) - Number(lng)) < 0.000001
         );
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function escapeHtml(value) {
         return String(value ?? '')
@@ -135,6 +150,8 @@
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function getSearchResultLabel(result) {
         if (result?.label) {
@@ -190,6 +207,8 @@
             segmentNameInput.dataset.autoSuggested = 'true';
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function renderExistingSegments() {
             existingLayer.clearLayers();
 
@@ -211,6 +230,8 @@
             });
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function calculateLength(points) {
             if (points.length < 2) {
                 return 0;
@@ -224,6 +245,8 @@
 
             return total;
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function refreshWorkingSegment() {
             pointLayer.clearLayers();
@@ -289,6 +312,8 @@
             }
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function setSearchStatus(message, options = {}) {
             if (locationSearchStatus) {
                 if (options.loading) {
@@ -305,9 +330,13 @@
             }
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function getResultKey(result) {
             return `${Number(result?.lat).toFixed(6)}:${Number(result?.lng).toFixed(6)}`;
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function hideSearchResults() {
             activeSearchResults = [];
@@ -318,6 +347,8 @@
                 locationSearchResults.innerHTML = '';
             }
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function previewSearchResult(result, options = {}) {
             if (!result || typeof result.lat !== 'number' || typeof result.lng !== 'number') {
@@ -338,10 +369,14 @@
             });
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function clearSearchPreview() {
             previewedResultKey = null;
             mapRoot.mapApi.clearPreviewLocation?.();
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function renderSearchResults(results) {
             activeSearchResults = Array.isArray(results) ? results : [];
@@ -368,6 +403,8 @@
             locationSearchResults.hidden = false;
         }
 
+        // Encapsulate one UI behavior so the page stays easier to maintain.
+
         function updateHighlightedResult() {
             if (!locationSearchResults) {
                 return;
@@ -379,6 +416,8 @@
                     element.classList.toggle('is-active', index === activeResultIndex);
                 });
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function focusSearchResult(index) {
             if (index < 0 || index >= activeSearchResults.length) {
@@ -398,6 +437,8 @@
                 ?.querySelector(`[data-location-search-result-index="${index}"]`)
                 ?.scrollIntoView({ block: 'nearest' });
         }
+
+        // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function applySearchSelection(result) {
             if (!result || typeof result.lat !== 'number' || typeof result.lng !== 'number') {

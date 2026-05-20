@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Schema;
 use Throwable;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Service class that centralizes AuditTrailService business logic.
+ */
 class AuditTrailService
 {
     /**
@@ -41,6 +44,10 @@ class AuditTrailService
         'reset-password',
     ];
 
+    /**
+     * Handle the logRequest workflow for this class.
+     */
+
     public function logRequest(Request $request, Response $response): void
     {
         if ($this->shouldSkip($request)) {
@@ -60,6 +67,10 @@ class AuditTrailService
         );
     }
 
+    /**
+     * Handle the logAuthEvent workflow for this class.
+     */
+
     public function logAuthEvent(
         string $action,
         Model|Authenticatable|null $subject = null,
@@ -78,6 +89,10 @@ class AuditTrailService
             request: $resolvedRequest,
         );
     }
+
+    /**
+     * Handle the logModelEvent workflow for this class.
+     */
 
     public function logModelEvent(
         string $event,
@@ -101,6 +116,10 @@ class AuditTrailService
             request: $request,
         );
     }
+
+    /**
+     * Handle the log workflow for this class.
+     */
 
     public function log(
         string $action,
@@ -148,6 +167,10 @@ class AuditTrailService
         }
     }
 
+    /**
+     * Handle the shouldSkip workflow for this class.
+     */
+
     protected function shouldSkip(Request $request): bool
     {
         $routeName = (string) $request->route()?->getName();
@@ -169,6 +192,10 @@ class AuditTrailService
             || $request->is('favicon.ico');
     }
 
+    /**
+     * Handle the auditTrailTableExists workflow for this class.
+     */
+
     protected function auditTrailTableExists(): bool
     {
         static $exists;
@@ -184,6 +211,10 @@ class AuditTrailService
         }
     }
 
+    /**
+     * Handle the resolveRequest workflow for this class.
+     */
+
     protected function resolveRequest(): ?Request
     {
         if (! app()->bound('request')) {
@@ -192,6 +223,10 @@ class AuditTrailService
 
         return request();
     }
+
+    /**
+     * Handle the resolveActor workflow for this class.
+     */
 
     protected function resolveActor(?Request $request = null, ?Model $fallback = null): ?Model
     {
@@ -209,6 +244,10 @@ class AuditTrailService
 
         return $fallback;
     }
+
+    /**
+     * Handle the resolveDisplayName workflow for this class.
+     */
 
     protected function resolveDisplayName(?Model $model): ?string
     {

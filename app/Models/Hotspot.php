@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Eloquent model representing the Hotspot domain record in RSRS.
+ */
 class Hotspot extends Model
 {
     use HasFactory;
@@ -40,6 +43,10 @@ class Hotspot extends Model
             'last_updated_at' => 'datetime',
         ];
     }
+
+    /**
+     * Handle the rule workflow for this class.
+     */
 
     public function rule(): BelongsTo
     {

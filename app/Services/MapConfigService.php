@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+/**
+ * Service class that centralizes MapConfigService business logic.
+ */
 class MapConfigService
 {
     /**

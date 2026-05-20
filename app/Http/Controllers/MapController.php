@@ -12,14 +12,24 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
+/**
+ * Web controller that coordinates the MapController request lifecycle.
+ */
 class MapController extends Controller
 {
+    /**
+     * Handle the lab workflow for this class.
+     */
     public function lab(MapConfigService $mapConfigService): View
     {
         return view('officer.road-segments.map-lab', [
             'mapConfig' => $mapConfigService->forFrontend(),
         ]);
     }
+
+    /**
+     * Handle the reverseGeocode workflow for this class.
+     */
 
     public function reverseGeocode(Request $request): JsonResponse
     {
@@ -78,6 +88,10 @@ class MapController extends Controller
             'provider' => config('map.geocoder.provider'),
         ]);
     }
+
+    /**
+     * Handle the search workflow for this class.
+     */
 
     public function search(Request $request): JsonResponse
     {
@@ -152,6 +166,10 @@ class MapController extends Controller
         return [[], $primaryProvider, 'Location search service is currently unavailable.'];
     }
 
+    /**
+     * Handle the searchLocationIq workflow for this class.
+     */
+
     private function searchLocationIq(string $query, int $searchLimit): ?Response
     {
         $apiKey = (string) config('map.geocoder.autocomplete.api_key');
@@ -173,6 +191,10 @@ class MapController extends Controller
         ]);
     }
 
+    /**
+     * Handle the searchNominatim workflow for this class.
+     */
+
     private function searchNominatim(string $query, int $searchLimit): Response
     {
         $baseUrl = rtrim((string) config('map.geocoder.base_url'), '/');
@@ -187,6 +209,10 @@ class MapController extends Controller
             'countrycodes' => config('map.geocoder.autocomplete.countrycodes', 'tz'),
         ]);
     }
+
+    /**
+     * Handle the searchHttpClient workflow for this class.
+     */
 
     private function searchHttpClient()
     {

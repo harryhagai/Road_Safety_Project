@@ -9,14 +9,24 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
+/**
+ * Officer-facing controller responsible for OfficerProfileController actions inside the dashboard.
+ */
 class OfficerProfileController extends Controller
 {
+    /**
+     * Load and return the detailed view for the requested record.
+     */
     public function show(Request $request): View
     {
         return view('officer.profile', [
             'officer' => $request->user(),
         ]);
     }
+
+    /**
+     * Apply validated changes to the selected record.
+     */
 
     public function update(Request $request): RedirectResponse
     {

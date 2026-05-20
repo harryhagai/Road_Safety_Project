@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Eloquent model representing the RoadSegment domain record in RSRS.
+ */
 class RoadSegment extends Model
 {
     use HasFactory;
@@ -39,20 +42,36 @@ class RoadSegment extends Model
         ];
     }
 
+    /**
+     * Handle the creator workflow for this class.
+     */
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(Officer::class, 'created_by');
     }
+
+    /**
+     * Handle the segmentType workflow for this class.
+     */
 
     public function segmentType(): BelongsTo
     {
         return $this->belongsTo(SegmentType::class, 'segment_type_id');
     }
 
+    /**
+     * Handle the roadRules workflow for this class.
+     */
+
     public function roadRules(): HasMany
     {
         return $this->hasMany(RoadRule::class, 'segment_id');
     }
+
+    /**
+     * Handle the getSegmentTypeNameAttribute workflow for this class.
+     */
 
     public function getSegmentTypeNameAttribute(): ?string
     {

@@ -25,6 +25,9 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * Service provider that boots container bindings related to AppServiceProvider.
+ */
 class AppServiceProvider extends ServiceProvider
 {
     /**

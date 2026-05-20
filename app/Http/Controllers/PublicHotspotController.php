@@ -6,8 +6,14 @@ use App\Models\Hotspot;
 use App\Services\MapConfigService;
 use Illuminate\View\View;
 
+/**
+ * Web controller that coordinates the PublicHotspotController request lifecycle.
+ */
 class PublicHotspotController extends Controller
 {
+    /**
+     * Prepare the data needed to render the listing page.
+     */
     public function index(MapConfigService $mapConfigService): View
     {
         $hotspots = Hotspot::query()

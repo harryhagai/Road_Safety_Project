@@ -1,3 +1,5 @@
+{{-- Layout shell for auth screens in the RSRS workflow. --}}
+
 <!DOCTYPE html>
 <html lang="en">
 

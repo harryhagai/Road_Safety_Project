@@ -6,8 +6,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
+/**
+ * Anonymous migration class for this database change.
+ */
 return new class extends Migration
 {
+    /**
+     * Create the database structures required by this migration.
+     */
     public function up(): void
     {
         Schema::create('segment_types', function (Blueprint $table) {
@@ -94,6 +100,10 @@ return new class extends Migration
                 }
             });
     }
+
+    /**
+     * Drop the database structures introduced by this migration.
+     */
 
     public function down(): void
     {

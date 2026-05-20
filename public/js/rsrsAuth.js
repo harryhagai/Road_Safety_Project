@@ -1,3 +1,5 @@
+// Frontend helper for rsrsAuth interactions in the RSRS interface.
+
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-password-toggle]').forEach((button) => {
         button.addEventListener('click', () => {

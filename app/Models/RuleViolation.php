@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Eloquent model representing the RuleViolation domain record in RSRS.
+ */
 class RuleViolation extends Model
 {
     use HasFactory;
@@ -38,15 +41,27 @@ class RuleViolation extends Model
         ];
     }
 
+    /**
+     * Handle the report workflow for this class.
+     */
+
     public function report(): BelongsTo
     {
         return $this->belongsTo(Report::class);
     }
 
+    /**
+     * Handle the rule workflow for this class.
+     */
+
     public function rule(): BelongsTo
     {
         return $this->belongsTo(RoadRule::class, 'rule_id');
     }
+
+    /**
+     * Handle the verifier workflow for this class.
+     */
 
     public function verifier(): BelongsTo
     {

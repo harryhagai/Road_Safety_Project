@@ -1,3 +1,5 @@
+{{-- Reusable Blade component used across multiple RSRS pages. --}}
+
 @props([
     'title',
     'subtitle' => null,

@@ -9,8 +9,14 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
+/**
+ * Officer-facing controller responsible for ViolationTypeController actions inside the dashboard.
+ */
 class ViolationTypeController extends Controller
 {
+    /**
+     * Prepare the data needed to render the listing page.
+     */
     public function index(): View
     {
         return view('officer.violation-types.index', [
@@ -19,6 +25,10 @@ class ViolationTypeController extends Controller
                 ->get(),
         ]);
     }
+
+    /**
+     * Validate the request and persist a new record.
+     */
 
     public function store(Request $request): RedirectResponse
     {
@@ -38,6 +48,10 @@ class ViolationTypeController extends Controller
             ->route('officer.violation-types.index')
             ->with('success', 'Violation type created successfully.');
     }
+
+    /**
+     * Apply validated changes to the selected record.
+     */
 
     public function update(Request $request, ViolationType $violationType): RedirectResponse
     {
@@ -62,6 +76,10 @@ class ViolationTypeController extends Controller
             ->route('officer.violation-types.index')
             ->with('success', 'Violation type updated successfully.');
     }
+
+    /**
+     * Remove the selected record from storage.
+     */
 
     public function destroy(ViolationType $violationType): RedirectResponse
     {

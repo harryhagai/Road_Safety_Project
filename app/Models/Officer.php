@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+/**
+ * Eloquent model representing the Officer domain record in RSRS.
+ */
 class Officer extends Authenticatable
 {
     use HasFactory, Notifiable;
@@ -47,20 +50,36 @@ class Officer extends Authenticatable
         ];
     }
 
+    /**
+     * Handle the reports workflow for this class.
+     */
+
     public function reports(): HasMany
     {
         return $this->hasMany(Report::class);
     }
+
+    /**
+     * Handle the createdRoadSegments workflow for this class.
+     */
 
     public function createdRoadSegments(): HasMany
     {
         return $this->hasMany(RoadSegment::class, 'created_by');
     }
 
+    /**
+     * Handle the createdRoadRules workflow for this class.
+     */
+
     public function createdRoadRules(): HasMany
     {
         return $this->hasMany(RoadRule::class, 'created_by');
     }
+
+    /**
+     * Handle the verifiedRuleViolations workflow for this class.
+     */
 
     public function verifiedRuleViolations(): HasMany
     {

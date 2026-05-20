@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Middleware that filters requests through the Authenticate rule.
+ */
 class Authenticate
 {
     /**

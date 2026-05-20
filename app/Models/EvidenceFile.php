@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Eloquent model representing the EvidenceFile domain record in RSRS.
+ */
 class EvidenceFile extends Model
 {
     use HasFactory;
@@ -22,6 +25,10 @@ class EvidenceFile extends Model
         'file_type',
         'file_size',
     ];
+
+    /**
+     * Handle the report workflow for this class.
+     */
 
     public function report(): BelongsTo
     {

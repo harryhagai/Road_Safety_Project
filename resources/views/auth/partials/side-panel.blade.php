@@ -1,3 +1,5 @@
+{{-- Authentication view for the side-panel step of the access flow. --}}
+
 @php
     $panelItems = $items ?? [];
     $roles = $roles ?? [];

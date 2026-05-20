@@ -1,3 +1,5 @@
+{{-- Authentication view for the reset-password step of the access flow. --}}
+
 @extends('layouts.auth')
 
 @section('title', 'Reset Password')

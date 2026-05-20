@@ -9,8 +9,14 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
+/**
+ * Officer-facing controller responsible for ContactMessageController actions inside the dashboard.
+ */
 class ContactMessageController extends Controller
 {
+    /**
+     * Prepare the data needed to render the listing page.
+     */
     public function index(Request $request): View
     {
         $status = $request->query('status');
@@ -41,6 +47,10 @@ class ContactMessageController extends Controller
         ]);
     }
 
+    /**
+     * Load and return the detailed view for the requested record.
+     */
+
     public function show(ContactMessage $contactMessage): View
     {
         if ($contactMessage->read_at === null) {
@@ -52,6 +62,10 @@ class ContactMessageController extends Controller
             'statuses' => ContactMessage::statuses(),
         ]);
     }
+
+    /**
+     * Apply validated changes to the selected record.
+     */
 
     public function update(Request $request, ContactMessage $contactMessage): RedirectResponse
     {
@@ -85,6 +99,10 @@ class ContactMessageController extends Controller
             ->route('officer.contact-messages.show', $contactMessage)
             ->with('success', 'Contact message updated successfully.');
     }
+
+    /**
+     * Remove the selected record from storage.
+     */
 
     public function destroy(ContactMessage $contactMessage): RedirectResponse
     {

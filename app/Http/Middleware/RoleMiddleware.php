@@ -5,6 +5,9 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
+/**
+ * Middleware that filters requests through the RoleMiddleware rule.
+ */
 class RoleMiddleware
 {
     /**

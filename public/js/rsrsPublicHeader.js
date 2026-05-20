@@ -1,3 +1,5 @@
+// Frontend helper for rsrsPublicHeader interactions in the RSRS interface.
+
 const navToggle = document.getElementById('navToggle');
     const mainNav = document.getElementById('mainNav');
 

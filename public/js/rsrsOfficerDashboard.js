@@ -1,3 +1,5 @@
+// Frontend helper for rsrsOfficerDashboard interactions in the RSRS interface.
+
 document.addEventListener('DOMContentLoaded', function () {
     const dashboardPage = document.querySelector('.roadofficer-dashboard-page');
 
@@ -13,6 +15,8 @@ document.addEventListener('DOMContentLoaded', function () {
     Chart.defaults.font.family = "'Segoe UI', sans-serif";
     Chart.defaults.color = '#5f7698';
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function showAlert(message) {
         if (!alertBox) {
             return;
@@ -22,6 +26,8 @@ document.addEventListener('DOMContentLoaded', function () {
         alertBox.classList.add('is-visible');
     }
 
+    // Encapsulate one UI behavior so the page stays easier to maintain.
+
     function setStatValues(stats) {
         document.querySelectorAll('[data-stat]').forEach(function (element) {
             const key = element.dataset.stat;
@@ -29,6 +35,8 @@ document.addEventListener('DOMContentLoaded', function () {
             element.textContent = numberFormatter.format(value);
         });
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function toggleEmptyState(emptyStateId, hasData) {
         const emptyState = document.getElementById(emptyStateId);
@@ -39,6 +47,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         emptyState.classList.toggle('is-visible', !hasData);
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function createOrReplaceChart(canvasId, emptyStateId, config) {
         const canvas = document.getElementById(canvasId);
@@ -60,6 +70,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         chartInstances[canvasId] = new Chart(canvas, config);
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function buildBarOptions() {
         return {
@@ -89,6 +101,8 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         };
     }
+
+    // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function buildGroupedBarOptions() {
         return {

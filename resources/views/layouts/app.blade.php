@@ -1,3 +1,5 @@
+{{-- Layout shell for app screens in the RSRS workflow. --}}
+
 <!DOCTYPE html>
 <html lang="en">
 

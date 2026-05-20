@@ -9,12 +9,22 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
+/**
+ * Web controller that coordinates the ContactMessageController request lifecycle.
+ */
 class ContactMessageController extends Controller
 {
+    /**
+     * Display the form used to capture a new record.
+     */
     public function create(): View
     {
         return view('contact');
     }
+
+    /**
+     * Validate the request and persist a new record.
+     */
 
     public function store(Request $request): RedirectResponse
     {
@@ -43,6 +53,10 @@ class ContactMessageController extends Controller
             ->route('contact')
             ->with('status', 'Thank you. Your message has been received and will be reviewed by a road officer.');
     }
+
+    /**
+     * Handle the makeReferenceNumber workflow for this class.
+     */
 
     private function makeReferenceNumber(): string
     {

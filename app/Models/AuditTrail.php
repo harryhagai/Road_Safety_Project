@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+/**
+ * Eloquent model representing the AuditTrail domain record in RSRS.
+ */
 class AuditTrail extends Model
 {
     use HasFactory;
@@ -49,10 +52,18 @@ class AuditTrail extends Model
         ];
     }
 
+    /**
+     * Handle the actor workflow for this class.
+     */
+
     public function actor(): MorphTo
     {
         return $this->morphTo();
     }
+
+    /**
+     * Handle the subject workflow for this class.
+     */
 
     public function subject(): MorphTo
     {

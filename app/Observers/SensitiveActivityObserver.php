@@ -5,12 +5,22 @@ namespace App\Observers;
 use App\Services\AuditTrailService;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Observer that reacts to model events handled by SensitiveActivityObserver.
+ */
 class SensitiveActivityObserver
 {
+    /**
+     * Handle the __construct workflow for this class.
+     */
     public function __construct(
         private readonly AuditTrailService $auditTrailService,
     ) {
     }
+
+    /**
+     * Handle the created workflow for this class.
+     */
 
     public function created(Model $model): void
     {
@@ -21,6 +31,10 @@ class SensitiveActivityObserver
             $model->getAttributes(),
         );
     }
+
+    /**
+     * Handle the updated workflow for this class.
+     */
 
     public function updated(Model $model): void
     {
@@ -43,6 +57,10 @@ class SensitiveActivityObserver
             $changes,
         );
     }
+
+    /**
+     * Handle the deleted workflow for this class.
+     */
 
     public function deleted(Model $model): void
     {

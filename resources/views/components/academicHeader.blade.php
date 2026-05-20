@@ -1,3 +1,5 @@
+{{-- Reusable Blade component used across multiple RSRS pages. --}}
+
 @php
     $currentOfficer = Auth::user();
     $notificationSource = $currentOfficer && method_exists($currentOfficer, 'systemNotifications')

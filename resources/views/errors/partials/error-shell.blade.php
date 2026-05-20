@@ -1,3 +1,5 @@
+{{-- Error page template rendered when this HTTP status is triggered. --}}
+
 @php
     $tips = $tips ?? [];
     $primaryAction = $primaryAction ?? null;

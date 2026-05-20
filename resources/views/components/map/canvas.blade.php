@@ -1,3 +1,5 @@
+{{-- Reusable Blade component used across multiple RSRS pages. --}}
+
 @props([
     'id' => 'geoMap',
     'height' => '420px',
