@@ -18,8 +18,8 @@ class AutoSpeedReportController extends Controller
 {
     private const REQUIRED_EXCEEDED_SECONDS = 30;
     private const DUPLICATE_WINDOW_SECONDS = 600;
-    private const BASE_SEGMENT_TOLERANCE_METERS = 80;
-    private const MAX_SEGMENT_TOLERANCE_METERS = 350;
+    private const BASE_SEGMENT_TOLERANCE_METERS = 30;
+    private const MAX_SEGMENT_TOLERANCE_METERS = 1;
 
     /**
      * Handle the evaluate workflow for this class.

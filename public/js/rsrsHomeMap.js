@@ -34,6 +34,7 @@
     let autoEvaluationInFlight = false;
     let autoReportInFlight = false;
     let lastAutoTelemetry = null;
+    let pendingInitialPosition = null;
     const reportedRuleIds = new Set();
 
     // Encapsulate one UI behavior so the page stays easier to maintain.
@@ -608,11 +609,33 @@
         );
     }
 
+    // Ask for GPS permission as soon as the home page loads, even before map wiring finishes.
+
+    function requestGpsDetectionEarly() {
+        if (!navigator.geolocation) return;
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                pendingInitialPosition = position;
+
+                if (mapInterface) {
+                    applyPosition(position);
+                    startWatch(true);
+                }
+            },
+            () => {
+                // No-op: normal bootstrap flow will show UI status once map is ready.
+            },
+            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        );
+    }
+
     // Encapsulate one UI behavior so the page stays easier to maintain.
 
     function initWhenMapReady() {
         const mapEl = document.getElementById('mainPublicMap');
         if (!mapEl) return;
+        requestGpsDetectionEarly();
         cacheSpeedWidget();
         updateSpeedDisplay(0, 'Waiting for movement...', false);
         updateSpeedAlert({
@@ -648,6 +671,13 @@
             mapInterface.map.on('dragstart', markUserAdjusted);
             mapInterface.map.on('zoomend', clearFocusedMode);
             mapInterface.map.on('dragend', clearFocusedMode);
+
+            if (pendingInitialPosition) {
+                applyPosition(pendingInitialPosition);
+                startWatch(true);
+                pendingInitialPosition = null;
+                return;
+            }
 
             bootstrapGps(false);
         };
