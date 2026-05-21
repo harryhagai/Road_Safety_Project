@@ -1,0 +1,19 @@
+.rounded-alert {
+    border-radius: 16px !important;
+    padding: 1.6rem;
+    font-family: 'Manrope', 'Segoe UI', sans-serif;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.swal2-title-custom {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.swal2-confirm-btn {
+    padding: 0.6rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 500;
+}
+

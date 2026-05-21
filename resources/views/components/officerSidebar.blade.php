@@ -47,15 +47,9 @@
                 <div class="collapse ps-3 {{ $isOperationsMenuOpen ? 'show' : '' }}" id="operationsMenu">
                     <ul class="nav flex-column">
                         <li class="nav-item mb-1">
-                            <a href="{{ url('/road-officer/road-rules') }}"
-                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/road-rules*') ? 'active is-current fw-bold shadow-sm' : '' }}">
-                                <i class="bi bi-sign-turn-right"></i> Road Rules
-                            </a>
-                        </li>
-                        <li class="nav-item mb-1">
-                            <a href="{{ route('officer.road-segments.index') }}"
-                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/road-segments*') ? 'active is-current fw-bold shadow-sm' : '' }}">
-                                <i class="bi bi-signpost-split"></i> Road Segments
+                            <a href="{{ url('/road-officer/violation-types') }}"
+                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/violation-types*') ? 'active is-current fw-bold shadow-sm' : '' }}">
+                                <i class="bi bi-exclamation-triangle"></i> Violation Types
                             </a>
                         </li>
                         <li class="nav-item mb-1">
@@ -65,9 +59,15 @@
                             </a>
                         </li>
                         <li class="nav-item mb-1">
-                            <a href="{{ url('/road-officer/violation-types') }}"
-                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/violation-types*') ? 'active is-current fw-bold shadow-sm' : '' }}">
-                                <i class="bi bi-exclamation-triangle"></i> Violation Types
+                            <a href="{{ route('officer.road-segments.index') }}"
+                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/road-segments*') ? 'active is-current fw-bold shadow-sm' : '' }}">
+                                <i class="bi bi-signpost-split"></i> Road Segments
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a href="{{ url('/road-officer/road-rules') }}"
+                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/road-rules*') ? 'active is-current fw-bold shadow-sm' : '' }}">
+                                <i class="bi bi-sign-turn-right"></i> Road Rules
                             </a>
                         </li>
                     </ul>
