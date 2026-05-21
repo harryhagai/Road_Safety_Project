@@ -93,7 +93,7 @@
         speedAlertEl.classList.add(`home-speed-alert--${state}`);
         speedAlertIconEl.innerHTML = `<i class="bi ${icons[state] || icons.info}" aria-hidden="true"></i>`;
         speedAlertLabelEl.textContent = options?.label || 'Speed info';
-        speedAlertMessageEl.textContent = options?.message || 'Tunatafuta location yako na speed rule iliyo karibu.';
+        speedAlertMessageEl.textContent = options?.message || 'We are checking your location and the nearest speed rule.';
 
         if (speedAlertLocationEl) {
             speedAlertLocationEl.textContent = `Location: ${options?.location || 'waiting...'}`;
@@ -235,10 +235,10 @@
             updateSpeedDisplay(telemetry.speed_kmh, result.duplicate ? 'Automatic report already submitted' : `Automatic report submitted${reference}`, true);
             updateSpeedAlert({
                 state: 'danger',
-                label: result.duplicate ? 'Report tayari imetumwa' : 'Speed violation imeripotiwa',
+                label: result.duplicate ? 'Report already submitted' : 'Speed violation reported',
                 message: result.duplicate
-                    ? 'Speed yako bado ipo juu ya limit na report ya eneo hili tayari ipo kwenye mfumo.'
-                    : `Auto report imetumwa kwa sababu speed haijashuka ndani ya sekunde 30${reference}.`,
+                    ? 'Your speed is still above the limit, and a report for this area is already in the system.'
+                    : `An automatic report was submitted because the speed did not go down within 30 seconds${reference}.`,
                 location: evaluation?.segment?.name || 'matched road segment',
                 limit: `${Math.round(Number(evaluation.speed_limit_kmh))} km/h`,
                 countdown: 'submitted',
@@ -269,8 +269,8 @@
             }
             updateSpeedAlert({
                 state: 'idle',
-                label: 'Hakuna speed rule karibu',
-                message: 'Location yako haijalingana na road segment yenye speed limit kwenye database.',
+                label: 'No nearby speed rule',
+                message: 'Your location did not match any road segment with a speed limit in the database.',
                 location: 'not matched',
                 limit: 'unknown',
                 countdown: 'inactive',
@@ -286,8 +286,8 @@
             updateSpeedDisplay(telemetry.speed_kmh, `Speed limit ${limitText} active`, telemetry.speed_kmh >= 1);
             updateSpeedAlert({
                 state: 'info',
-                label: 'Speed iko sawa',
-                message: `Speed yako haivunji sheria za eneo hili. Inatakiwa usizidi ${limitText}.`,
+                label: 'Speed is within limit',
+                message: `Your speed is within the rule for this area. Please stay below ${limitText}.`,
                 location: segmentName,
                 limit: limitText,
                 countdown: 'inactive',
@@ -303,8 +303,8 @@
             updateSpeedDisplay(telemetry.speed_kmh, `Limit ${limitText} exceeded for ${Math.round(exceededSeconds)}s`, true);
             updateSpeedAlert({
                 state: 'warning',
-                label: 'Warning: umepitiliza speed',
-                message: `Punguza speed mpaka ${limitText}. Ukibaki juu ya limit, mfumo utatuma auto report.`,
+                label: 'Warning: speed limit exceeded',
+                message: `Reduce speed to ${limitText}. If you stay above the limit, the system will send an automatic report.`,
                 location: segmentName,
                 limit: limitText,
                 countdown: `${Math.ceil(remainingSeconds)}s remaining`,
@@ -315,8 +315,8 @@
         updateSpeedDisplay(telemetry.speed_kmh, 'Submitting automatic speed report...', true);
         updateSpeedAlert({
             state: 'danger',
-            label: 'Danger: auto report inaanza',
-            message: `Speed yako imekaa juu ya ${limitText} kwa sekunde 30. Mfumo unatuma speed violation report.`,
+            label: 'Danger: auto report starting',
+            message: `Your speed stayed above ${limitText} for 30 seconds. The system is submitting a speed violation report.`,
             location: segmentName,
             limit: limitText,
             countdown: 'submitting',
@@ -570,8 +570,8 @@
         updateSpeedDisplay(0, 'Checking GPS speed...', false);
         updateSpeedAlert({
             state: 'idle',
-            label: 'Inasoma location',
-            message: 'Ruhusu GPS ili mfumo ulinganishe coordinates zako na speed limit ya database.',
+            label: 'Reading location',
+            message: 'Allow GPS so the system can match your coordinates to speed limits in the database.',
             location: 'checking GPS...',
             limit: 'unknown',
             countdown: 'inactive',
@@ -593,8 +593,8 @@
                         updateSpeedDisplay(0, 'Speed unavailable right now', false);
                         updateSpeedAlert({
                             state: 'warning',
-                            label: 'Location haipatikani',
-                            message: 'GPS haijapatikana, hivyo speed rule na auto reporting haziwezi kufanya kazi sasa.',
+                            label: 'Location unavailable',
+                            message: 'GPS could not be detected, so speed rules and automatic reporting cannot work right now.',
                             location: 'unavailable',
                             limit: 'unknown',
                             countdown: 'inactive',
@@ -618,7 +618,7 @@
         updateSpeedAlert({
             state: 'idle',
             label: 'Speed info',
-            message: 'Tunatafuta location yako na speed rule iliyo karibu.',
+            message: 'We are checking your location and the nearest speed rule.',
             location: 'waiting...',
             limit: 'unknown',
             countdown: 'inactive',

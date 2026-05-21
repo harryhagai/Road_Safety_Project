@@ -4,8 +4,9 @@
     <div class="header-container">
         <div class="header-branding">
             <div class="header-logo">
-                <img src="{{ asset('img/road-safety-favicon.svg') }}" alt="RSRS Logo"
-                    style="height: 50px; border-radius: 12px;" />
+                <div class="officer-sidebar-logo" aria-hidden="true">
+                    <i class="bi bi-cone-striped officer-sidebar-logo-icon"></i>
+                </div>
             </div>
             <span class="header-name">
                 <span class="header-title">RSRS</span>
