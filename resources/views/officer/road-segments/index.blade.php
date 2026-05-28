@@ -16,6 +16,10 @@
         <i class="bi bi-eraser"></i>
         <span>Clear Path</span>
     </button>
+    <button type="button" class="btn geo-header-btn" id="generateRoadShapeBtn">
+        <i class="bi bi-bezier2"></i>
+        <span>Generate Road Shape</span>
+    </button>
 @endsection
 
 @section('content')
@@ -84,6 +88,11 @@
                     <div class="geo-location-panel geo-location-panel--compact">
                         <div class="geo-location-panel__label">Segment points</div>
                         <div id="segmentPointCount" class="geo-location-panel__value">0 points selected</div>
+                    </div>
+
+                    <div class="geo-location-panel geo-location-panel--compact">
+                        <div class="geo-location-panel__label">Generated points (3m)</div>
+                        <div id="generatedPointCount" class="geo-location-panel__value">0 points generated</div>
                     </div>
 
                     <div class="geo-location-panel">
@@ -173,9 +182,15 @@
                                 <input type="text" class="form-control" id="segment_point_summary" value="0 points"
                                     readonly>
                             </div>
+                            <div class="col-12">
+                                <label for="coordinates_json_preview" class="form-label">Coordinates JSON (3m intervals)</label>
+                                <textarea class="form-control" id="coordinates_json_preview" rows="4" readonly
+                                    placeholder="Will be generated after clicking 'Generate Road Shape'."></textarea>
+                            </div>
                         </div>
 
                         <input type="hidden" name="boundary_coordinates" id="boundary_coordinates">
+                        <input type="hidden" id="coordinates_json_string">
                     </div>
                     <div class="modal-footer geo-modal__footer">
                         <button type="button" class="btn geo-modal__secondary-btn" data-bs-dismiss="modal">
@@ -184,7 +199,7 @@
                         </button>
                         <button type="submit" class="btn geo-modal__primary-btn">
                             <i class="bi bi-check2-circle"></i>
-                            <span>Save segment</span>
+                            <span>Save segment (all coordinates)</span>
                         </button>
                     </div>
                 </form>
@@ -197,11 +212,18 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
     <link rel="stylesheet" href="{{ asset('css/rsrsMap.css') }}">
+    <style>
+        .geo-map-search__result.is-active {
+            border-color: #0d6efd;
+            background: rgba(13, 110, 253, 0.08);
+        }
+    </style>
 @endpush
 
 @section('scripts')
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
 @endsection
 
 @push('scripts')

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Report;
 use App\Models\RoadRule;
+use App\Models\RoadSegment;
 use App\Models\RuleViolation;
 use App\Models\ViolationType;
 use Illuminate\Http\JsonResponse;
@@ -19,7 +20,7 @@ class AutoSpeedReportController extends Controller
     private const REQUIRED_EXCEEDED_SECONDS = 30;
     private const DUPLICATE_WINDOW_SECONDS = 600;
     private const BASE_SEGMENT_TOLERANCE_METERS = 30;
-    private const MAX_SEGMENT_TOLERANCE_METERS = 6;
+    private const MAX_SEGMENT_TOLERANCE_METERS = 120;
 
     /**
      * Handle the evaluate workflow for this class.
@@ -61,6 +62,7 @@ class AutoSpeedReportController extends Controller
         }
 
         $exceededSeconds = $startedAt ? max(0, now()->timestamp - (int) $startedAt) : 0;
+        $reporting = $this->reportingSnapshot((int) $match['rule']->id);
 
         return response()->json([
             'matched' => true,
@@ -69,17 +71,20 @@ class AutoSpeedReportController extends Controller
             'exceeded_seconds' => $exceededSeconds,
             'required_seconds' => self::REQUIRED_EXCEEDED_SECONDS,
             'distance_meters' => round($match['distance_meters'], 1),
+            'matching_buffer_meters' => round($match['matching_buffer_meters'], 1),
             'speed_kmh' => round($speedKmh, 1),
             'speed_limit_kmh' => $match['speed_limit_kmh'],
             'segment' => [
                 'id' => $match['segment']->id,
                 'name' => $match['segment']->segment_name,
+                'db_name' => $match['segment']->segment_name,
             ],
             'rule' => [
                 'id' => $match['rule']->id,
                 'name' => $match['rule']->rule_name,
                 'value' => $match['rule']->rule_value,
             ],
+            'reporting' => $reporting,
         ]);
     }
 
@@ -252,6 +257,8 @@ class AutoSpeedReportController extends Controller
             }
 
             $distance = $this->distanceToPolylineMeters(['lat' => $latitude, 'lng' => $longitude], $points);
+            $segmentBuffer = $this->segmentBufferMeters($rule->segment);
+            $matchingBuffer = max($tolerance, $segmentBuffer);
 
             if (! $nearestMatch || $distance < $nearestMatch['distance_meters']) {
                 $nearestMatch = [
@@ -259,10 +266,11 @@ class AutoSpeedReportController extends Controller
                     'segment' => $rule->segment,
                     'speed_limit_kmh' => $speedLimit,
                     'distance_meters' => $distance,
+                    'matching_buffer_meters' => $matchingBuffer,
                 ];
             }
 
-            if ($distance > $tolerance) {
+            if ($distance > $matchingBuffer) {
                 continue;
             }
 
@@ -272,15 +280,46 @@ class AutoSpeedReportController extends Controller
                     'segment' => $rule->segment,
                     'speed_limit_kmh' => $speedLimit,
                     'distance_meters' => $distance,
+                    'matching_buffer_meters' => $matchingBuffer,
                 ];
             }
         }
 
         return $bestMatch ?: (
-            $nearestMatch && $nearestMatch['distance_meters'] <= self::MAX_SEGMENT_TOLERANCE_METERS
+            $nearestMatch && $nearestMatch['distance_meters'] <= $nearestMatch['matching_buffer_meters']
                 ? $nearestMatch
                 : null
         );
+    }
+
+    /**
+     * Estimate segment detection buffer from road type metadata.
+     */
+    private function segmentBufferMeters(RoadSegment $segment): float
+    {
+        $type = strtolower(trim((string) ($segment->segment_type_name ?? $segment->segment_type ?? '')));
+
+        if ($type === '') {
+            return self::BASE_SEGMENT_TOLERANCE_METERS;
+        }
+
+        if (str_contains($type, 'highway') || str_contains($type, 'trunk') || str_contains($type, 'junction')) {
+            return 40.0;
+        }
+
+        if (str_contains($type, 'primary')) {
+            return 30.0;
+        }
+
+        if (str_contains($type, 'secondary') || str_contains($type, 'arterial')) {
+            return 24.0;
+        }
+
+        if (str_contains($type, 'residential') || str_contains($type, 'local')) {
+            return 15.0;
+        }
+
+        return 20.0;
     }
 
     /**
@@ -536,5 +575,27 @@ class AutoSpeedReportController extends Controller
                 session()->forget($key);
             }
         }
+    }
+
+    /**
+     * Build live reporting snapshot for the matched speed rule.
+     */
+    private function reportingSnapshot(int $ruleId): array
+    {
+        $latestViolation = RuleViolation::query()
+            ->where('rule_id', $ruleId)
+            ->with('report:id,reference_no,status,reported_at')
+            ->latest('id')
+            ->first();
+
+        $latestReport = $latestViolation?->report;
+        $totalReports = RuleViolation::query()->where('rule_id', $ruleId)->count();
+
+        return [
+            'total_reports_for_rule' => $totalReports,
+            'latest_reference_no' => $latestReport?->reference_no,
+            'latest_status' => $latestReport?->status,
+            'latest_reported_at' => optional($latestReport?->reported_at)?->toIso8601String(),
+        ];
     }
 }

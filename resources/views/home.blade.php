@@ -6,7 +6,7 @@
 @section('title', 'RSRS - Road Safety Reporting System')
 
 @push('critical-head')
-    <link rel="stylesheet" href="{{ asset('css/rsrsHomeLoader.css') }}?v={{ filemtime(public_path('css/rsrsHomeLoader.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/rsrsHomeLoader.css') }}">
 @endpush
 
 @push('page_loader')
@@ -61,7 +61,7 @@
                                     We are checking your location and the nearest speed rule.
                                 </div>
                                 <div class="home-speed-alert__meta">
-                                    <span data-home-speed-alert-location>Location: waiting...</span>
+                                    <span data-home-speed-alert-location>Segment: waiting...</span>
                                     <span data-home-speed-alert-limit>Limit: unknown</span>
                                     <span data-home-speed-alert-countdown>Report: inactive</span>
                                 </div>
@@ -78,7 +78,7 @@
 @push('styles')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
     <link rel="stylesheet" href="{{ asset('css/rsrsMap.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/rsrsHomeMap.css') }}?v={{ filemtime(public_path('css/rsrsHomeMap.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/rsrsHomeMap.css') }}">
 @endpush
 
 @section('scripts')
@@ -89,8 +89,8 @@
             csrfToken: @json(csrf_token()),
         };
     </script>
-    <script src="{{ asset('js/rsrsHomeLoader.js') }}?v={{ filemtime(public_path('js/rsrsHomeLoader.js')) }}"></script>
+    <script src="{{ asset('js/rsrsHomeLoader.js') }}"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="{{ asset('js/rsrsMapPicker.js') }}?v={{ filemtime(public_path('js/rsrsMapPicker.js')) }}"></script>
-    <script src="{{ asset('js/rsrsHomeMap.js') }}?v={{ filemtime(public_path('js/rsrsHomeMap.js')) }}"></script>
+    <script src="{{ asset('js/rsrsMapPicker.js') }}"></script>
+    <script src="{{ asset('js/rsrsHomeMap.js') }}"></script>
 @endsection

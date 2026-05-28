@@ -37,8 +37,11 @@
     let pendingInitialPosition = null;
     const reportedRuleIds = new Set();
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
+    // =========================
+    // UI helpers
+    // =========================
 
+    // Cache speed widget DOM elements once so repeated UI updates stay cheap.
     function cacheSpeedWidget() {
         if (speedWidget) return;
 
@@ -54,8 +57,7 @@
         speedAlertCountdownEl = document.querySelector('[data-home-speed-alert-countdown]');
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
+    // Render live speed value + activity state in the circular speed widget.
     function updateSpeedDisplay(speedKmh, statusText, isLive) {
         cacheSpeedWidget();
         if (!speedWidget || !speedValueEl || !speedStatusEl) return;
@@ -69,8 +71,7 @@
         speedWidget.classList.toggle('is-idle', !isLive);
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
+    // Update alert panel details (state, icon, labels, and status metadata).
     function updateSpeedAlert(options) {
         cacheSpeedWidget();
         if (!speedAlertEl || !speedAlertIconEl || !speedAlertLabelEl || !speedAlertMessageEl) return;
@@ -97,7 +98,7 @@
         speedAlertMessageEl.textContent = options?.message || 'We are checking your location and the nearest speed rule.';
 
         if (speedAlertLocationEl) {
-            speedAlertLocationEl.textContent = `Location: ${options?.location || 'waiting...'}`;
+            speedAlertLocationEl.textContent = `Segment: ${options?.location || 'waiting...'}`;
         }
 
         if (speedAlertLimitEl) {
@@ -109,8 +110,11 @@
         }
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
+    // =========================
+    // Location + speed math
+    // =========================
 
+    // Resolve speed in km/h from GPS speed; fallback to distance/time when speed is missing.
     function resolveSpeedKmh(position, now, currentPoint) {
         const directSpeed = Number(position.coords.speed);
         if (Number.isFinite(directSpeed) && directSpeed >= 0) {
@@ -130,8 +134,7 @@
         return (movedMeters / elapsedSeconds) * 3.6;
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
+    // Emit one-time event when first usable location/speed payload is available.
     function publishLocationReady(position, speedKmh) {
         if (hasPublishedLocationReady) return;
 
@@ -152,8 +155,39 @@
         }));
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
+    // Compute distance between two GPS points using the haversine formula.
+    function distanceInMeters(a, b) {
+        const toRad = (value) => (value * Math.PI) / 180;
+        const earthRadius = 6371000;
+        const dLat = toRad(b.lat - a.lat);
+        const dLng = toRad(b.lng - a.lng);
+        const lat1 = toRad(a.lat);
+        const lat2 = toRad(b.lat);
+        const sinLat = Math.sin(dLat / 2);
+        const sinLng = Math.sin(dLng / 2);
+        const h = sinLat * sinLat + Math.cos(lat1) * Math.cos(lat2) * sinLng * sinLng;
 
+        return 2 * earthRadius * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+    }
+
+    // Compute movement bearing (0-360) from previous point to current point.
+    function bearingDegrees(a, b) {
+        const toRad = (value) => (value * Math.PI) / 180;
+        const toDeg = (value) => (value * 180) / Math.PI;
+        const lat1 = toRad(a.lat);
+        const lat2 = toRad(b.lat);
+        const dLng = toRad(b.lng - a.lng);
+        const y = Math.sin(dLng) * Math.cos(lat2);
+        const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+
+        return (toDeg(Math.atan2(y, x)) + 360) % 360;
+    }
+
+    // =========================
+    // Auto speed reporting
+    // =========================
+
+    // Read required backend routes/token for auto reporting.
     function getAutoReportingConfig() {
         const config = window.rsrsAutoSpeedReporting || {};
 
@@ -164,6 +198,7 @@
         return config;
     }
 
+    // POST JSON to backend with CSRF and normalize API error handling.
     async function postAutoJson(url, payload, csrfToken) {
         const response = await fetch(url, {
             method: 'POST',
@@ -189,8 +224,7 @@
         return data;
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
+    // Build telemetry payload from current geolocation fix.
     function buildAutoTelemetry(position, speedKmh) {
         const latitude = Number(position.coords.latitude);
         const longitude = Number(position.coords.longitude);
@@ -206,13 +240,13 @@
         };
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
+    // Allow same rule to be reported again after speed goes back to safe state.
     function resetReportedRuleIfSafe(evaluation) {
         if (!evaluation?.matched || !evaluation?.rule?.id || evaluation.exceeded) return;
         reportedRuleIds.delete(Number(evaluation.rule.id));
     }
 
+    // Submit auto-report request once violation threshold is met.
     async function submitAutoReport(evaluation, telemetry) {
         const config = getAutoReportingConfig();
         const ruleId = Number(evaluation?.rule?.id);
@@ -259,8 +293,7 @@
         }
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
+    // Convert evaluation response into UI state and trigger report submission when needed.
     function handleAutoEvaluation(evaluation, telemetry) {
         resetReportedRuleIfSafe(evaluation);
 
@@ -281,7 +314,14 @@
 
         const limit = Number(evaluation.speed_limit_kmh);
         const limitText = Number.isFinite(limit) ? `${Math.round(limit)} km/h` : 'saved limit';
-        const segmentName = evaluation.segment?.name || 'matched road segment';
+        const segmentName = evaluation.segment?.db_name || evaluation.segment?.name || 'matched road segment';
+        const matchingBufferMeters = Number(evaluation.matching_buffer_meters || 0);
+        const bufferMeta = Number.isFinite(matchingBufferMeters) && matchingBufferMeters > 0
+            ? `Buffer: ${Math.round(matchingBufferMeters)}m`
+            : null;
+        const latestReference = evaluation.reporting?.latest_reference_no || null;
+        const totalReports = Number(evaluation.reporting?.total_reports_for_rule || 0);
+        const reportMeta = latestReference ? `Last report: ${latestReference}` : 'No reports yet';
 
         if (!evaluation.exceeded) {
             updateSpeedDisplay(telemetry.speed_kmh, `Speed limit ${limitText} active`, telemetry.speed_kmh >= 1);
@@ -291,7 +331,7 @@
                 message: `Your speed is within the rule for this area. Please stay below ${limitText}.`,
                 location: segmentName,
                 limit: limitText,
-                countdown: 'inactive',
+                countdown: `${reportMeta} | Total: ${totalReports}${bufferMeta ? ` | ${bufferMeta}` : ''}`,
             });
             return;
         }
@@ -308,7 +348,7 @@
                 message: `Reduce speed to ${limitText}. If you stay above the limit, the system will send an automatic report.`,
                 location: segmentName,
                 limit: limitText,
-                countdown: `${Math.ceil(remainingSeconds)}s remaining`,
+                countdown: `${Math.ceil(remainingSeconds)}s remaining | ${reportMeta}${bufferMeta ? ` | ${bufferMeta}` : ''}`,
             });
             return;
         }
@@ -325,8 +365,7 @@
         submitAutoReport(evaluation, telemetry);
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
+    // Throttle evaluate calls so backend is not hit on every GPS tick.
     function evaluateAutoReporting(position, speedKmh, now) {
         const config = getAutoReportingConfig();
 
@@ -355,8 +394,11 @@
             });
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
+    // =========================
+    // Map location controls
+    // =========================
 
+    // Sync location button visual state and accessible label.
     function setLocationButtonMode(mode) {
         if (!locationButton) return;
 
@@ -367,31 +409,27 @@
         locationButton.setAttribute('aria-label', buttonTitle);
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
+    // Toggle sequence: idle -> focus -> detail -> focus...
     function getNextLocationViewMode() {
         if (locationViewMode === 'idle') return 'focus';
         if (locationViewMode === 'focus') return 'detail';
         return 'focus';
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
+    // Resolve target zoom while respecting map max zoom.
     function getTargetZoom(mode) {
         if (!mapInterface?.map) return LOCATION_FOCUS_ZOOM;
         const maxZoom = Number(mapInterface.map.getMaxZoom()) || LOCATION_DETAIL_ZOOM;
         return Math.min(mode === 'detail' ? LOCATION_DETAIL_ZOOM : LOCATION_FOCUS_ZOOM, maxZoom);
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
+    // Smoothly move map to user point at requested view mode.
     function flyToUser(lat, lng, mode) {
         if (!mapInterface?.map) return;
         mapInterface.map.flyTo([lat, lng], getTargetZoom(mode), FLY_ANIMATION);
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
+    // Disable location button while geolocation request is in progress.
     function setLocatingState(isLocating) {
         if (!locationButton) return;
 
@@ -405,8 +443,7 @@
         setLocationButtonMode(locationViewMode);
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
+    // Create leaflet button that re-centers user and toggles focus/detail zoom.
     function createLocationControl() {
         if (!mapInterface?.map || locationButton) return;
 
@@ -455,38 +492,7 @@
         setLocationButtonMode(locationViewMode);
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
-    function distanceInMeters(a, b) {
-        const toRad = (value) => (value * Math.PI) / 180;
-        const earthRadius = 6371000;
-        const dLat = toRad(b.lat - a.lat);
-        const dLng = toRad(b.lng - a.lng);
-        const lat1 = toRad(a.lat);
-        const lat2 = toRad(b.lat);
-        const sinLat = Math.sin(dLat / 2);
-        const sinLng = Math.sin(dLng / 2);
-        const h = sinLat * sinLat + Math.cos(lat1) * Math.cos(lat2) * sinLng * sinLng;
-
-        return 2 * earthRadius * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
-    }
-
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
-    function bearingDegrees(a, b) {
-        const toRad = (value) => (value * Math.PI) / 180;
-        const toDeg = (value) => (value * 180) / Math.PI;
-        const lat1 = toRad(a.lat);
-        const lat2 = toRad(b.lat);
-        const dLng = toRad(b.lng - a.lng);
-        const y = Math.sin(dLng) * Math.cos(lat2);
-        const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
-
-        return (toDeg(Math.atan2(y, x)) + 360) % 360;
-    }
-
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
+    // Apply new position fix to map marker, speed UI, centering logic, and auto-eval.
     function applyPosition(position) {
         if (!mapInterface) return;
 
@@ -534,8 +540,7 @@
         }
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
+    // Start/refresh geolocation watch with configurable accuracy mode.
     function startWatch(highAccuracy) {
         if (!navigator.geolocation || !mapInterface) return;
 
@@ -561,8 +566,7 @@
         );
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
+    // Bootstrap GPS with high-accuracy first, then fallback strategy for reliability.
     function bootstrapGps(force) {
         if (!navigator.geolocation || !mapInterface) return;
         if (!force && watchId !== null) return;
@@ -609,8 +613,7 @@
         );
     }
 
-    // Ask for GPS permission as soon as the home page loads, even before map wiring finishes.
-
+    // Request GPS early so first map interaction already has location context.
     function requestGpsDetectionEarly() {
         if (!navigator.geolocation) return;
 
@@ -630,8 +633,11 @@
         );
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
+    // =========================
+    // Entry point
+    // =========================
 
+    // Wait for map API, attach handlers, then start GPS lifecycle.
     function initWhenMapReady() {
         const mapEl = document.getElementById('mainPublicMap');
         if (!mapEl) return;
@@ -690,6 +696,7 @@
         mapEl.addEventListener('rsrs:map-ready', wireUp, { once: true });
     }
 
+    // Initialize once DOM is ready.
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initWhenMapReady);
     } else {

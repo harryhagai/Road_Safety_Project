@@ -1,43 +1,23 @@
-// Frontend helper for rsrsRoadSegments interactions in the RSRS interface.
+// Road-segment mapping flow with OSRM route fitting and 3-meter interpolation.
 
 (function () {
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-    function getDistanceInKm(pointA, pointB) {
-        const toRadians = (value) => (value * Math.PI) / 180;
-        const earthRadiusKm = 6371;
+    const DAR_ES_SALAAM_CENTER = [-6.7924, 39.2083];
+    const MIN_POINTS_FOR_ROUTE = 2;
+    const INTERVAL_METERS = 3;
+    const SEARCH_MIN_CHARS = 2;
 
-        const latDelta = toRadians(pointB.lat - pointA.lat);
-        const lngDelta = toRadians(pointB.lng - pointA.lng);
-        const a =
-            Math.sin(latDelta / 2) * Math.sin(latDelta / 2) +
-            Math.cos(toRadians(pointA.lat)) *
-                Math.cos(toRadians(pointB.lat)) *
-                Math.sin(lngDelta / 2) *
-                Math.sin(lngDelta / 2);
-
-        return earthRadiusKm * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
-    function createGeometry(points) {
-        return {
-            type: 'Feature',
-            geometry: {
-                type: 'LineString',
-                coordinates: points.map((point) => [point.lng, point.lat]),
-            },
-            properties: {
-                point_count: points.length,
-            },
-        };
-    }
-
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
-    function createPointIcon(index, isLatest) {
+    function createLocationPointIcon(index) {
         return L.divIcon({
-            className: `geo-point-marker${isLatest ? ' geo-point-marker--latest' : ''}`,
+            className: 'geo-point-marker',
             html: `
                 <div class="geo-point-marker__pin">
                     <i class="bi bi-geo-alt-fill"></i>
@@ -50,696 +30,541 @@
         });
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
-    function getSegmentNameSuggestion(points) {
-        if (!Array.isArray(points) || points.length === 0) {
-            return '';
-        }
-
-        const firstPoint = points[0];
-        const lastPoint = points[points.length - 1];
-
-        const firstRoad = firstPoint.address?.road || firstPoint.address?.pedestrian || firstPoint.address?.footway || null;
-        const lastRoad = lastPoint.address?.road || lastPoint.address?.pedestrian || lastPoint.address?.footway || null;
-
-        const firstArea =
-            firstPoint.address?.suburb ||
-            firstPoint.address?.neighbourhood ||
-            firstPoint.address?.ward ||
-            firstPoint.address?.city_district ||
-            firstPoint.address?.city ||
-            null;
-        const lastArea =
-            lastPoint.address?.suburb ||
-            lastPoint.address?.neighbourhood ||
-            lastPoint.address?.ward ||
-            lastPoint.address?.city_district ||
-            lastPoint.address?.city ||
-            null;
-
-        if (firstRoad && lastRoad && firstRoad === lastRoad) {
-            return `${firstRoad} segment`;
-        }
-
-        if (firstRoad && lastRoad) {
-            return `${firstRoad} - ${lastRoad} link`;
-        }
-
-        if (firstArea && lastArea && firstArea === lastArea) {
-            return `${firstArea} segment`;
-        }
-
-        if (firstArea && lastArea) {
-            return `${firstArea} - ${lastArea} segment`;
-        }
-
-        if (firstPoint.displayName) {
-            return `${firstPoint.displayName.split(',')[0]} segment`;
-        }
-
-        return '';
+    function toLngLat(points) {
+        return points.map((point) => [Number(point.lng), Number(point.lat)]);
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
-    function getUniqueSegmentName(candidate, existingNames) {
-        const normalizedExisting = new Set(
-            existingNames
-                .filter(Boolean)
-                .map((name) => String(name).trim().toLowerCase())
-        );
-
-        const baseName = String(candidate || '').trim();
-
-        if (!baseName) {
-            return '';
+    function lineLengthKm(lineCoordinates) {
+        if (!window.turf || !Array.isArray(lineCoordinates) || lineCoordinates.length < 2) {
+            return 0;
         }
 
-        if (!normalizedExisting.has(baseName.toLowerCase())) {
-            return baseName;
-        }
-
-        let suffix = 2;
-        let nextCandidate = `${baseName} (${suffix})`;
-
-        while (normalizedExisting.has(nextCandidate.toLowerCase())) {
-            suffix += 1;
-            nextCandidate = `${baseName} (${suffix})`;
-        }
-
-        return nextCandidate;
+        return turf.length(turf.lineString(lineCoordinates), { units: 'kilometers' });
     }
 
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
-    function isSamePoint(point, lat, lng) {
-        return (
-            Math.abs(Number(point.lat) - Number(lat)) < 0.000001 &&
-            Math.abs(Number(point.lng) - Number(lng)) < 0.000001
-        );
-    }
-
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
-    function escapeHtml(value) {
-        return String(value ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-    }
-
-    // Encapsulate one UI behavior so the page stays easier to maintain.
-
-    function getSearchResultLabel(result) {
-        if (result?.label) {
-            return String(result.label).trim();
+    function densifyEveryMeters(lineCoordinates, everyMeters) {
+        if (!window.turf || !Array.isArray(lineCoordinates) || lineCoordinates.length < 2) {
+            return [];
         }
 
-        if (!result?.subtitle) {
-            return 'Unknown location';
+        const line = turf.lineString(lineCoordinates);
+        const totalKm = turf.length(line, { units: 'kilometers' });
+        const stepKm = everyMeters / 1000;
+
+        if (totalKm <= 0 || stepKm <= 0) {
+            return lineCoordinates;
         }
 
-        return String(result.subtitle).split(',')[0].trim() || result.subtitle;
+        const sampled = [];
+        for (let distanceKm = 0; distanceKm <= totalKm; distanceKm += stepKm) {
+            const along = turf.along(line, distanceKm, { units: 'kilometers' });
+            sampled.push(along.geometry.coordinates);
+        }
+
+        const endPoint = lineCoordinates[lineCoordinates.length - 1];
+        const last = sampled[sampled.length - 1];
+        if (!last || Math.abs(last[0] - endPoint[0]) > 1e-7 || Math.abs(last[1] - endPoint[1]) > 1e-7) {
+            sampled.push(endPoint);
+        }
+
+        return sampled;
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const mapRoot = document.getElementById('roadSegmentMapLab');
+    async function fetchOsrmRoute(points) {
+        const coordinates = points.map((point) => `${point.lng},${point.lat}`).join(';');
+        const url = `https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson&steps=false`;
+        const response = await fetch(url, { method: 'GET' });
+        const data = await response.json().catch(() => ({}));
 
-        if (!mapRoot || !mapRoot.mapApi) {
+        if (!response.ok || data.code !== 'Ok' || !Array.isArray(data.routes) || !data.routes[0]?.geometry?.coordinates) {
+            throw new Error(data.message || 'OSRM route generation failed.');
+        }
+
+        return data.routes[0].geometry.coordinates;
+    }
+
+    async function fetchDirectNominatim(query) {
+        const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&limit=6&addressdetails=0&countrycodes=tz`;
+        const response = await fetch(url, {
+            headers: {
+                Accept: 'application/json',
+            },
+        });
+        const payload = await response.json().catch(() => []);
+        if (!response.ok || !Array.isArray(payload)) {
+            return [];
+        }
+
+        return payload
+            .map((item) => ({
+                label: String(item.display_name || 'Unknown location').split(',')[0] || 'Unknown location',
+                subtitle: String(item.display_name || ''),
+                lat: Number(item.lat),
+                lng: Number(item.lon),
+                provider: 'nominatim-direct',
+            }))
+            .filter((item) => Number.isFinite(item.lat) && Number.isFinite(item.lng));
+    }
+
+    function initializeRoadSegmentMap(mapRoot) {
+        if (!mapRoot?.mapApi || !window.L) {
             return;
         }
 
         const map = mapRoot.mapApi.map;
-        const existingSegments = window.roadSegmentPage?.existingSegments || [];
-        const existingSegmentNames = existingSegments.map((segment) => segment.segment_name);
+        map.setView(DAR_ES_SALAAM_CENTER, Math.max(12, map.getZoom() || 12));
+
         const selectedPoints = [];
+        let osrmLineCoordinates = [];
+        let interpolatedCoordinates = [];
 
         const pointCountTarget = document.getElementById('segmentPointCount');
+        const generatedPointCountTarget = document.getElementById('generatedPointCount');
+        const selectedCoordinatesPanel = document.getElementById('selectedCoordinatesPanel');
         const lengthTarget = document.getElementById('segmentLengthPreview');
-        const openModalBtn = document.getElementById('openSegmentModalBtn');
-        const undoBtn = document.getElementById('undoSegmentPointBtn');
-        const clearBtn = document.getElementById('clearSegmentPointsBtn');
         const boundaryInput = document.getElementById('boundary_coordinates');
+        const coordinatesJsonString = document.getElementById('coordinates_json_string');
+        const coordinatesJsonPreview = document.getElementById('coordinates_json_preview');
         const pointSummary = document.getElementById('segment_point_summary');
         const lengthInput = document.getElementById('length_km');
-        const modalElement = document.getElementById('createRoadSegmentModal');
-        const segmentNameInput = document.getElementById('segment_name');
+        const generateBtn = document.getElementById('generateRoadShapeBtn');
+        const undoBtn = document.getElementById('undoSegmentPointBtn');
+        const clearBtn = document.getElementById('clearSegmentPointsBtn');
+        const openModalBtn = document.getElementById('openSegmentModalBtn');
+        const form = document.getElementById('roadSegmentForm');
         const locationSearchInput = document.getElementById('roadSegmentLocationSearch');
         const locationSearchResults = document.getElementById('roadSegmentLocationSearchResults');
         const locationSearchStatus = document.getElementById('roadSegmentLocationSearchStatus');
         const locationSearchClear = document.getElementById('roadSegmentLocationSearchClear');
 
-        const pointLayer = L.layerGroup().addTo(map);
-        const existingLayer = L.layerGroup().addTo(map);
-        let workingLine = null;
-        let searchDebounceHandle = null;
+        const pickedLayer = L.layerGroup().addTo(map);
+        const routeLayer = L.layerGroup().addTo(map);
+        const dotsLayer = L.layerGroup().addTo(map);
         let searchController = null;
-        let searchSequence = 0;
-        let activeSearchResults = [];
+        let searchDebounce = null;
+        let activeResults = [];
         let activeResultIndex = -1;
         const searchCache = new Map();
-        let previewedResultKey = null;
 
-        if (segmentNameInput && !segmentNameInput.value.trim()) {
-            segmentNameInput.dataset.autoSuggested = 'true';
-        }
-
-        // Encapsulate one UI behavior so the page stays easier to maintain.
-
-        function renderExistingSegments() {
-            existingLayer.clearLayers();
-
-            existingSegments.forEach((segment) => {
-                const coordinates = segment.boundary_coordinates?.geometry?.coordinates || [];
-
-                if (!Array.isArray(coordinates) || coordinates.length < 2) {
-                    return;
-                }
-
-                const latLngs = coordinates.map((coordinate) => [coordinate[1], coordinate[0]]);
-                const polyline = L.polyline(latLngs, {
-                    color: '#7d8ca3',
-                    weight: 4,
-                    opacity: 0.55,
-                }).addTo(existingLayer);
-
-                polyline.bindTooltip(segment.segment_name || 'Road segment');
-            });
-        }
-
-        // Encapsulate one UI behavior so the page stays easier to maintain.
-
-        function calculateLength(points) {
-            if (points.length < 2) {
-                return 0;
-            }
-
-            let total = 0;
-
-            for (let index = 1; index < points.length; index += 1) {
-                total += getDistanceInKm(points[index - 1], points[index]);
-            }
-
-            return total;
-        }
-
-        // Encapsulate one UI behavior so the page stays easier to maintain.
-
-        function refreshWorkingSegment() {
-            pointLayer.clearLayers();
-
-            selectedPoints.forEach((point, index) => {
-                const isLatest = index === selectedPoints.length - 1;
-                L.marker([point.lat, point.lng], {
-                    icon: createPointIcon(index, isLatest),
-                })
-                    .bindTooltip(`Point ${index + 1}`)
-                    .addTo(pointLayer);
-            });
-
-            if (workingLine) {
-                map.removeLayer(workingLine);
-                workingLine = null;
-            }
-
-            if (selectedPoints.length >= 2) {
-                workingLine = L.polyline(
-                    selectedPoints.map((point) => [point.lat, point.lng]),
-                    {
-                        color: '#0d6efd',
-                        weight: 5,
-                        opacity: 0.9,
-                    }
-                ).addTo(map);
-            }
-
-            const lengthKm = calculateLength(selectedPoints);
-            const geometry = selectedPoints.length >= 2 ? createGeometry(selectedPoints) : null;
-
+        function updatePanels() {
             if (pointCountTarget) {
-                pointCountTarget.textContent = `${selectedPoints.length} point${selectedPoints.length === 1 ? '' : 's'} selected`;
+                pointCountTarget.textContent = `${selectedPoints.length} points selected`;
             }
 
-            if (lengthTarget) {
-                lengthTarget.textContent = `${lengthKm.toFixed(2)} km`;
-            }
-
-            if (lengthInput) {
-                lengthInput.value = lengthKm > 0 ? lengthKm.toFixed(2) : '';
+            if (generatedPointCountTarget) {
+                generatedPointCountTarget.textContent = `${interpolatedCoordinates.length} points generated`;
             }
 
             if (pointSummary) {
-                pointSummary.value = `${selectedPoints.length} point${selectedPoints.length === 1 ? '' : 's'}`;
+                pointSummary.value = `${selectedPoints.length} selected / ${interpolatedCoordinates.length} generated`;
             }
 
-            if (boundaryInput) {
-                boundaryInput.value = geometry ? JSON.stringify(geometry) : '';
+            if (selectedCoordinatesPanel) {
+                if (selectedPoints.length === 0) {
+                    selectedCoordinatesPanel.textContent = 'Click on the map to choose a location.';
+                } else {
+                    const last = selectedPoints[selectedPoints.length - 1];
+                    selectedCoordinatesPanel.textContent = `Last point: ${last.lat.toFixed(6)}, ${last.lng.toFixed(6)}`;
+                }
             }
 
-            if (openModalBtn) {
-                openModalBtn.disabled = selectedPoints.length < 2;
+            const lengthKm = lineLengthKm(osrmLineCoordinates);
+            if (lengthTarget) {
+                lengthTarget.textContent = `${lengthKm.toFixed(2)} km`;
             }
-
-            if (segmentNameInput?.dataset.autoSuggested !== 'false') {
-                const suggestedName = getUniqueSegmentName(
-                    getSegmentNameSuggestion(selectedPoints),
-                    existingSegmentNames
-                );
-                segmentNameInput.value = suggestedName;
+            if (lengthInput) {
+                lengthInput.value = lengthKm > 0 ? lengthKm.toFixed(2) : '';
             }
         }
 
-        // Encapsulate one UI behavior so the page stays easier to maintain.
-
-        function setSearchStatus(message, options = {}) {
+        function setSearchStatus(message) {
             if (locationSearchStatus) {
-                if (options.loading) {
-                    locationSearchStatus.innerHTML = `
-                        <span class="geo-map-search__status-inline">
-                            <span class="geo-map-search__spinner" aria-hidden="true"></span>
-                            <span>${escapeHtml(message)}</span>
-                        </span>
-                    `;
-                    return;
-                }
-
                 locationSearchStatus.textContent = message;
             }
         }
 
-        // Encapsulate one UI behavior so the page stays easier to maintain.
+        function renderSearchResults(results) {
+            if (!locationSearchResults) return;
 
-        function getResultKey(result) {
-            return `${Number(result?.lat).toFixed(6)}:${Number(result?.lng).toFixed(6)}`;
-        }
-
-        // Encapsulate one UI behavior so the page stays easier to maintain.
-
-        function hideSearchResults() {
-            activeSearchResults = [];
+            activeResults = Array.isArray(results) ? results : [];
             activeResultIndex = -1;
-
-            if (locationSearchResults) {
+            if (activeResults.length === 0) {
                 locationSearchResults.hidden = true;
                 locationSearchResults.innerHTML = '';
-            }
-        }
-
-        // Encapsulate one UI behavior so the page stays easier to maintain.
-
-        function previewSearchResult(result, options = {}) {
-            if (!result || typeof result.lat !== 'number' || typeof result.lng !== 'number') {
+                mapRoot.mapApi.clearPreviewLocation?.();
                 return;
             }
 
-            const resultKey = getResultKey(result);
-            const force = options.force === true;
-
-            if (!force && previewedResultKey === resultKey) {
-                return;
-            }
-
-            previewedResultKey = resultKey;
-            mapRoot.mapApi.previewLocation?.(result.lat, result.lng, {
-                zoom: Number.isFinite(options.zoom) ? options.zoom : 16,
-                animate: options.animate !== false,
-            });
-        }
-
-        // Encapsulate one UI behavior so the page stays easier to maintain.
-
-        function clearSearchPreview() {
-            previewedResultKey = null;
-            mapRoot.mapApi.clearPreviewLocation?.();
-        }
-
-        // Encapsulate one UI behavior so the page stays easier to maintain.
-
-        function renderSearchResults(results) {
-            activeSearchResults = Array.isArray(results) ? results : [];
-            activeResultIndex = -1;
-
-            if (!locationSearchResults || activeSearchResults.length === 0) {
-                hideSearchResults();
-                return;
-            }
-
-            locationSearchResults.innerHTML = activeSearchResults
-                .map(function (result, index) {
-                    const title = getSearchResultLabel(result);
-                    const meta = result.subtitle || 'Location result';
-
+            locationSearchResults.hidden = false;
+            locationSearchResults.innerHTML = activeResults
+                .map((result, index) => {
+                    const label = String(result.label || result.display_name || 'Unknown location');
+                    const subtitle = String(result.subtitle || result.display_name || '');
                     return `
                         <button type="button" class="geo-map-search__result" data-location-search-result-index="${index}">
-                            <span class="geo-map-search__result-title">${escapeHtml(title)}</span>
-                            <span class="geo-map-search__result-meta">${escapeHtml(meta)}</span>
+                            <span class="geo-map-search__result-title">${escapeHtml(label)}</span>
+                            <span class="geo-map-search__result-meta">${escapeHtml(subtitle)}</span>
                         </button>
                     `;
                 })
                 .join('');
-            locationSearchResults.hidden = false;
         }
 
-        // Encapsulate one UI behavior so the page stays easier to maintain.
-
-        function updateHighlightedResult() {
-            if (!locationSearchResults) {
+        function focusResultByIndex(index, shouldPreview = true) {
+            if (!locationSearchResults || activeResults.length === 0) {
                 return;
             }
 
+            activeResultIndex = Math.max(0, Math.min(index, activeResults.length - 1));
             locationSearchResults
                 .querySelectorAll('[data-location-search-result-index]')
-                .forEach(function (element, index) {
-                    element.classList.toggle('is-active', index === activeResultIndex);
-                });
+                .forEach((el, idx) => el.classList.toggle('is-active', idx === activeResultIndex));
+
+            const result = activeResults[activeResultIndex];
+            const lat = Number(result?.lat);
+            const lng = Number(result?.lng);
+            if (shouldPreview && Number.isFinite(lat) && Number.isFinite(lng)) {
+                mapRoot.mapApi.previewLocation?.(lat, lng, { zoom: 16, animate: true });
+            }
         }
 
-        // Encapsulate one UI behavior so the page stays easier to maintain.
-
-        function focusSearchResult(index) {
-            if (index < 0 || index >= activeSearchResults.length) {
-                activeResultIndex = -1;
-                updateHighlightedResult();
-                return;
-            }
-
-            activeResultIndex = index;
-            updateHighlightedResult();
-            previewSearchResult(activeSearchResults[index], {
-                zoom: 16,
-                animate: true,
-                force: true,
-            });
-            locationSearchResults
-                ?.querySelector(`[data-location-search-result-index="${index}"]`)
-                ?.scrollIntoView({ block: 'nearest' });
-        }
-
-        // Encapsulate one UI behavior so the page stays easier to maintain.
-
-        function applySearchSelection(result) {
-            if (!result || typeof result.lat !== 'number' || typeof result.lng !== 'number') {
-                return;
-            }
-
-            mapRoot.mapApi.centerOn(result.lat, result.lng, 17, true);
-            clearSearchPreview();
-            mapRoot.mapApi.selectPoint(result.lat, result.lng);
-
-            if (locationSearchInput) {
-                locationSearchInput.value = result.subtitle || result.label || '';
-            }
-
-            if (locationSearchClear) {
-                locationSearchClear.hidden = !locationSearchInput?.value.trim();
-            }
-
-            setSearchStatus('Location found. You can now continue clicking points on the map to trace the segment.');
-            hideSearchResults();
-        }
-
-        async function performLocationSearch(query) {
-            if (!locationSearchInput || !mapRoot.mapApi?.config?.searchUrl) {
-                return;
-            }
-
-            const normalizedQuery = query.toLowerCase();
-
-            if (searchCache.has(normalizedQuery)) {
-                const cachedResults = searchCache.get(normalizedQuery) || [];
-                renderSearchResults(cachedResults);
-
-                if (cachedResults[0]) {
-                    previewSearchResult(cachedResults[0], {
-                        zoom: 16,
-                        animate: true,
-                        force: true,
-                    });
-                }
-
-                setSearchStatus(
-                    cachedResults.length
-                        ? `Found ${cachedResults.length} matching location${cachedResults.length === 1 ? '' : 's'}.`
-                        : `No locations found for "${query}".`
-                );
+        async function runLocationSearch(query) {
+            if (!mapRoot.mapApi?.config?.searchUrl) {
+                setSearchStatus('Search service unavailable.');
                 return;
             }
 
             if (searchController) {
                 searchController.abort();
             }
+            const cacheKey = query.toLowerCase();
+            if (searchCache.has(cacheKey)) {
+                const cached = searchCache.get(cacheKey);
+                renderSearchResults(cached);
+                setSearchStatus(cached.length > 0 ? `Found ${cached.length} location(s).` : 'No matching locations found.');
+                return;
+            }
 
             searchController = new AbortController();
-            searchSequence += 1;
-            const currentSequence = searchSequence;
-
-            setSearchStatus('Searching locations...', { loading: true });
+            setSearchStatus('Searching locations...');
 
             try {
                 const response = await fetch(
                     `${mapRoot.mapApi.config.searchUrl}?query=${encodeURIComponent(query)}`,
-                    {
-                        headers: {
-                            Accept: 'application/json',
-                        },
-                        signal: searchController.signal,
-                    }
+                    { headers: { Accept: 'application/json' }, signal: searchController.signal }
                 );
+                const payload = await response.json().catch(() => ({}));
+                const items = Array.isArray(payload?.results) ? payload.results : (Array.isArray(payload) ? payload : []);
+                searchCache.set(cacheKey, items);
 
-                if (!response.ok) {
-                    throw new Error('Failed to search locations.');
-                }
-
-                const payload = await response.json();
-
-                if (currentSequence !== searchSequence) {
+                if (items.length > 0) {
+                    renderSearchResults(items);
+                    setSearchStatus(`Found ${items.length} location(s).`);
                     return;
                 }
 
-                const results = Array.isArray(payload.results) ? payload.results : [];
-                searchCache.set(normalizedQuery, results);
-
-                if (results.length === 0) {
-                    hideSearchResults();
-                    clearSearchPreview();
-                    setSearchStatus(payload.message || `No locations found for "${query}".`);
+                const fallbackItems = await fetchDirectNominatim(query);
+                if (fallbackItems.length > 0) {
+                    searchCache.set(cacheKey, fallbackItems);
+                    renderSearchResults(fallbackItems);
+                    setSearchStatus(`Found ${fallbackItems.length} location(s) via browser fallback.`);
                     return;
                 }
 
-                renderSearchResults(results);
-                previewSearchResult(results[0], {
-                    zoom: 16,
-                    animate: true,
-                    force: true,
-                });
-                setSearchStatus(payload.message || `Found ${results.length} matching location${results.length === 1 ? '' : 's'}.`);
+                renderSearchResults([]);
+                setSearchStatus(payload?.message || 'No matching locations found.');
             } catch (error) {
-                if (error.name === 'AbortError') {
+                if (error.name === 'AbortError') return;
+                const fallbackItems = await fetchDirectNominatim(query).catch(() => []);
+                if (fallbackItems.length > 0) {
+                    searchCache.set(query.toLowerCase(), fallbackItems);
+                    renderSearchResults(fallbackItems);
+                    setSearchStatus(`Found ${fallbackItems.length} location(s) via browser fallback.`);
                     return;
                 }
 
-                hideSearchResults();
-                clearSearchPreview();
-                setSearchStatus('Location search failed. Please try again.');
+                renderSearchResults([]);
+                setSearchStatus('Search failed. Network from server is blocked, and browser fallback also failed.');
             }
         }
 
-        map.on('rsrs:point-selected', function (event) {
-            if (typeof event.lat !== 'number' || typeof event.lng !== 'number') {
-                return;
-            }
+        function renderPickedPoints() {
+            pickedLayer.clearLayers();
 
-            selectedPoints.push({
-                lat: event.lat,
-                lng: event.lng,
+            selectedPoints.forEach((point, index) => {
+                L.marker([point.lat, point.lng], { icon: createLocationPointIcon(index) })
+                    .addTo(pickedLayer)
+                    .bindTooltip(`Point ${index + 1}`);
             });
 
-            refreshWorkingSegment();
-        });
+            if (selectedPoints.length >= 2) {
+                L.polyline(selectedPoints.map((point) => [point.lat, point.lng]), {
+                    color: '#64748b',
+                    weight: 3,
+                    dashArray: '6 6',
+                    opacity: 0.9,
+                }).addTo(pickedLayer);
+            }
+        }
 
-        map.on('rsrs:location-resolved', function (event) {
-            const targetPoint = selectedPoints.find((point) => isSamePoint(point, event.lat, event.lng));
+        function renderRouteAndDots() {
+            routeLayer.clearLayers();
+            dotsLayer.clearLayers();
 
-            if (!targetPoint) {
+            if (osrmLineCoordinates.length >= 2) {
+                L.polyline(osrmLineCoordinates.map((coord) => [coord[1], coord[0]]), {
+                    color: '#0d6efd',
+                    weight: 5,
+                    opacity: 0.95,
+                }).addTo(routeLayer);
+            }
+
+            interpolatedCoordinates.forEach((coord) => {
+                L.circleMarker([coord[1], coord[0]], {
+                    radius: 2.5,
+                    color: '#0d6efd',
+                    fillColor: '#60a5fa',
+                    fillOpacity: 0.85,
+                    weight: 1,
+                }).addTo(dotsLayer);
+            });
+        }
+
+        function persistPayload() {
+            const geometryPayload = {
+                type: 'Feature',
+                geometry: {
+                    type: 'LineString',
+                    coordinates: interpolatedCoordinates,
+                },
+                properties: {
+                    source: 'osrm_route',
+                    interpolation_meters: INTERVAL_METERS,
+                    selected_point_count: selectedPoints.length,
+                    generated_point_count: interpolatedCoordinates.length,
+                    raw_points: toLngLat(selectedPoints),
+                },
+            };
+
+            const coordinatesJson = JSON.stringify(interpolatedCoordinates);
+            if (coordinatesJsonString) {
+                coordinatesJsonString.value = coordinatesJson;
+            }
+            if (coordinatesJsonPreview) {
+                coordinatesJsonPreview.value = coordinatesJson;
+            }
+            if (boundaryInput) {
+                boundaryInput.value = JSON.stringify(geometryPayload);
+            }
+        }
+
+        function resetGenerated() {
+            osrmLineCoordinates = [];
+            interpolatedCoordinates = [];
+            if (boundaryInput) {
+                boundaryInput.value = '';
+            }
+            if (coordinatesJsonString) {
+                coordinatesJsonString.value = '';
+            }
+            if (coordinatesJsonPreview) {
+                coordinatesJsonPreview.value = '';
+            }
+            renderRouteAndDots();
+            updatePanels();
+        }
+
+        map.on('rsrs:point-selected', function (event) {
+            const latitude = Number(event?.lat);
+            const longitude = Number(event?.lng);
+
+            if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
                 return;
             }
 
-            targetPoint.displayName = event.displayName || null;
-            targetPoint.address = event.address || {};
-
-            if (segmentNameInput?.dataset.autoSuggested !== 'false') {
-                const suggestedName = getUniqueSegmentName(
-                    getSegmentNameSuggestion(selectedPoints),
-                    existingSegmentNames
-                );
-                segmentNameInput.value = suggestedName;
-            }
+            selectedPoints.push({ lat: latitude, lng: longitude });
+            renderPickedPoints();
+            resetGenerated();
         });
 
-        undoBtn?.addEventListener('click', function () {
-            selectedPoints.pop();
-            refreshWorkingSegment();
-        });
-
-        clearBtn?.addEventListener('click', function () {
-            selectedPoints.splice(0, selectedPoints.length);
-            refreshWorkingSegment();
-        });
-
-        modalElement?.addEventListener('show.bs.modal', function (event) {
-            if (selectedPoints.length < 2) {
-                event.preventDefault();
-                window.showroadofficerUiAlert?.({
-                    theme: 'warning',
-                    title: 'More points needed',
-                    text: 'Select at least two points on the map before saving a road segment.',
-                    showConfirmButton: true,
-                    confirmButtonText: '<i class="bi bi-check2 me-1"></i> OK',
-                });
-            }
-        });
-
-        segmentNameInput?.addEventListener('input', function () {
-            this.dataset.autoSuggested = this.value.trim() ? 'false' : 'true';
-        });
-
-        locationSearchInput?.addEventListener('input', function () {
-            const query = this.value.trim();
-
-            if (locationSearchClear) {
-                locationSearchClear.hidden = !query;
-            }
-
-            window.clearTimeout(searchDebounceHandle);
-
-            if (query.length < 3) {
-                if (searchController) {
-                    searchController.abort();
-                }
-
-                hideSearchResults();
-                clearSearchPreview();
-                setSearchStatus('Type at least 3 letters to search locations quickly.');
-                return;
-            }
-
-            searchDebounceHandle = window.setTimeout(function () {
-                performLocationSearch(query);
-            }, 80);
-        });
-
-        locationSearchInput?.addEventListener('keydown', function (event) {
-            if (!activeSearchResults.length) {
-                return;
-            }
-
-            if (event.key === 'ArrowDown') {
-                event.preventDefault();
-                focusSearchResult(
-                    activeResultIndex < activeSearchResults.length - 1 ? activeResultIndex + 1 : 0
-                );
-            }
-
-            if (event.key === 'ArrowUp') {
-                event.preventDefault();
-                focusSearchResult(
-                    activeResultIndex > 0 ? activeResultIndex - 1 : activeSearchResults.length - 1
-                );
-            }
-
-            if (event.key === 'Enter' && activeResultIndex >= 0) {
-                event.preventDefault();
-                applySearchSelection(activeSearchResults[activeResultIndex]);
-            }
-
-            if (event.key === 'Escape') {
-                hideSearchResults();
-                clearSearchPreview();
-            }
-        });
-
-        locationSearchClear?.addEventListener('click', function () {
-            if (locationSearchInput) {
-                locationSearchInput.value = '';
-                locationSearchInput.focus();
-            }
-
-            this.hidden = true;
-            hideSearchResults();
-            clearSearchPreview();
-            setSearchStatus('Start typing to find a location and jump the map there.');
-        });
-
-        locationSearchResults?.addEventListener('click', function (event) {
-            const button = event.target.closest('[data-location-search-result-index]');
-
-            if (!button) {
-                return;
-            }
-
-            const index = Number(button.dataset.locationSearchResultIndex);
-
-            if (!Number.isInteger(index)) {
-                return;
-            }
-
-            applySearchSelection(activeSearchResults[index]);
-        });
-
-        document.addEventListener('click', function (event) {
-            if (
-                event.target === locationSearchInput ||
-                event.target === locationSearchClear ||
-                locationSearchResults?.contains(event.target)
-            ) {
-                return;
-            }
-
-            hideSearchResults();
-        });
-
-        document.querySelectorAll('[data-existing-segment]').forEach((button) => {
-            button.addEventListener('click', function () {
-                const segment = JSON.parse(button.dataset.existingSegment || '{}');
-                const coordinates = segment.boundary_coordinates?.geometry?.coordinates || [];
-
-                if (!Array.isArray(coordinates) || coordinates.length < 2) {
+        if (undoBtn) {
+            undoBtn.addEventListener('click', function () {
+                if (selectedPoints.length === 0) {
                     return;
                 }
 
-                const latLngs = coordinates.map((coordinate) => [coordinate[1], coordinate[0]]);
-                const bounds = L.latLngBounds(latLngs);
-
-                existingLayer.eachLayer((layer) => {
-                    if (typeof layer.setStyle === 'function') {
-                        layer.setStyle({
-                            color: '#7d8ca3',
-                            weight: 4,
-                            opacity: 0.55,
-                        });
-                    }
-                });
-
-                existingLayer.eachLayer((layer) => {
-                    if (layer.getTooltip && layer.getTooltip()?.getContent() === (segment.segment_name || 'Road segment')) {
-                        layer.setStyle({
-                            color: '#0d6efd',
-                            weight: 5,
-                            opacity: 0.95,
-                        });
-                    }
-                });
-
-                map.fitBounds(bounds, {
-                    padding: [30, 30],
-                });
+                selectedPoints.pop();
+                renderPickedPoints();
+                resetGenerated();
             });
-        });
+        }
 
-        renderExistingSegments();
-        refreshWorkingSegment();
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function () {
+                selectedPoints.length = 0;
+                renderPickedPoints();
+                resetGenerated();
+            });
+        }
+
+        if (generateBtn) {
+            generateBtn.addEventListener('click', async function () {
+                if (selectedPoints.length < MIN_POINTS_FOR_ROUTE) {
+                    alert('Select at least two points first.');
+                    return;
+                }
+
+                generateBtn.disabled = true;
+                generateBtn.innerHTML = '<i class="bi bi-hourglass-split"></i><span>Generating...</span>';
+
+                try {
+                    osrmLineCoordinates = await fetchOsrmRoute(selectedPoints);
+                    interpolatedCoordinates = densifyEveryMeters(osrmLineCoordinates, INTERVAL_METERS);
+                    renderRouteAndDots();
+                    persistPayload();
+
+                    if (osrmLineCoordinates.length > 1) {
+                        const bounds = L.latLngBounds(osrmLineCoordinates.map((coord) => [coord[1], coord[0]]));
+                        map.fitBounds(bounds, { padding: [26, 26], maxZoom: 18 });
+                    }
+                } catch (error) {
+                    alert(error.message || 'Failed to generate road shape.');
+                } finally {
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = '<i class="bi bi-bezier2"></i><span>Generate Road Shape</span>';
+                    updatePanels();
+                }
+            });
+        }
+
+        if (openModalBtn) {
+            openModalBtn.addEventListener('click', function (event) {
+                if (interpolatedCoordinates.length < 2) {
+                    event.preventDefault();
+                    alert('Generate Road Shape first so the system can save full coordinates every 3 meters.');
+                }
+            });
+        }
+
+        if (form) {
+            form.addEventListener('submit', function (event) {
+                if (interpolatedCoordinates.length < 2 || !boundaryInput?.value) {
+                    event.preventDefault();
+                    alert('Generate Road Shape first before saving.');
+                }
+            });
+        }
+
+        if (locationSearchInput) {
+            locationSearchInput.addEventListener('input', function () {
+                const query = String(locationSearchInput.value || '').trim();
+                if (locationSearchClear) {
+                    locationSearchClear.hidden = query.length === 0;
+                }
+
+                if (searchDebounce) {
+                    clearTimeout(searchDebounce);
+                }
+
+                if (query.length < SEARCH_MIN_CHARS) {
+                    renderSearchResults([]);
+                    setSearchStatus('Start typing to find a location and jump the map there.');
+                    return;
+                }
+
+                searchDebounce = setTimeout(() => runLocationSearch(query), 280);
+            });
+
+            locationSearchInput.addEventListener('keydown', function (event) {
+                if (!activeResults.length) return;
+
+                if (event.key === 'ArrowDown') {
+                    event.preventDefault();
+                    focusResultByIndex(activeResultIndex + 1);
+                    return;
+                }
+
+                if (event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    focusResultByIndex(activeResultIndex <= 0 ? activeResults.length - 1 : activeResultIndex - 1);
+                    return;
+                }
+
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    const index = activeResultIndex >= 0 ? activeResultIndex : 0;
+                    const target = locationSearchResults?.querySelector(`[data-location-search-result-index="${index}"]`);
+                    target?.click();
+                    return;
+                }
+
+                if (event.key === 'Escape') {
+                    renderSearchResults([]);
+                    setSearchStatus('Search closed.');
+                }
+            });
+        }
+
+        if (locationSearchClear) {
+            locationSearchClear.addEventListener('click', function () {
+                if (locationSearchInput) {
+                    locationSearchInput.value = '';
+                    locationSearchInput.focus();
+                }
+                locationSearchClear.hidden = true;
+                renderSearchResults([]);
+                setSearchStatus('Start typing to find a location and jump the map there.');
+                mapRoot.mapApi.clearPreviewLocation?.();
+            });
+        }
+
+        if (locationSearchResults) {
+            locationSearchResults.addEventListener('mousemove', function (event) {
+                const button = event.target.closest('[data-location-search-result-index]');
+                if (!button) return;
+                const index = Number(button.getAttribute('data-location-search-result-index'));
+                focusResultByIndex(index, true);
+            });
+
+            locationSearchResults.addEventListener('click', function (event) {
+                const button = event.target.closest('[data-location-search-result-index]');
+                if (!button) return;
+
+                const index = Number(button.getAttribute('data-location-search-result-index'));
+                const result = activeResults[index];
+                const lat = Number(result?.lat);
+                const lng = Number(result?.lng);
+
+                if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+                    return;
+                }
+
+                mapRoot.mapApi.centerOn(lat, lng, 17, true);
+                mapRoot.mapApi.selectPoint(lat, lng);
+                map.fire('rsrs:point-selected', { lat, lng });
+
+                renderSearchResults([]);
+                setSearchStatus('Location selected. You can continue adding points.');
+                mapRoot.mapApi.clearPreviewLocation?.();
+            });
+        }
+
+        updatePanels();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const mapRoot = document.getElementById('roadSegmentMapLab');
+        if (!mapRoot || !window.L) {
+            return;
+        }
+
+        if (mapRoot.mapApi) {
+            initializeRoadSegmentMap(mapRoot);
+            return;
+        }
+
+        mapRoot.addEventListener('rsrs:map-ready', function () {
+            initializeRoadSegmentMap(mapRoot);
+        }, { once: true });
     });
 })();
