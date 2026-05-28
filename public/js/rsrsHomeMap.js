@@ -8,7 +8,7 @@
         duration: 1.05,
         easeLinearity: 0.25,
     };
-    const AUTO_EVALUATION_INTERVAL_MS = 4000;
+    const AUTO_EVALUATION_INTERVAL_MS = 3000;
 
     let mapInterface = null;
     let watchId = null;

@@ -9,6 +9,7 @@ use App\Models\RuleViolation;
 use App\Models\ViolationType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -17,6 +18,7 @@ use Illuminate\Support\Str;
  */
 class AutoSpeedReportController extends Controller
 {
+    private const ACTIVE_RULES_CACHE_SECONDS = 20;
     private const REQUIRED_EXCEEDED_SECONDS = 30;
     private const DUPLICATE_WINDOW_SECONDS = 600;
     private const BASE_SEGMENT_TOLERANCE_METERS = 30;
@@ -218,17 +220,34 @@ class AutoSpeedReportController extends Controller
 
     private function matchSpeedRule(float $latitude, float $longitude, float $accuracy): ?array
     {
-        $rules = RoadRule::query()
-            ->with('segment:id,segment_name,boundary_coordinates')
-            ->where('is_active', true)
-            ->where('rule_type', 'speed_limit')
-            ->where(function ($query) {
-                $query->whereNull('effective_from')->orWhere('effective_from', '<=', now());
-            })
-            ->where(function ($query) {
-                $query->whereNull('effective_to')->orWhere('effective_to', '>=', now());
-            })
-            ->get();
+        $cacheKey = 'auto_speed.active_rules.snapshot';
+        $rules = Cache::remember($cacheKey, now()->addSeconds(self::ACTIVE_RULES_CACHE_SECONDS), function () {
+            return RoadRule::query()
+                ->select([
+                    'id',
+                    'rule_name',
+                    'rule_type',
+                    'rule_value',
+                    'latitude_start',
+                    'longitude_start',
+                    'latitude_end',
+                    'longitude_end',
+                    'effective_from',
+                    'effective_to',
+                    'is_active',
+                    'segment_id',
+                ])
+                ->with('segment:id,segment_name,segment_type,boundary_coordinates')
+                ->where('is_active', true)
+                ->where('rule_type', 'speed_limit')
+                ->where(function ($query) {
+                    $query->whereNull('effective_from')->orWhere('effective_from', '<=', now());
+                })
+                ->where(function ($query) {
+                    $query->whereNull('effective_to')->orWhere('effective_to', '>=', now());
+                })
+                ->get();
+        });
 
         $bestMatch = null;
         $nearestMatch = null;
