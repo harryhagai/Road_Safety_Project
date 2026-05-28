@@ -55,7 +55,7 @@
                         <li class="nav-item mb-1">
                             <a href="{{ route('officer.segment-types.index') }}"
                                 class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/segment-types*') ? 'active is-current fw-bold shadow-sm' : '' }}">
-                                <i class="bi bi-diagram-3"></i> Segment Types
+                                <i class="bi bi-diagram-3"></i> Segment Types & Rules
                             </a>
                         </li>
                         <li class="nav-item mb-1">

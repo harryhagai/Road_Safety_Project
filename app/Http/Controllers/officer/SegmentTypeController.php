@@ -4,6 +4,7 @@ namespace App\Http\Controllers\officer;
 
 use App\Http\Controllers\Controller;
 use App\Models\SegmentType;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -22,7 +23,8 @@ class SegmentTypeController extends Controller
     {
         return view('officer.segment-types.index', [
             'segmentTypes' => SegmentType::query()
-                ->withCount('roadSegments')
+                ->withCount(['roadSegments', 'defaultRules'])
+                ->with('defaultRules')
                 ->latest()
                 ->get(),
         ]);
@@ -37,15 +39,20 @@ class SegmentTypeController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:segment_types,name'],
             'description' => ['nullable', 'string', 'max:2000'],
-            'is_active' => ['nullable', 'boolean'],
+            'speed_limit_kmh' => ['nullable', 'numeric', 'min:1', 'max:320'],
+            'other_rules' => ['nullable', 'string', 'max:4000'],
         ]);
 
-        SegmentType::create([
-            'name' => $validated['name'],
-            'slug' => $this->generateUniqueSlug($validated['name']),
-            'description' => $validated['description'] ?: null,
-            'is_active' => $request->boolean('is_active', true),
-        ]);
+        DB::transaction(function () use ($validated, $request): void {
+            $segmentType = SegmentType::create([
+                'name' => $validated['name'],
+                'slug' => $this->generateUniqueSlug($validated['name']),
+                'description' => $validated['description'] ?: null,
+                'is_active' => true,
+            ]);
+
+            $this->syncDefaultRules($segmentType, $validated, $request);
+        });
 
         return redirect()
             ->route('officer.segment-types.index')
@@ -66,17 +73,22 @@ class SegmentTypeController extends Controller
                 Rule::unique('segment_types', 'name')->ignore($segmentType->id),
             ],
             'description' => ['nullable', 'string', 'max:2000'],
-            'is_active' => ['nullable', 'boolean'],
+            'speed_limit_kmh' => ['nullable', 'numeric', 'min:1', 'max:320'],
+            'other_rules' => ['nullable', 'string', 'max:4000'],
         ]);
 
-        $segmentType->update([
-            'name' => $validated['name'],
-            'slug' => $segmentType->name === $validated['name']
-                ? $segmentType->slug
-                : $this->generateUniqueSlug($validated['name'], $segmentType->id),
-            'description' => $validated['description'] ?: null,
-            'is_active' => $request->boolean('is_active'),
-        ]);
+        DB::transaction(function () use ($segmentType, $validated, $request): void {
+            $segmentType->update([
+                'name' => $validated['name'],
+                'slug' => $segmentType->name === $validated['name']
+                    ? $segmentType->slug
+                    : $this->generateUniqueSlug($validated['name'], $segmentType->id),
+                'description' => $validated['description'] ?: null,
+                'is_active' => true,
+            ]);
+
+            $this->syncDefaultRules($segmentType, $validated, $request);
+        });
 
         return redirect()
             ->route('officer.segment-types.index')
@@ -123,5 +135,45 @@ class SegmentTypeController extends Controller
         }
 
         return $slug;
+    }
+
+    private function syncDefaultRules(SegmentType $segmentType, array $validated, Request $request): void
+    {
+        $rules = [];
+        $sort = 1;
+
+        if (! empty($validated['speed_limit_kmh'])) {
+            $speed = (float) $validated['speed_limit_kmh'];
+            $rules[] = [
+                'rule_name' => 'Speed limit',
+                'rule_type' => 'speed_limit',
+                'rule_value' => rtrim(rtrim(number_format($speed, 2, '.', ''), '0'), '.') . ' km/h',
+                'description' => 'Maximum allowed speed for this segment type.',
+                'is_active' => true,
+                'sort_order' => $sort++,
+            ];
+        }
+
+        $otherRules = collect(preg_split('/\r\n|\r|\n/', (string) ($validated['other_rules'] ?? '')))
+            ->map(fn (string $line): string => trim($line))
+            ->filter()
+            ->values();
+
+        foreach ($otherRules as $otherRule) {
+            $rules[] = [
+                'rule_name' => $otherRule,
+                'rule_type' => 'other',
+                'rule_value' => $otherRule,
+                'description' => null,
+                'is_active' => true,
+                'sort_order' => $sort++,
+            ];
+        }
+
+        $segmentType->defaultRules()->delete();
+
+        if ($rules !== []) {
+            $segmentType->defaultRules()->createMany($rules);
+        }
     }
 }

@@ -167,6 +167,12 @@
                                 </select>
                             </div>
                             <div class="col-12">
+                                <label class="form-label">Rules preview from selected segment type</label>
+                                <div id="segmentTypeRulesPreview" class="form-control" style="min-height: 94px; height: auto;">
+                                    Select a segment type to preview default rules that will be auto-created.
+                                </div>
+                            </div>
+                            <div class="col-12">
                                 <label for="description" class="form-label">Description</label>
                                 <textarea class="form-control" id="description" name="description" rows="3"
                                     placeholder="Optional notes about this road segment">{{ old('description') }}</textarea>
@@ -230,6 +236,7 @@
     <script>
         window.roadSegmentPage = {
             existingSegments: @json($segments),
+            segmentTypesWithRules: @json($segmentTypesWithRules),
         };
     </script>
     <script src="{{ asset('js/rsrsMapPicker.js') }}"></script>

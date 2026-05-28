@@ -41,4 +41,9 @@ class SegmentType extends Model
     {
         return $this->hasMany(RoadSegment::class, 'segment_type_id');
     }
+
+    public function defaultRules(): HasMany
+    {
+        return $this->hasMany(SegmentTypeRule::class, 'segment_type_id')->orderBy('sort_order');
+    }
 }

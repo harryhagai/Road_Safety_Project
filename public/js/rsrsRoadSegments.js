@@ -132,6 +132,8 @@
         const clearBtn = document.getElementById('clearSegmentPointsBtn');
         const openModalBtn = document.getElementById('openSegmentModalBtn');
         const form = document.getElementById('roadSegmentForm');
+        const segmentTypeSelect = document.getElementById('segment_type_id');
+        const segmentTypeRulesPreview = document.getElementById('segmentTypeRulesPreview');
         const locationSearchInput = document.getElementById('roadSegmentLocationSearch');
         const locationSearchResults = document.getElementById('roadSegmentLocationSearchResults');
         const locationSearchStatus = document.getElementById('roadSegmentLocationSearchStatus');
@@ -145,6 +147,35 @@
         let activeResults = [];
         let activeResultIndex = -1;
         const searchCache = new Map();
+        const segmentTypesWithRules = Array.isArray(window.roadSegmentPage?.segmentTypesWithRules)
+            ? window.roadSegmentPage.segmentTypesWithRules
+            : [];
+
+        function renderSegmentTypeRulesPreview() {
+            if (!segmentTypeRulesPreview || !segmentTypeSelect) return;
+
+            const selectedId = Number(segmentTypeSelect.value);
+            const selectedType = segmentTypesWithRules.find((item) => Number(item?.id) === selectedId);
+            const rules = Array.isArray(selectedType?.default_rules) ? selectedType.default_rules : [];
+
+            if (!selectedId) {
+                segmentTypeRulesPreview.innerHTML = 'Select a segment type to preview default rules that will be auto-created.';
+                return;
+            }
+
+            if (rules.length === 0) {
+                segmentTypeRulesPreview.innerHTML = 'No default rules for this segment type. Segment will be saved without auto-generated rules.';
+                return;
+            }
+
+            segmentTypeRulesPreview.innerHTML = rules
+                .map((rule, index) => {
+                    const value = rule?.rule_value ? ` (${escapeHtml(rule.rule_value)})` : '';
+                    const description = rule?.description ? ` - ${escapeHtml(rule.description)}` : '';
+                    return `${index + 1}. <strong>${escapeHtml(rule.rule_name || 'Rule')}</strong>${value}${description}`;
+                })
+                .join('<br>');
+        }
 
         function updatePanels() {
             if (pointCountTarget) {
@@ -453,6 +484,11 @@
                     alert('Generate Road Shape first before saving.');
                 }
             });
+        }
+
+        if (segmentTypeSelect) {
+            segmentTypeSelect.addEventListener('change', renderSegmentTypeRulesPreview);
+            renderSegmentTypeRulesPreview();
         }
 
         if (locationSearchInput) {

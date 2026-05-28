@@ -40,6 +40,7 @@
                             <th>Name</th>
                             <th>Description</th>
                             <th>Segments</th>
+                            <th>Default Rules</th>
                             <th>Status</th>
                             <th>Created</th>
                             <th class="text-end">Actions</th>
@@ -51,6 +52,7 @@
                                 <td><div class="violation-name">{{ $segmentType->name }}</div></td>
                                 <td><div class="violation-description">{{ $segmentType->description ?: 'No description provided.' }}</div></td>
                                 <td>{{ number_format($segmentType->road_segments_count) }}</td>
+                                <td>{{ number_format($segmentType->default_rules_count ?? 0) }}</td>
                                 <td>
                                     <span class="violation-status {{ $segmentType->is_active ? 'is-active' : 'is-inactive' }}">
                                         <i class="bi {{ $segmentType->is_active ? 'bi-check2-circle' : 'bi-pause-circle' }}"></i>
@@ -73,7 +75,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6">
+                                <td colspan="7">
                                     <div class="violation-empty">
                                         <i class="bi bi-inboxes"></i>
                                         <span>No segment types created yet.</span>
@@ -107,24 +109,27 @@
                     @csrf
                     <div class="modal-body geo-modal__body">
                         <div class="row g-3">
-                            <div class="col-12">
+                            <div class="col-12 col-md-8">
                                 <label for="segment_type_name" class="form-label">Segment type name</label>
                                 <input type="text" class="form-control" id="segment_type_name" name="name" value="{{ old('name') }}" placeholder="e.g. Residential street" required>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="speed_limit_kmh" class="form-label">Speed limit (km/h)</label>
+                                <input type="number" class="form-control" id="speed_limit_kmh" name="speed_limit_kmh" min="1" max="320" step="1" placeholder="e.g. 30">
                             </div>
                             <div class="col-12">
                                 <label for="segment_type_description" class="form-label">Description</label>
                                 <textarea class="form-control" id="segment_type_description" name="description" rows="4" placeholder="Describe what this segment type covers">{{ old('description') }}</textarea>
                             </div>
                             <div class="col-12">
-                                <div class="form-check form-switch mt-2">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="segment_type_is_active" name="is_active" value="1" {{ old('is_active') ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="segment_type_is_active">Segment type is active</label>
-                                </div>
+                                <label for="other_rules" class="form-label">Other rules (one per line)</label>
+                                <textarea class="form-control" id="other_rules" name="other_rules" rows="3"
+                                    placeholder="No stopping&#10;No heavy trucks 6am-9pm"></textarea>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer geo-modal__footer">
-                        <button type="button" class="btn geo-modal__secondary-btn" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-outline-secondary geo-modal__cancel-btn" data-bs-dismiss="modal">
                             <i class="bi bi-x-circle"></i>
                             <span>Cancel</span>
                         </button>
@@ -158,26 +163,37 @@
                     <form method="POST" action="{{ route('officer.segment-types.update', $segmentType) }}">
                         @csrf
                         @method('PUT')
+                        @php
+                            $speedRule = $segmentType->defaultRules->firstWhere('rule_type', 'speed_limit');
+                            $speedValue = $speedRule && preg_match('/\d+(?:\.\d+)?/', (string) $speedRule->rule_value, $m) ? $m[0] : '';
+                            $otherRules = $segmentType->defaultRules
+                                ->where('rule_type', 'other')
+                                ->pluck('rule_name')
+                                ->filter()
+                                ->implode("\n");
+                        @endphp
                         <div class="modal-body geo-modal__body">
                             <div class="row g-3">
-                                <div class="col-12">
+                                <div class="col-12 col-md-8">
                                     <label for="edit_segment_type_name_{{ $segmentType->id }}" class="form-label">Segment type name</label>
                                     <input type="text" class="form-control" id="edit_segment_type_name_{{ $segmentType->id }}" name="name" value="{{ $segmentType->name }}" required>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label for="edit_speed_limit_kmh_{{ $segmentType->id }}" class="form-label">Speed limit (km/h)</label>
+                                    <input type="number" class="form-control" id="edit_speed_limit_kmh_{{ $segmentType->id }}" name="speed_limit_kmh" min="1" max="320" step="1" value="{{ $speedValue }}">
                                 </div>
                                 <div class="col-12">
                                     <label for="edit_segment_type_description_{{ $segmentType->id }}" class="form-label">Description</label>
                                     <textarea class="form-control" id="edit_segment_type_description_{{ $segmentType->id }}" name="description" rows="4">{{ $segmentType->description }}</textarea>
                                 </div>
                                 <div class="col-12">
-                                    <div class="form-check form-switch mt-2">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="edit_segment_type_is_active_{{ $segmentType->id }}" name="is_active" value="1" {{ $segmentType->is_active ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="edit_segment_type_is_active_{{ $segmentType->id }}">Segment type is active</label>
-                                    </div>
+                                    <label for="edit_other_rules_{{ $segmentType->id }}" class="form-label">Other rules (one per line)</label>
+                                    <textarea class="form-control" id="edit_other_rules_{{ $segmentType->id }}" name="other_rules" rows="3">{{ $otherRules }}</textarea>
                                 </div>
                             </div>
                         </div>
                         <div class="modal-footer geo-modal__footer">
-                            <button type="button" class="btn geo-modal__secondary-btn" data-bs-dismiss="modal">
+                            <button type="button" class="btn btn-outline-secondary geo-modal__cancel-btn" data-bs-dismiss="modal">
                                 <i class="bi bi-x-circle"></i>
                                 <span>Cancel</span>
                             </button>
@@ -219,7 +235,7 @@
                             </p>
                         </div>
                         <div class="modal-footer geo-modal__footer">
-                            <button type="button" class="btn geo-modal__secondary-btn" data-bs-dismiss="modal">
+                            <button type="button" class="btn btn-outline-secondary geo-modal__cancel-btn" data-bs-dismiss="modal">
                                 <i class="bi bi-x-circle"></i>
                                 <span>Cancel</span>
                             </button>
@@ -238,4 +254,24 @@
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/rsrsMap.css') }}">
     <link rel="stylesheet" href="{{ asset('css/rsrsViolationTypes.css') }}">
+    <style>
+        .geo-modal .form-control,
+        .geo-modal .form-select {
+            border-color: #1f314f;
+        }
+        .geo-modal .form-control:focus,
+        .geo-modal .form-select:focus {
+            border-color: #1f314f;
+            box-shadow: 0 0 0 0.2rem rgba(31, 49, 79, 0.2);
+        }
+        .geo-modal__cancel-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border-radius: 14px;
+            padding: 0.75rem 1rem;
+            font-weight: 400;
+        }
+    </style>
 @endpush
