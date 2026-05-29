@@ -94,6 +94,24 @@
                                             </span>
                                             <span class="geo-rule-result__count">{{ $segment['road_rules_count'] }}</span>
                                         </button>
+                                        <div class="geo-rule-result__actions">
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                data-segment-edit='@json($segment)'
+                                            >
+                                                <i class="bi bi-pencil-square"></i>
+                                                <span>Edit segment</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-outline-danger"
+                                                data-segment-delete='@json($segment)'
+                                            >
+                                                <i class="bi bi-trash3"></i>
+                                                <span>Delete segment</span>
+                                            </button>
+                                        </div>
 
                                         @if (count($segment['rules']))
                                             <div class="geo-rule-result__rules">
@@ -209,6 +227,100 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="editRoadSegmentModal" tabindex="-1" aria-labelledby="editRoadSegmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content geo-modal">
+                <div class="modal-header geo-modal__header">
+                    <div class="geo-modal__title-wrap">
+                        <span class="geo-modal__icon">
+                            <i class="bi bi-pencil-square"></i>
+                        </span>
+                        <div>
+                            <h5 class="modal-title geo-modal__title" id="editRoadSegmentModalLabel">Update segment</h5>
+                            <div class="geo-modal__subtitle">Edit segment details while keeping existing route geometry.</div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" id="editRoadSegmentForm">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-body geo-modal__body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="edit_segment_name" class="form-label">Segment name</label>
+                                <input type="text" class="form-control" id="edit_segment_name" name="segment_name" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="edit_segment_type_id" class="form-label">Segment type</label>
+                                <select class="form-select" id="edit_segment_type_id" name="segment_type_id">
+                                    <option value="">No type</option>
+                                    @foreach ($segmentTypes as $segmentType)
+                                        <option value="{{ $segmentType->id }}">{{ $segmentType->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="edit_segment_length" class="form-label">Length (km)</label>
+                                <input type="number" min="0" step="0.01" class="form-control" id="edit_segment_length" name="length_km">
+                            </div>
+                            <div class="col-12">
+                                <label for="edit_segment_description" class="form-label">Description</label>
+                                <textarea class="form-control" id="edit_segment_description" name="description" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer geo-modal__footer">
+                        <button type="button" class="btn geo-modal__secondary-btn" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle"></i>
+                            <span>Cancel</span>
+                        </button>
+                        <button type="submit" class="btn geo-modal__primary-btn">
+                            <i class="bi bi-check2-circle"></i>
+                            <span>Apply update</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteRoadSegmentModal" tabindex="-1" aria-labelledby="deleteRoadSegmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content geo-modal">
+                <div class="modal-header geo-modal__header">
+                    <div class="geo-modal__title-wrap">
+                        <span class="geo-modal__icon">
+                            <i class="bi bi-trash3"></i>
+                        </span>
+                        <div>
+                            <h5 class="modal-title geo-modal__title" id="deleteRoadSegmentModalLabel">Delete segment</h5>
+                            <div class="geo-modal__subtitle">This removes the segment from map and list.</div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" id="deleteRoadSegmentForm">
+                    @csrf
+                    @method('DELETE')
+                    <div class="modal-body geo-modal__body">
+                        <p class="mb-0">Delete <strong id="deleteRoadSegmentName">this segment</strong>? This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer geo-modal__footer">
+                        <button type="button" class="btn geo-modal__secondary-btn" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle"></i>
+                            <span>Cancel</span>
+                        </button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash3"></i>
+                            <span>Delete segment</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('styles')
@@ -228,6 +340,8 @@
             segments: @json($segments),
             rules: @json($rules),
             dataUrl: @json(route('officer.road-rules.data')),
+            roadSegmentUpdateUrlTemplate: @json(route('officer.road-segments.update', ['roadSegment' => '__ID__'])),
+            roadSegmentDeleteUrlTemplate: @json(route('officer.road-segments.destroy', ['roadSegment' => '__ID__'])),
             pagination: @json($initialSegmentPagination),
         };
     </script>

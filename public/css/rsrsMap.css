@@ -914,6 +914,29 @@
     padding: 0 0.95rem 0.95rem 3.65rem;
 }
 
+.geo-rule-result__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0 0.95rem 0.75rem 3.65rem;
+}
+
+.geo-rule-result__actions .btn {
+    border-radius: 999px;
+    font-size: 0.74rem;
+    line-height: 1.2;
+    font-weight: 500;
+    padding: 0.36rem 0.64rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28rem;
+}
+
+.geo-rule-result__actions .btn i {
+    font-size: 0.76rem;
+    line-height: 1;
+}
+
 .geo-rule-chip {
     display: inline-flex;
     align-items: center;
@@ -971,5 +994,14 @@
 
     .geo-rule-browser__selection-grid {
         grid-template-columns: 1fr;
+    }
+
+    .geo-rule-result__actions {
+        padding-left: 0.95rem;
+    }
+
+    .geo-rule-result__rules,
+    .geo-rule-result__empty {
+        padding-left: 0.95rem;
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\officer;
 use App\Http\Controllers\Controller;
 use App\Models\RoadRule;
 use App\Models\RoadSegment;
+use App\Models\SegmentType;
 use App\Services\MapConfigService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -21,21 +22,25 @@ class RoadRuleController extends Controller
      */
     public function index(MapConfigService $mapConfigService): View
     {
-        $initialSegmentPage = $this->segmentResultsQuery()->paginate(10);
-        $segments = collect($initialSegmentPage->items())->map(
+        $allSegments = $this->segmentResultsQuery()->get();
+        $segments = $allSegments->map(
             fn (RoadSegment $segment) => $this->formatSegment($segment)
         )->values();
 
         return view('officer.road-rules.index', [
             'mapConfig' => $mapConfigService->forFrontend(),
             'segments' => $segments,
+            'segmentTypes' => SegmentType::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name']),
             'rules' => collect(),
             'initialSegmentPagination' => [
-                'current_page' => $initialSegmentPage->currentPage(),
-                'last_page' => $initialSegmentPage->lastPage(),
-                'per_page' => $initialSegmentPage->perPage(),
-                'total' => $initialSegmentPage->total(),
-                'has_more' => $initialSegmentPage->hasMorePages(),
+                'current_page' => 1,
+                'last_page' => 1,
+                'per_page' => $allSegments->count(),
+                'total' => $allSegments->count(),
+                'has_more' => false,
             ],
         ]);
     }
@@ -185,6 +190,7 @@ class RoadRuleController extends Controller
         return [
             'id' => $segment->id,
             'segment_name' => $segment->segment_name,
+            'segment_type_id' => $segment->segment_type_id,
             'segment_type' => $segment->segment_type_name,
             'description' => $segment->description,
             'length_km' => $segment->length_km,

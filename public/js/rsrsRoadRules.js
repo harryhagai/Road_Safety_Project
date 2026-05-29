@@ -23,6 +23,19 @@
         const searchInput = document.getElementById('roadRuleSearchInput');
         const resultsCount = document.getElementById('roadRuleResultsCount');
         const loadMoreBtn = document.getElementById('roadRuleLoadMoreBtn');
+        const editSegmentModalEl = document.getElementById('editRoadSegmentModal');
+        const editSegmentModal = editSegmentModalEl ? bootstrap.Modal.getOrCreateInstance(editSegmentModalEl) : null;
+        const editSegmentForm = document.getElementById('editRoadSegmentForm');
+        const editSegmentNameInput = document.getElementById('edit_segment_name');
+        const editSegmentTypeInput = document.getElementById('edit_segment_type_id');
+        const editSegmentLengthInput = document.getElementById('edit_segment_length');
+        const editSegmentDescriptionInput = document.getElementById('edit_segment_description');
+        const deleteSegmentModalEl = document.getElementById('deleteRoadSegmentModal');
+        const deleteSegmentModal = deleteSegmentModalEl ? bootstrap.Modal.getOrCreateInstance(deleteSegmentModalEl) : null;
+        const deleteSegmentForm = document.getElementById('deleteRoadSegmentForm');
+        const deleteSegmentNameEl = document.getElementById('deleteRoadSegmentName');
+        const segmentUpdateUrlTemplate = pageConfig.roadSegmentUpdateUrlTemplate || '';
+        const segmentDeleteUrlTemplate = pageConfig.roadSegmentDeleteUrlTemplate || '';
 
         const segmentLayer = L.layerGroup().addTo(map);
         const segmentMarkerLayer = L.layerGroup().addTo(map);
@@ -386,6 +399,69 @@
             }
         }
 
+        function segmentActionMarkup(segment) {
+            return `
+                <div class="geo-rule-result__actions">
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-segment-edit='${escapeHtml(JSON.stringify(segment))}'>
+                        <i class="bi bi-pencil-square"></i>
+                        <span>Edit segment</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-segment-delete='${escapeHtml(JSON.stringify(segment))}'>
+                        <i class="bi bi-trash3"></i>
+                        <span>Delete segment</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        function buildSegmentActionUrl(template, segmentId) {
+            if (!template || !segmentId) {
+                return '';
+            }
+
+            return String(template).replace('__ID__', String(segmentId));
+        }
+
+        function openEditSegmentModal(segment) {
+            if (!segment?.id || !editSegmentForm) {
+                return;
+            }
+
+            editSegmentForm.action = buildSegmentActionUrl(segmentUpdateUrlTemplate, segment.id);
+
+            if (editSegmentNameInput) {
+                editSegmentNameInput.value = segment.segment_name || '';
+            }
+
+            if (editSegmentTypeInput) {
+                editSegmentTypeInput.value = segment.segment_type_id ? String(segment.segment_type_id) : '';
+            }
+
+            if (editSegmentLengthInput) {
+                editSegmentLengthInput.value = segment.length_km || '';
+            }
+
+            if (editSegmentDescriptionInput) {
+                editSegmentDescriptionInput.value = segment.description || '';
+            }
+
+            editSegmentModal?.show();
+        }
+
+        function openDeleteSegmentModal(segment) {
+            if (!segment?.id || !deleteSegmentForm) {
+                return;
+            }
+
+            deleteSegmentForm.action = buildSegmentActionUrl(segmentDeleteUrlTemplate, segment.id);
+
+            if (deleteSegmentNameEl) {
+                deleteSegmentNameEl.textContent = segment.segment_name || 'this segment';
+            }
+
+            deleteSegmentModal?.show();
+        }
+
         // Encapsulate one UI behavior so the page stays easier to maintain.
 
         function bindSegmentLayerInteractions(layer, segment) {
@@ -476,6 +552,7 @@
                         </span>
                         <span class="geo-rule-result__count">${segment.road_rules_count || 0}</span>
                     </button>
+                    ${segmentActionMarkup(segment)}
                     ${rulesMarkup}
                 </article>
             `;
@@ -716,6 +793,22 @@
 
             if (segmentButton) {
                 handleSegmentButtonClick(segmentButton);
+                return;
+            }
+
+            const segmentEditButton = event.target.closest('[data-segment-edit]');
+
+            if (segmentEditButton) {
+                const segment = safeJsonParse(segmentEditButton.dataset.segmentEdit);
+                openEditSegmentModal(segment);
+                return;
+            }
+
+            const segmentDeleteButton = event.target.closest('[data-segment-delete]');
+
+            if (segmentDeleteButton) {
+                const segment = safeJsonParse(segmentDeleteButton.dataset.segmentDelete);
+                openDeleteSegmentModal(segment);
             }
         });
 

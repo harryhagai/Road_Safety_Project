@@ -10,6 +10,7 @@ use App\Services\MapConfigService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -136,6 +137,52 @@ class RoadSegmentController extends Controller
         return redirect()
             ->route('officer.road-segments.index')
             ->with('success', 'Road segment saved successfully.');
+    }
+
+    /**
+     * Update editable metadata for an existing road segment.
+     */
+    public function update(Request $request, RoadSegment $roadSegment): RedirectResponse
+    {
+        $validated = $request->validate([
+            'segment_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('road_segments', 'segment_name')->ignore($roadSegment->id),
+            ],
+            'segment_type_id' => ['nullable', 'exists:segment_types,id'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'length_km' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        $segmentType = ! empty($validated['segment_type_id'])
+            ? SegmentType::query()->find($validated['segment_type_id'])
+            : null;
+
+        $roadSegment->update([
+            'segment_name' => trim($validated['segment_name']),
+            'segment_type_id' => $segmentType?->id,
+            'segment_type' => $segmentType?->name,
+            'description' => $validated['description'] ?: null,
+            'length_km' => $validated['length_km'] ?: null,
+        ]);
+
+        return redirect()
+            ->route('officer.road-rules.index')
+            ->with('success', 'Road segment updated successfully.');
+    }
+
+    /**
+     * Delete a road segment record.
+     */
+    public function destroy(RoadSegment $roadSegment): RedirectResponse
+    {
+        $roadSegment->delete();
+
+        return redirect()
+            ->route('officer.road-rules.index')
+            ->with('success', 'Road segment deleted successfully.');
     }
 
     /**

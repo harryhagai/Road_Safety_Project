@@ -82,6 +82,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/road-officer/road-rules', [RoadRuleController::class, 'store'])->name('officer.road-rules.store');
     Route::get('/road-officer/road-segments', [RoadSegmentController::class, 'index'])->name('officer.road-segments.index');
     Route::post('/road-officer/road-segments', [RoadSegmentController::class, 'store'])->name('officer.road-segments.store');
+    Route::put('/road-officer/road-segments/{roadSegment}', [RoadSegmentController::class, 'update'])->name('officer.road-segments.update');
+    Route::delete('/road-officer/road-segments/{roadSegment}', [RoadSegmentController::class, 'destroy'])->name('officer.road-segments.destroy');
     Route::get('/road-officer/segment-types', [SegmentTypeController::class, 'index'])->name('officer.segment-types.index');
     Route::post('/road-officer/segment-types', [SegmentTypeController::class, 'store'])->name('officer.segment-types.store');
     Route::put('/road-officer/segment-types/{segmentType}', [SegmentTypeController::class, 'update'])->name('officer.segment-types.update');
