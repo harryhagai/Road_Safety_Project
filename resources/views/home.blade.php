@@ -49,8 +49,7 @@
                                 </div>
                                 <div class="home-speed-alert__meta">
                                     <span data-home-speed-alert-location>Segment: waiting...</span>
-                                    <span data-home-speed-alert-limit>Limit: unknown</span>
-                                    <span data-home-speed-alert-countdown>Report: inactive</span>
+                                    <span data-home-speed-alert-limit>Speed limit: unknown</span>
                                 </div>
                             </div>
                         </div>

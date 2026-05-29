@@ -28,7 +28,6 @@
     let speedAlertMessageEl = null;
     let speedAlertLocationEl = null;
     let speedAlertLimitEl = null;
-    let speedAlertCountdownEl = null;
     let hasPublishedLocationReady = false;
     let lastAutoEvaluationAt = 0;
     let autoEvaluationInFlight = false;
@@ -54,7 +53,6 @@
         speedAlertMessageEl = document.querySelector('[data-home-speed-alert-message]');
         speedAlertLocationEl = document.querySelector('[data-home-speed-alert-location]');
         speedAlertLimitEl = document.querySelector('[data-home-speed-alert-limit]');
-        speedAlertCountdownEl = document.querySelector('[data-home-speed-alert-countdown]');
     }
 
     // Render live speed value + activity state in the circular speed widget.
@@ -102,11 +100,7 @@
         }
 
         if (speedAlertLimitEl) {
-            speedAlertLimitEl.textContent = `Limit: ${options?.limit || 'unknown'}`;
-        }
-
-        if (speedAlertCountdownEl) {
-            speedAlertCountdownEl.textContent = `Report: ${options?.countdown || 'inactive'}`;
+            speedAlertLimitEl.textContent = `Speed limit: ${options?.limit || 'unknown'}`;
         }
     }
 
@@ -276,7 +270,6 @@
                     : `An automatic report was submitted because the speed did not go down within 30 seconds${reference}.`,
                 location: evaluation?.segment?.name || 'matched road segment',
                 limit: `${Math.round(Number(evaluation.speed_limit_kmh))} km/h`,
-                countdown: 'submitted',
             });
         } catch (error) {
             const response = error.response || {};
@@ -307,7 +300,6 @@
                 message: 'Your location did not match any road segment with a speed limit in the database.',
                 location: 'not matched',
                 limit: 'unknown',
-                countdown: 'inactive',
             });
             return;
         }
@@ -315,14 +307,6 @@
         const limit = Number(evaluation.speed_limit_kmh);
         const limitText = Number.isFinite(limit) ? `${Math.round(limit)} km/h` : 'saved limit';
         const segmentName = evaluation.segment?.db_name || evaluation.segment?.name || 'matched road segment';
-        const matchingBufferMeters = Number(evaluation.matching_buffer_meters || 0);
-        const bufferMeta = Number.isFinite(matchingBufferMeters) && matchingBufferMeters > 0
-            ? `Buffer: ${Math.round(matchingBufferMeters)}m`
-            : null;
-        const latestReference = evaluation.reporting?.latest_reference_no || null;
-        const totalReports = Number(evaluation.reporting?.total_reports_for_rule || 0);
-        const reportMeta = latestReference ? `Last report: ${latestReference}` : 'No reports yet';
-
         if (!evaluation.exceeded) {
             updateSpeedDisplay(telemetry.speed_kmh, `Speed limit ${limitText} active`, telemetry.speed_kmh >= 1);
             updateSpeedAlert({
@@ -331,7 +315,6 @@
                 message: `Your speed is within the rule for this area. Please stay below ${limitText}.`,
                 location: segmentName,
                 limit: limitText,
-                countdown: `${reportMeta} | Total: ${totalReports}${bufferMeta ? ` | ${bufferMeta}` : ''}`,
             });
             return;
         }
@@ -348,7 +331,6 @@
                 message: `Reduce speed to ${limitText}. If you stay above the limit, the system will send an automatic report.`,
                 location: segmentName,
                 limit: limitText,
-                countdown: `${Math.ceil(remainingSeconds)}s remaining | ${reportMeta}${bufferMeta ? ` | ${bufferMeta}` : ''}`,
             });
             return;
         }
@@ -360,7 +342,6 @@
             message: `Your speed stayed above ${limitText} for 30 seconds. The system is submitting a speed violation report.`,
             location: segmentName,
             limit: limitText,
-            countdown: 'submitting',
         });
         submitAutoReport(evaluation, telemetry);
     }
@@ -579,7 +560,6 @@
             message: 'Allow GPS so the system can match your coordinates to speed limits in the database.',
             location: 'checking GPS...',
             limit: 'unknown',
-            countdown: 'inactive',
         });
 
         navigator.geolocation.getCurrentPosition(
@@ -602,7 +582,6 @@
                             message: 'GPS could not be detected, so speed rules and automatic reporting cannot work right now.',
                             location: 'unavailable',
                             limit: 'unknown',
-                            countdown: 'inactive',
                         });
                         startWatch(false);
                     },
@@ -650,7 +629,6 @@
             message: 'We are checking your location and the nearest speed rule.',
             location: 'waiting...',
             limit: 'unknown',
-            countdown: 'inactive',
         });
 
         const wireUp = () => {
