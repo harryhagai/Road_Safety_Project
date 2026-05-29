@@ -271,6 +271,7 @@
                 location: evaluation?.segment?.name || 'matched road segment',
                 limit: `${Math.round(Number(evaluation.speed_limit_kmh))} km/h`,
             });
+
         } catch (error) {
             const response = error.response || {};
 
@@ -328,7 +329,7 @@
             updateSpeedAlert({
                 state: 'warning',
                 label: 'Warning: speed limit exceeded',
-                message: `Reduce speed to ${limitText}. If you stay above the limit, the system will send an automatic report.`,
+                message: `Reduce speed to ${limitText}. Auto report will be submitted in ${remainingSeconds}s if speed stays above limit.`,
                 location: segmentName,
                 limit: limitText,
             });
