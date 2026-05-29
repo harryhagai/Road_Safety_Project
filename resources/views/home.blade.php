@@ -38,19 +38,6 @@
             <div class="col-12">
                 <section class="geo-card geo-card--fill geo-card--map home-geo-card">
                     <div class="home-map-stage">
-                        <div class="home-speed-widget" data-home-speed-widget aria-live="polite">
-                            <span class="home-speed-widget__label">Speed</span>
-                            <div class="home-speed-widget__dial" aria-hidden="true">
-                                <span class="home-speed-widget__ring"></span>
-                                <span class="home-speed-widget__core"></span>
-                                <span class="home-speed-widget__pulse"></span>
-                            </div>
-                            <div class="home-speed-widget__value">
-                                <strong data-home-speed-value>0</strong>
-                                <span>km/h</span>
-                            </div>
-                            <small data-home-speed-status>Waiting for movement...</small>
-                        </div>
                         <div class="home-speed-alert home-speed-alert--idle" data-home-speed-alert aria-live="polite">
                             <div class="home-speed-alert__icon" data-home-speed-alert-icon>
                                 <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
@@ -67,6 +54,19 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="home-speed-widget" data-home-speed-widget aria-live="polite">
+                            <span class="home-speed-widget__label">Speed</span>
+                            <div class="home-speed-widget__dial" aria-hidden="true">
+                                <span class="home-speed-widget__ring"></span>
+                                <span class="home-speed-widget__core"></span>
+                                <span class="home-speed-widget__pulse"></span>
+                            </div>
+                            <div class="home-speed-widget__value">
+                                <strong data-home-speed-value>0</strong>
+                                <span>km/h</span>
+                            </div>
+                            <small data-home-speed-status>Waiting for movement...</small>
+                        </div>
                         <x-map.canvas id="mainPublicMap" :config="$mapConfig" height="100%" :show-toolbar="false" mode="viewer" />
                     </div>
                 </section>
@@ -82,6 +82,25 @@
 @endpush
 
 @section('scripts')
+    <script>
+        (() => {
+            const syncViewportOffsets = () => {
+                const header = document.querySelector('.header-wrapper');
+                const footer = document.querySelector('.footer-wrapper');
+                const root = document.documentElement;
+
+                const headerHeight = header ? Math.round(header.getBoundingClientRect().height) : 0;
+                const footerHeight = footer ? Math.round(footer.getBoundingClientRect().height) : 0;
+
+                root.style.setProperty('--home-header-height', `${headerHeight}px`);
+                root.style.setProperty('--home-footer-height', `${footerHeight}px`);
+            };
+
+            window.addEventListener('load', syncViewportOffsets);
+            window.addEventListener('resize', syncViewportOffsets);
+            syncViewportOffsets();
+        })();
+    </script>
     <script>
         window.rsrsAutoSpeedReporting = {
             evaluateUrl: @json(route('auto-speed-reports.evaluate')),

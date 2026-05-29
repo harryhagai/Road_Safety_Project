@@ -46,14 +46,22 @@ body {
 }
 
 .header-logo .officer-sidebar-logo {
-  width: 64px;
-  height: 64px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
-  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(35, 44, 58, 0.06);
+  border: 2px solid rgba(35, 44, 58, 0.18);
+  padding: 6px;
+  box-shadow: 0 8px 18px rgba(27, 34, 48, 0.12);
 }
 
 .header-logo .officer-sidebar-logo-icon {
-  font-size: 1.95rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #232c3a;
 }
 
 .header-name {
@@ -187,40 +195,50 @@ body {
 
 @media (max-width: 768px) {
   .header-toggle {
-    width: 52px;
-    height: 52px;
-    right: 0.75rem;
+    width: 40px;
+    height: 40px;
+    right: 0.6rem;
+    border-radius: 10px;
   }
 
   .header-toggle-line {
-    width: 22px;
-    height: 2.5px;
-    margin: 4.5px auto;
+    width: 16px;
+    height: 2px;
+    margin: 3px auto;
+  }
+
+  .header-wrapper {
+    padding: 0.55rem 0;
+  }
+
+  .header-container {
+    padding: 0 0.9rem;
   }
 
   .header-title {
-    font-size: 1.12rem;
+    font-size: 1.02rem;
     line-height: 1;
   }
 
   .header-logo .officer-sidebar-logo {
-    width: 56px;
-    height: 56px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
+    padding: 5px;
   }
 
   .header-logo .officer-sidebar-logo-icon {
-    font-size: 1.7rem;
+    font-size: 1.3rem;
   }
 
   .header-subtitle {
-    font-size: 0.56rem;
+    font-size: 0.52rem;
     line-height: 1.05;
     letter-spacing: 0.01em;
   }
 
   .header-subtitle {
-    font-size: 0.85rem;
+    font-size: 0.72rem;
     font-weight: 500;
   }
 

@@ -49,7 +49,7 @@ main.flex-grow-1 {
     width: 100%;
     height: 100%;
     min-height: 0;
-    padding: 0.65rem;
+    padding: 0.35rem 0.65rem 0.65rem;
 }
 
 .home-geo-workspace .geo-workspace__grid,
@@ -192,15 +192,15 @@ main.flex-grow-1 {
 
 .home-speed-alert {
     position: absolute;
-    top: 0.9rem;
-    left: 0.9rem;
-    right: 0.9rem;
+    top: 0.55rem;
+    left: 0.55rem;
+    right: 0.55rem;
     z-index: 460;
     display: grid;
     grid-template-columns: 38px minmax(0, 1fr);
     gap: 0.72rem;
     align-items: start;
-    max-width: 640px;
+    width: auto;
     padding: 0.72rem 0.82rem;
     border: 1px solid rgba(35, 44, 58, 0.1);
     border-radius: 16px;
@@ -667,7 +667,7 @@ main.flex-grow-1 {
     }
 
     .home-speed-alert {
-        top: 1rem;
+        top: 0.7rem;
         left: 1rem;
         right: auto;
         width: min(50vw, 640px);
@@ -706,7 +706,7 @@ main.flex-grow-1 {
         width: 100%;
         height: calc(100svh - var(--home-header-height) - var(--home-footer-height));
         min-height: 0;
-        padding: 0.35rem;
+        padding: 0.3rem 0.35rem 0.35rem;
         border-radius: 0;
     }
 
@@ -745,9 +745,10 @@ main.flex-grow-1 {
     }
 
     .home-speed-alert {
-        top: 0.58rem;
-        left: 0.55rem;
-        right: 0.55rem;
+        top: 0.45rem;
+        left: 0.35rem;
+        right: 0.35rem;
+        width: auto;
         grid-template-columns: 34px minmax(0, 1fr);
         gap: 0.58rem;
         padding: 0.62rem 0.64rem;

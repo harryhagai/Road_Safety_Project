@@ -238,3 +238,35 @@ Detection area
 ## Jibu la moja kwa moja
 
 Ndiyo, inawezekana system ikimaliza mapping ifanye automatic selection ya road na kuonyesha road yote iliyoselectiwa. Lakini inahitaji **map matching service** au **OSM road geometry data**. Usitumie image ya map pekee. Pia usisave coordinates kila 1 meter kama main approach; save **matched road polyline + buffer width**, halafu tumia distance-to-polyline ku-detect user akiwa kwenye road.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Wewe ni mtaalamu wa Frontend Web Development (blade, JavaScript & Leaflet.js). tumodfy this blade 
+
+Nahitaji unitengenezee ukurasa wa HTML na JavaScript unaotumia Leaflet Map kwa ajili ya "Road Officer" kufanya mapping ya barabara.
+
+Vigezo na Flow ya Mfumo inatakiwa iwe hivi:
+1. **Leaflet Map Initialization:** Ramani ifunguke ikionyesha maeneo ya Tanzania (Dar es Salaam).
+2. **Kupiga Points:** Officer akibonyeza (click) kwenye ramani, point iwekwe (Marker). Anaweza kuweka point ya kuanzia na ya kuishia, au point kadhaa njiani.
+3. **OSRM Route Integration (Auto-Fit Road):** Officer akimaliza kuweka points na kubonyeza kitufe cha "Generate Road Shape", mfumo utume hizo coordinates kwenye API ya Bure ya OSRM (Open Source Routing Machine) ya "Route" au "Match" ili kupata mstari (Polyline) halisi unaofuata kona zote za barabara ya OpenStreetMap.
+4. **Onyesha Umbo (Shape):** Mfumo uonyeshe mstari huo wa barabara kwenye ramani kwa rangi ya bluu (Polyline).
+5. **Kukata Coordinates Kila Mita 3 (Interpolation):** Baada ya kupata ule mstari halisi kutoka OSRM, mfumo uhesabu na uchukue coordinates zipya kila baada ya mita 3 (3-meter intervals) kufuata ule mstari mzima. (Unaweza kutumia library ya Turf.js function ya `turf.along` au kuandika algorithm safi ya JS ya kupiga hesabu ya umbali kati ya points za polyline na kuzigawa kila baada ya mita 3).
+6. **Weka Alama (Visual Check):** Kila point iliyokatwa baada ya mita 3 ionyeshwe kwenye ramani kama dot ndogo au marker ndogo ili Officer ajiridhishe 
+7. **Hifadhi kama JSON String:** 
+   - Hidden Input ya "Coordinates JSON" (Ambapo array ya hizi points zilizokatwa kila mita 3 itageuzwa kuwa JSON string kwa kutumia `JSON.stringify()`).
+   - Kitufe cha "Save segment  kisave all coordinates " 
+
