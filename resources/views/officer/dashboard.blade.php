@@ -25,25 +25,28 @@
                         <i class="bi bi-bar-chart-line" aria-hidden="true"></i>
                     </span>
                     <div>
-                        <h3 class="roadofficer-panel-title">Status breakdown</h3>
+                        <h3 class="roadofficer-panel-title">Speed violation analytics</h3>
                     </div>
+                    @if (($speedAnalytics['sample_count'] ?? 0) > 0)
+                        <div class="roadofficer-panel-metric">
+                            <span>Avg Violation Speed</span>
+                            <strong>{{ number_format($speedAnalytics['average_speed'], 1) }} km/h</strong>
+                        </div>
+                    @endif
                 </div>
 
                 <div class="roadofficer-panel-body">
-                    @if ($reportStatuses->isNotEmpty())
-                        <div class="roadofficer-status-list">
-                            @foreach ($reportStatuses as $status)
-                                <div class="roadofficer-status-item">
-                                    <span>{{ $status['label'] }}</span>
-                                    <strong>{{ number_format($status['value']) }}</strong>
-                                </div>
-                            @endforeach
+                    @if (($speedAnalytics['sample_count'] ?? 0) > 0)
+                        <div class="roadofficer-speed-analytics">
+                            <div class="roadofficer-speed-chart-wrap">
+                                <canvas id="officerSpeedTrendLineChart" height="190"></canvas>
+                            </div>
                         </div>
                     @else
                         <div class="roadofficer-empty-state">
                             <i class="bi bi-bar-chart-line"></i>
-                            <h4>No report status data</h4>
-                            <p>Report summaries will appear here once cases are submitted into the system.</p>
+                            <h4>No violation speed analytics yet</h4>
+                            <p>Line trend will appear once automatic speed violation reports are available.</p>
                         </div>
                     @endif
                 </div>
@@ -110,13 +113,13 @@
                 </div>
 
                 <div class="roadofficer-panel-body roadofficer-panel-body--map">
-                    @if ($hotspots->isNotEmpty())
+                    @if ($attentionHotspotPayload->isNotEmpty())
                         <div id="officerHotspotsMap" class="roadofficer-hotspot-map"></div>
                     @else
                         <div class="roadofficer-empty-state roadofficer-empty-state--map">
                             <i class="bi bi-map"></i>
-                            <h4>No hotspots recorded</h4>
-                            <p>When officers add hotspot records, the map will display them here automatically.</p>
+                            <h4>No violation hotspots yet</h4>
+                            <p>Once more violations are submitted, high-priority segment hotspots will appear here.</p>
                         </div>
                     @endif
                 </div>
@@ -132,33 +135,28 @@
                     </div>
                 </div>
 
-                <div class="roadofficer-panel-body">
-                    @if ($hotspots->isNotEmpty())
+                <div class="roadofficer-panel-body roadofficer-panel-body--attention">
+                    @if ($attentionSegments->isNotEmpty())
                         <div class="roadofficer-hotspot-list">
-                            @foreach ($hotspots as $hotspot)
-                                @php
-                                    $severity = $hotspot->severity ?: 'medium';
-                                @endphp
+                            @foreach ($attentionSegments as $segment)
                                 <article class="roadofficer-hotspot-card">
                                     <div class="roadofficer-hotspot-card__top">
                                         <div>
-                                            <h4 class="roadofficer-hotspot-card__title">{{ $hotspot->name ?: 'Unnamed hotspot' }}</h4>
-                                            <p class="roadofficer-hotspot-card__meta">
-                                                Rule: {{ $hotspot->rule?->rule_name ?? 'Not linked' }}
-                                            </p>
+                                            <h4 class="roadofficer-hotspot-card__title">{{ $segment['segment_name'] }}</h4>
                                         </div>
-                                        <span class="roadofficer-severity-badge roadofficer-severity-badge--{{ str_replace('_', '-', $severity) }}">
-                                            {{ str($severity)->replace('_', ' ')->title() }}
-                                        </span>
                                     </div>
 
                                     <div class="roadofficer-hotspot-card__details">
-                                        <span>Frequency: {{ number_format((int) ($hotspot->frequency ?: 0)) }}</span>
-                                        <span>Radius: {{ number_format((float) ($hotspot->radius_meters ?: 0)) }} m</span>
-                                        <span>Updated: {{ optional($hotspot->last_updated_at ?? $hotspot->updated_at)->format('d M Y, H:i') ?? 'N/A' }}</span>
+                                        <span>
+                                            Violations: {{ number_format($segment['violations_count']) }} | Priority:
+                                            <span class="roadofficer-severity-badge roadofficer-severity-badge--{{ str_replace('_', '-', $segment['priority']) }}">
+                                                {{ str($segment['priority'])->title() }}
+                                            </span>
+                                        </span>
+                                        <span>Last report: {{ $segment['last_reported_at'] }}</span>
                                     </div>
 
-                                    <button type="button" class="roadofficer-focus-btn" data-hotspot-focus="{{ $hotspot->id }}">
+                                    <button type="button" class="roadofficer-focus-btn" data-hotspot-focus="{{ $segment['segment_id'] }}">
                                         <i class="bi bi-crosshair"></i>
                                         <span>Focus on map</span>
                                     </button>
@@ -168,8 +166,8 @@
                     @else
                         <div class="roadofficer-empty-state">
                             <i class="bi bi-geo"></i>
-                            <h4>No hotspot details available</h4>
-                            <p>Hotspot records will appear here once new dangerous locations are captured in the system.</p>
+                            <h4>No segment risk data available</h4>
+                            <p>Segments with repeated violations will be listed here automatically.</p>
                         </div>
                     @endif
                 </div>
@@ -184,11 +182,17 @@
 @endpush
 
 @section('scripts')
-    @if ($hotspots->isNotEmpty())
+    @if (($speedAnalytics['sample_count'] ?? 0) > 0)
+        <script>
+            window.rsrsOfficerSpeedAnalytics = @json($speedAnalytics);
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    @endif
+    @if ($attentionHotspotPayload->isNotEmpty())
         <script>
             window.rsrsOfficerDashboardMap = {
                 mapConfig: @json($mapConfig),
-                hotspots: @json($hotspotPayload),
+                hotspots: @json($attentionHotspotPayload),
             };
         </script>
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>

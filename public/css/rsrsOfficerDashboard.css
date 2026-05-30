@@ -168,6 +168,27 @@
     color: #fff;
 }
 
+.roadofficer-panel-metric {
+    margin-left: auto;
+    text-align: right;
+    line-height: 1.15;
+}
+
+.roadofficer-panel-metric span {
+    display: block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--dashboard-muted);
+}
+
+.roadofficer-panel-metric strong {
+    color: #15345b;
+    font-size: 1.05rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
 .roadofficer-panel-body {
     padding: 1.2rem;
 }
@@ -181,6 +202,36 @@
 .roadofficer-summary-list {
     display: grid;
     gap: 0.85rem;
+}
+
+.roadofficer-speed-analytics {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.roadofficer-speed-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.roadofficer-speed-chart-wrap {
+    background: #f9fbff;
+    border: 1px solid rgba(23, 78, 166, 0.1);
+    border-radius: 1rem;
+    padding: 0.8rem;
+    height: 260px;
+}
+
+.roadofficer-analytics-note {
+    color: var(--dashboard-muted);
+    font-size: 0.78rem;
+    display: block;
+    margin-top: 0.15rem;
+}
+
+.roadofficer-speed-chart-wrap--donut {
+    height: 300px;
 }
 
 .roadofficer-status-item,
@@ -229,6 +280,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    white-space: nowrap;
     border-radius: 999px;
     padding: 0.34rem 0.72rem;
     font-size: 0.76rem;
@@ -251,8 +303,14 @@
 
 .roadofficer-hotspot-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
+}
+
+.roadofficer-panel-body--attention {
+    max-height: min(58vh, 520px);
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .roadofficer-hotspot-card {
@@ -272,6 +330,9 @@
     font-size: 1rem;
     font-weight: 500;
     color: #15345b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .roadofficer-hotspot-card__details {
@@ -384,7 +445,20 @@
         align-items: flex-start;
     }
 
+    .roadofficer-panel-metric {
+        margin-left: 0;
+        text-align: left;
+    }
+
     .roadofficer-hotspot-map {
         min-height: 360px;
+    }
+
+    .roadofficer-hotspot-list {
+        grid-template-columns: 1fr;
+    }
+
+    .roadofficer-speed-kpis {
+        grid-template-columns: 1fr;
     }
 }
