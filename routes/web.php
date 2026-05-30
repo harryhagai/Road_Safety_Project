@@ -8,11 +8,13 @@ use App\Http\Controllers\officer\OfficerDashboardController;
 use App\Http\Controllers\officer\OfficerNotificationController;
 use App\Http\Controllers\officer\OfficerProfileController;
 use App\Http\Controllers\officer\OfficerReportController;
+use App\Http\Controllers\officer\OfficerTelemetryMonitoringController;
 use App\Http\Controllers\officer\RoadSegmentController;
 use App\Http\Controllers\officer\RoadRuleController;
 use App\Http\Controllers\officer\SegmentTypeController;
 use App\Http\Controllers\officer\ViolationTypeController;
 use App\Http\Controllers\PublicHotspotController;
+use App\Http\Controllers\VehicleTelemetryController;
 use Illuminate\Support\Facades\Route;
 
 $routeFiles = [
@@ -63,10 +65,15 @@ Route::post('/auto-speed-reports/evaluate', [AutoSpeedReportController::class, '
 Route::post('/auto-speed-reports', [AutoSpeedReportController::class, 'store'])
     ->middleware('throttle:12,1')
     ->name('auto-speed-reports.store');
+Route::post('/vehicle-telemetry', [VehicleTelemetryController::class, 'store'])
+    ->middleware('throttle:120,1')
+    ->name('vehicle-telemetry.store');
 
 // Protected officer tools that require authentication.
 Route::middleware('auth')->group(function () {
     Route::get('/road-officer/notifications', [OfficerNotificationController::class, 'index'])->name('officer.notifications.index');
+    Route::get('/road-officer/telemetry-monitoring', [OfficerTelemetryMonitoringController::class, 'index'])->name('officer.telemetry-monitoring.index');
+    Route::get('/road-officer/telemetry-monitoring/live', [VehicleTelemetryController::class, 'live'])->name('officer.telemetry-monitoring.live');
     Route::get('/road-officer/notifications/dropdown-data', [OfficerNotificationController::class, 'dropdownData'])->name('officer.notifications.dropdown-data');
     Route::post('/road-officer/notifications/mark-all-read', [OfficerNotificationController::class, 'markAllRead'])->name('officer.notifications.mark-all-read');
     Route::get('/road-officer/notifications/{notificationId}', [OfficerNotificationController::class, 'show'])->name('officer.notifications.show');

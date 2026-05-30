@@ -107,6 +107,79 @@
             csrfToken: @json(csrf_token()),
         };
     </script>
+    <script>
+        window.rsrsVehicleTelemetry = {
+            submitUrl: @json(route('vehicle-telemetry.store')),
+            csrfToken: @json(csrf_token()),
+            intervalMs: 30000,
+            defaultVehicleRegNo: (function() {
+                const key = 'rsrs_vehicle_reg_no';
+                const existing = localStorage.getItem(key);
+                if (existing && existing.trim() !== '') {
+                    return existing;
+                }
+                const generated = `CITIZEN-${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
+                localStorage.setItem(key, generated);
+                return generated;
+            })(),
+        };
+    </script>
+    <script>
+        (() => {
+            const config = window.rsrsVehicleTelemetry;
+            if (!config || !('geolocation' in navigator)) {
+                return;
+            }
+            let lastCoordinateKey = null;
+
+            const sendTelemetry = (position) => {
+                const speedMs = Number(position?.coords?.speed ?? 0);
+                const speedKmh = speedMs > 0 ? speedMs * 3.6 : 0;
+                const heading = Number(position?.coords?.heading);
+                const latitude = Number(position?.coords?.latitude);
+                const longitude = Number(position?.coords?.longitude);
+                const coordinateKey = `${latitude.toFixed(6)}:${longitude.toFixed(6)}`;
+
+                if (coordinateKey === lastCoordinateKey) {
+                    return;
+                }
+                lastCoordinateKey = coordinateKey;
+
+                fetch(config.submitUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': config.csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        vehicle_reg_no: config.defaultVehicleRegNo,
+                        latitude,
+                        longitude,
+                        current_speed: Number(speedKmh.toFixed(2)),
+                        heading: Number.isFinite(heading) ? Number(heading.toFixed(2)) : null,
+                    }),
+                }).catch(() => null);
+            };
+
+            const pullAndSend = () => {
+                navigator.geolocation.getCurrentPosition(
+                    sendTelemetry,
+                    () => null,
+                    {
+                        enableHighAccuracy: true,
+                        maximumAge: 10000,
+                        timeout: 12000,
+                    }
+                );
+            };
+
+            pullAndSend();
+            setInterval(pullAndSend, config.intervalMs || 60000);
+        })();
+    </script>
     <script src="{{ asset('js/rsrsHomeLoader.js') }}"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="{{ asset('js/rsrsMapPicker.js') }}"></script>

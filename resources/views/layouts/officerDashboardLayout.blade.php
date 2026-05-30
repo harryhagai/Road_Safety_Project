@@ -50,6 +50,10 @@
                 'title' => 'Hotspots',
                 'subtitle' => 'Track dangerous areas, severity trends, and recurring incident locations.',
             ],
+            request()->is('road-officer/telemetry-monitoring*') => [
+                'title' => 'Live Telemetry Monitoring',
+                'subtitle' => 'Monitor incoming vehicle location and speed events in near real-time.',
+            ],
             request()->is('road-officer/contact-messages*') => [
                 'title' => 'Contact Messages',
                 'subtitle' => 'Review public enquiries, update response progress, and keep support history organised.',

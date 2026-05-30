@@ -7,6 +7,7 @@
         request()->is('road-officer/violation-types*');
     $isReportsMenuOpen = request()->is('road-officer/reports*');
     $isMonitoringMenuOpen = request()->is('road-officer/hotspots*') ||
+        request()->is('road-officer/telemetry-monitoring*') ||
         request()->is('road-officer/contact-messages*') ||
         request()->is('road-officer/notifications*');
     $isAdministrationMenuOpen = request()->is('road-officer/officers*') ||
@@ -110,6 +111,12 @@
                 </a>
                 <div class="collapse ps-3 {{ $isMonitoringMenuOpen ? 'show' : '' }}" id="monitoringMenu">
                     <ul class="nav flex-column">
+                        <li class="nav-item mb-1">
+                            <a href="{{ route('officer.telemetry-monitoring.index') }}"
+                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/telemetry-monitoring*') ? 'active is-current fw-bold shadow-sm' : '' }}">
+                                <i class="bi bi-broadcast-pin"></i> Live Telemetry
+                            </a>
+                        </li>
                         <li class="nav-item mb-1">
                             <a href="{{ url('/road-officer/hotspots') }}"
                                 class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/hotspots*') ? 'active is-current fw-bold shadow-sm' : '' }}">

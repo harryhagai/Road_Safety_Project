@@ -2,7 +2,9 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 use App\Models\ReportConfig;
+use App\Models\VehicleTelemetry;
 use App\Services\ReportRowService;
 
 Artisan::command('inspire', function () {
@@ -42,3 +44,9 @@ Artisan::command('reports:backfill {--config_id=} {--class_id=} {--roadofficer_y
         }
     }
 })->purpose('Backfill computed report rows');
+
+Schedule::call(function (): void {
+    VehicleTelemetry::query()
+        ->where('created_at', '<', now()->subHours(12))
+        ->delete();
+})->hourly();
