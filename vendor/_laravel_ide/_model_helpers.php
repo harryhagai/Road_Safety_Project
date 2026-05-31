@@ -4483,6 +4483,7 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $created_at
      * @property int|null $segment_id
      * @property mixed $status_color
+     * @property float|null $heading
      * @property float $current_speed
      * @property float $longitude
      * @property float $latitude
@@ -4494,6 +4495,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereLatitude($value)
      * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereLongitude($value)
      * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereCurrentSpeed($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereHeading($value)
      * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereStatusColor($value)
      * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereSegmentId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereCreatedAt($value)
