@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const labels = Array.isArray(speedAnalytics.line_labels) ? speedAnalytics.line_labels : [];
             const speedValues = Array.isArray(speedAnalytics.line_speed_values) ? speedAnalytics.line_speed_values : [];
             const limitValues = Array.isArray(speedAnalytics.line_limit_values) ? speedAnalytics.line_limit_values : [];
-            const violationTotals = Array.isArray(speedAnalytics.line_violation_totals) ? speedAnalytics.line_violation_totals : [];
             const pointMeta = Array.isArray(speedAnalytics.line_point_meta) ? speedAnalytics.line_point_meta : [];
 
             // Single line chart for violation trend + speed behavior.
@@ -18,15 +17,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 type: 'line',
                 data: {
                     datasets: [{
-                        label: 'Total Violations',
-                        data: violationTotals,
-                        borderColor: '#dc2626',
-                        borderWidth: 2,
-                        tension: 0.25,
-                        pointRadius: 0,
-                        fill: false,
-                        yAxisID: 'y',
-                    }, {
                         label: 'Violation Speed (km/h)',
                         data: speedValues,
                         borderColor: '#2563eb',
@@ -45,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         pointRadius: 0,
                         fill: true,
                         clip: 16,
-                        yAxisID: 'y1',
+                        yAxisID: 'y',
                     }, {
                         label: 'Speed Limit (km/h)',
                         data: limitValues,
@@ -55,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         tension: 0.15,
                         pointRadius: 0,
                         fill: false,
-                        yAxisID: 'y1',
+                        yAxisID: 'y',
                     }],
                     labels: labels,
                 },
@@ -88,14 +78,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         },
                         y: {
                             beginAtZero: true,
-                            title: { display: true, text: 'Violations' },
-                            grid: { color: 'rgba(23, 78, 166, 0.12)' },
-                        },
-                        y1: {
-                            position: 'right',
-                            beginAtZero: true,
                             title: { display: true, text: 'Speed (km/h)' },
-                            grid: { drawOnChartArea: false },
+                            grid: { color: 'rgba(23, 78, 166, 0.12)' },
                         },
                     },
                 },
