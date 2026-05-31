@@ -15,12 +15,11 @@ class VehicleTelemetry extends Model
     protected $primaryKey = 'telemetry_id';
 
     protected $fillable = [
-        'vehicle_reg_no',
+        'citizen_device_no',
         'latitude',
         'longitude',
         'current_speed',
         'heading',
-        'status_color',
         'segment_id',
     ];
 

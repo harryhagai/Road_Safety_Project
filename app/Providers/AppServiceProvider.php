@@ -7,7 +7,7 @@ use App\Models\EvidenceFile;
 use App\Models\Hotspot;
 use App\Models\Officer;
 use App\Models\Report;
-use App\Models\RoadRule;
+use App\Models\SegmentTypeRule;
 use App\Models\RoadSegment;
 use App\Models\RuleViolation;
 use App\Models\User;
@@ -54,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
         Officer::observe(SensitiveActivityObserver::class);
         ContactMessage::observe(SensitiveActivityObserver::class);
         Report::observe(SensitiveActivityObserver::class);
-        RoadRule::observe(SensitiveActivityObserver::class);
+        SegmentTypeRule::observe(SensitiveActivityObserver::class);
         RoadSegment::observe(SensitiveActivityObserver::class);
         ViolationType::observe(SensitiveActivityObserver::class);
         RuleViolation::observe(SensitiveActivityObserver::class);

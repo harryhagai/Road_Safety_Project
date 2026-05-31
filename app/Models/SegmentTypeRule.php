@@ -31,5 +31,5 @@ class SegmentTypeRule extends Model
     {
         return $this->belongsTo(SegmentType::class, 'segment_type_id');
     }
-}
 
+}

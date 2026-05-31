@@ -112,8 +112,8 @@
             submitUrl: @json(route('vehicle-telemetry.store')),
             csrfToken: @json(csrf_token()),
             intervalMs: 30000,
-            defaultVehicleRegNo: (function() {
-                const key = 'rsrs_vehicle_reg_no';
+            defaultCitizenDeviceNo: (function() {
+                const key = 'rsrs_citizen_device_no';
                 const existing = localStorage.getItem(key);
                 if (existing && existing.trim() !== '') {
                     return existing;
@@ -155,7 +155,7 @@
                     },
                     credentials: 'same-origin',
                     body: JSON.stringify({
-                        vehicle_reg_no: config.defaultVehicleRegNo,
+                        citizen_device_no: config.defaultCitizenDeviceNo,
                         latitude,
                         longitude,
                         current_speed: Number(speedKmh.toFixed(2)),

@@ -69,15 +69,6 @@ class Officer extends Authenticatable
     }
 
     /**
-     * Handle the createdRoadRules workflow for this class.
-     */
-
-    public function createdRoadRules(): HasMany
-    {
-        return $this->hasMany(RoadRule::class, 'created_by');
-    }
-
-    /**
      * Handle the verifiedRuleViolations workflow for this class.
      */
 

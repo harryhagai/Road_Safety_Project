@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Report;
-use App\Models\RoadRule;
 use App\Models\RoadSegment;
 use App\Models\RuleViolation;
 use App\Models\VehicleTelemetry;
 use App\Models\ViolationType;
+use App\Services\SegmentRuleResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,17 +15,27 @@ use Illuminate\Support\Str;
 
 class VehicleTelemetryController extends Controller
 {
+    public function __construct(private readonly SegmentRuleResolver $segmentRuleResolver) {}
+
     private const DEFAULT_COUNTRY_SPEED_LIMIT = 80.0;
 
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'vehicle_reg_no' => ['required', 'string', 'max:60'],
+            'citizen_device_no' => ['nullable', 'string', 'max:60'],
+            'vehicle_reg_no' => ['nullable', 'string', 'max:60'],
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],
             'current_speed' => ['nullable', 'numeric', 'min:0', 'max:320'],
             'heading' => ['nullable', 'numeric', 'min:0', 'max:360'],
         ]);
+        $deviceNo = trim((string) ($validated['citizen_device_no'] ?? $validated['vehicle_reg_no'] ?? ''));
+        if ($deviceNo === '') {
+            return response()->json([
+                'saved' => false,
+                'message' => 'citizen_device_no is required.',
+            ], 422);
+        }
 
         $latitude = (float) $validated['latitude'];
         $longitude = (float) $validated['longitude'];
@@ -33,7 +43,7 @@ class VehicleTelemetryController extends Controller
         $heading = isset($validated['heading']) ? round((float) $validated['heading'], 2) : null;
 
         $latestForVehicle = VehicleTelemetry::query()
-            ->where('vehicle_reg_no', $validated['vehicle_reg_no'])
+            ->where('citizen_device_no', $deviceNo)
             ->latest('telemetry_id')
             ->first();
 
@@ -51,27 +61,29 @@ class VehicleTelemetryController extends Controller
         }
 
         $segment = $this->resolveSegmentBySpatialLookup($latitude, $longitude);
-        $speedLimit = $this->resolveSpeedLimitForSegment($segment?->id);
+        $speedRule = $segment ? $this->segmentRuleResolver->resolveSpeedLimitRuleForSegment($segment) : null;
+        $speedLimit = $this->resolveSpeedLimitFromRule($speedRule);
         $statusColor = $this->resolveStatusColor($speed, $speedLimit);
 
         $telemetry = VehicleTelemetry::create([
-            'vehicle_reg_no' => $validated['vehicle_reg_no'],
+            'citizen_device_no' => $deviceNo,
             'latitude' => $latitude,
             'longitude' => $longitude,
             'current_speed' => $speed,
             'heading' => $heading,
-            'status_color' => $statusColor,
             'segment_id' => $segment?->id,
         ]);
 
         $reportReference = null;
         if ($statusColor === 'red') {
-            $reportReference = $this->createViolationReportFromTelemetry($telemetry, $segment, $speedLimit);
+            $reportReference = $this->createViolationReportFromTelemetry($telemetry, $segment, $speedLimit, $speedRule);
         }
 
         return response()->json([
             'saved' => true,
             'telemetry_id' => $telemetry->telemetry_id,
+            'citizen_device_no' => $telemetry->citizen_device_no,
+            'vehicle_reg_no' => $telemetry->citizen_device_no,
             'status_color' => $statusColor,
             'speed_limit' => $speedLimit,
             'segment' => $segment?->segment_name,
@@ -86,44 +98,59 @@ class VehicleTelemetryController extends Controller
             ->latest('telemetry_id')
             ->limit(700)
             ->get();
+        $speedLimitsBySegment = $this->speedLimitsBySegmentIds(
+            $rows->pluck('segment_id')->filter()->unique()->map(fn ($value) => (int) $value)->all()
+        );
 
         $mappedRows = $rows->map(fn (VehicleTelemetry $item): array => [
                 'telemetry_id' => $item->telemetry_id,
-                'vehicle_reg_no' => $item->vehicle_reg_no,
+                'citizen_device_no' => $item->citizen_device_no,
+                'vehicle_reg_no' => $item->citizen_device_no,
                 'latitude' => (float) $item->latitude,
                 'longitude' => (float) $item->longitude,
                 'current_speed' => (float) $item->current_speed,
                 'heading' => $item->heading !== null ? (float) $item->heading : null,
-                'status_color' => $item->status_color,
+                'status_color' => $this->resolveStatusColor(
+                    (float) $item->current_speed,
+                    $item->segment_id ? ($speedLimitsBySegment[(int) $item->segment_id] ?? self::DEFAULT_COUNTRY_SPEED_LIMIT) : self::DEFAULT_COUNTRY_SPEED_LIMIT
+                ),
                 'segment_name' => $item->segment?->segment_name,
                 'created_at' => optional($item->created_at)->toDateTimeString(),
             ]);
 
         $tracks = $rows
-            ->groupBy('vehicle_reg_no')
+            ->groupBy('citizen_device_no')
             ->map(function ($items, $vehicleRegNo): array {
                 $ordered = $items->sortBy('telemetry_id')->values();
                 $points = $ordered->map(fn (VehicleTelemetry $item): array => [
                     'latitude' => (float) $item->latitude,
                     'longitude' => (float) $item->longitude,
                     'heading' => $item->heading !== null ? (float) $item->heading : null,
-                    'status_color' => $item->status_color,
+                    'status_color' => $this->resolveStatusColor(
+                        (float) $item->current_speed,
+                        $item->segment_id ? ($speedLimitsBySegment[(int) $item->segment_id] ?? self::DEFAULT_COUNTRY_SPEED_LIMIT) : self::DEFAULT_COUNTRY_SPEED_LIMIT
+                    ),
                     'created_at' => optional($item->created_at)->toDateTimeString(),
                 ])->all();
 
                 $latest = $ordered->last();
 
                 return [
+                    'citizen_device_no' => (string) $vehicleRegNo,
                     'vehicle_reg_no' => (string) $vehicleRegNo,
                     'points' => $points,
                     'latest' => $latest ? [
                         'telemetry_id' => $latest->telemetry_id,
-                        'vehicle_reg_no' => $latest->vehicle_reg_no,
+                        'citizen_device_no' => $latest->citizen_device_no,
+                        'vehicle_reg_no' => $latest->citizen_device_no,
                         'latitude' => (float) $latest->latitude,
                         'longitude' => (float) $latest->longitude,
                         'current_speed' => (float) $latest->current_speed,
                         'heading' => $latest->heading !== null ? (float) $latest->heading : null,
-                        'status_color' => $latest->status_color,
+                        'status_color' => $this->resolveStatusColor(
+                            (float) $latest->current_speed,
+                            $latest->segment_id ? ($speedLimitsBySegment[(int) $latest->segment_id] ?? self::DEFAULT_COUNTRY_SPEED_LIMIT) : self::DEFAULT_COUNTRY_SPEED_LIMIT
+                        ),
                         'segment_name' => $latest->segment?->segment_name,
                         'created_at' => optional($latest->created_at)->toDateTimeString(),
                     ] : null,
@@ -139,41 +166,53 @@ class VehicleTelemetryController extends Controller
 
     private function resolveSegmentBySpatialLookup(float $latitude, float $longitude): ?RoadSegment
     {
-        try {
-            return RoadSegment::query()
-                ->whereNotNull('boundary_coordinates')
-                ->whereRaw(
-                    "ST_Contains(
-                        ST_GeomFromGeoJSON(
-                            COALESCE(
-                                JSON_UNQUOTE(JSON_EXTRACT(boundary_coordinates, '$.geometry')),
-                                JSON_UNQUOTE(JSON_EXTRACT(boundary_coordinates, '$.features[0].geometry')),
-                                JSON_UNQUOTE(boundary_coordinates)
-                            )
-                        ),
-                        ST_SRID(POINT(?, ?), 4326)
-                    )",
-                    [$longitude, $latitude]
-                )
-                ->first();
-        } catch (\Throwable) {
-            return RoadSegment::query()
-                ->whereNotNull('boundary_coordinates')
-                ->get()
-                ->first(function (RoadSegment $segment) use ($latitude, $longitude): bool {
-                    return $this->pointInsideSegmentPolygon($latitude, $longitude, $segment->boundary_coordinates ?? []);
-                });
+        $candidate = null;
+        $nearestDistance = INF;
+        $maxMatchDistanceMeters = 40.0;
+
+        foreach (RoadSegment::query()->whereNotNull('boundary_coordinates')->get() as $segment) {
+            $distance = $this->distanceToSegmentGeometryMeters($latitude, $longitude, $segment->boundary_coordinates ?? []);
+            if ($distance < $nearestDistance) {
+                $nearestDistance = $distance;
+                $candidate = $segment;
+            }
         }
+
+        return $candidate && $nearestDistance <= $maxMatchDistanceMeters ? $candidate : null;
     }
 
-    private function pointInsideSegmentPolygon(float $latitude, float $longitude, array $geometry): bool
+    private function distanceToSegmentGeometryMeters(float $latitude, float $longitude, array $geometry): float
     {
-        $coordinates = data_get($geometry, 'geometry.coordinates.0')
-            ?? data_get($geometry, 'features.0.geometry.coordinates.0')
-            ?? data_get($geometry, 'coordinates.0')
+        $rawCoordinates = data_get($geometry, 'geometry.coordinates')
+            ?? data_get($geometry, 'features.0.geometry.coordinates')
+            ?? data_get($geometry, 'coordinates')
             ?? [];
+        $geometryType = strtolower((string) (
+            data_get($geometry, 'geometry.type')
+            ?? data_get($geometry, 'features.0.geometry.type')
+            ?? data_get($geometry, 'type')
+            ?? ''
+        ));
 
-        if (!is_array($coordinates) || count($coordinates) < 3) {
+        if (! is_array($rawCoordinates) || $rawCoordinates === []) {
+            return INF;
+        }
+
+        if (str_contains($geometryType, 'polygon')) {
+            $ring = $rawCoordinates[0] ?? [];
+            if ($this->pointInsideSegmentPolygon($latitude, $longitude, is_array($ring) ? $ring : [])) {
+                return 0.0;
+            }
+
+            return $this->distanceToPolylineMeters($latitude, $longitude, is_array($ring) ? $ring : []);
+        }
+
+        return $this->distanceToPolylineMeters($latitude, $longitude, $rawCoordinates);
+    }
+
+    private function pointInsideSegmentPolygon(float $latitude, float $longitude, array $coordinates): bool
+    {
+        if (! is_array($coordinates) || count($coordinates) < 3) {
             return false;
         }
 
@@ -197,30 +236,95 @@ class VehicleTelemetryController extends Controller
         return $inside;
     }
 
-    private function resolveSpeedLimitForSegment(?int $segmentId): float
+    private function distanceToPolylineMeters(float $latitude, float $longitude, array $coordinates): float
     {
-        if (!$segmentId) {
+        $points = collect($coordinates)
+            ->map(function ($coordinate): ?array {
+                if (! is_array($coordinate) || count($coordinate) < 2) {
+                    return null;
+                }
+
+                return [
+                    'lat' => (float) $coordinate[1],
+                    'lng' => (float) $coordinate[0],
+                ];
+            })
+            ->filter(fn (?array $point): bool => $point !== null)
+            ->values()
+            ->all();
+
+        if (count($points) < 2) {
+            return INF;
+        }
+
+        $minimum = INF;
+        $target = ['lat' => $latitude, 'lng' => $longitude];
+
+        for ($index = 0; $index < count($points) - 1; $index++) {
+            $minimum = min(
+                $minimum,
+                $this->distanceToLineSegmentMeters($target, $points[$index], $points[$index + 1])
+            );
+        }
+
+        return $minimum;
+    }
+
+    private function distanceToLineSegmentMeters(array $point, array $start, array $end): float
+    {
+        $metersPerDegreeLat = 111320.0;
+        $metersPerDegreeLng = 111320.0 * cos(deg2rad($point['lat']));
+
+        $px = $point['lng'] * $metersPerDegreeLng;
+        $py = $point['lat'] * $metersPerDegreeLat;
+        $sx = $start['lng'] * $metersPerDegreeLng;
+        $sy = $start['lat'] * $metersPerDegreeLat;
+        $ex = $end['lng'] * $metersPerDegreeLng;
+        $ey = $end['lat'] * $metersPerDegreeLat;
+
+        $dx = $ex - $sx;
+        $dy = $ey - $sy;
+
+        if (abs($dx) < 0.000001 && abs($dy) < 0.000001) {
+            return hypot($px - $sx, $py - $sy);
+        }
+
+        $t = max(0, min(1, (($px - $sx) * $dx + ($py - $sy) * $dy) / (($dx * $dx + $dy * $dy) ?: 0.0000001)));
+        $closestX = $sx + ($t * $dx);
+        $closestY = $sy + ($t * $dy);
+
+        return hypot($px - $closestX, $py - $closestY);
+    }
+
+    private function speedLimitsBySegmentIds(array $segmentIds): array
+    {
+        if ($segmentIds === []) {
+            return [];
+        }
+
+        return RoadSegment::query()
+            ->whereIn('id', $segmentIds)
+            ->with([
+                'segmentType.defaultRules' => function ($query) {
+                    $query->select('id', 'segment_type_id', 'rule_name', 'rule_type', 'rule_value', 'description', 'is_active', 'sort_order')
+                        ->orderBy('sort_order');
+                },
+            ])
+            ->get(['id', 'segment_type_id'])
+            ->mapWithKeys(function (RoadSegment $segment): array {
+                $rule = $this->segmentRuleResolver->resolveSpeedLimitRuleForSegment($segment);
+                return [(int) $segment->id => $this->resolveSpeedLimitFromRule($rule)];
+            })
+            ->all();
+    }
+
+    private function resolveSpeedLimitFromRule(?array $speedRule): float
+    {
+        if (! $speedRule) {
             return self::DEFAULT_COUNTRY_SPEED_LIMIT;
         }
 
-        $rule = RoadRule::query()
-            ->where('segment_id', $segmentId)
-            ->where('rule_type', 'speed_limit')
-            ->where('is_active', true)
-            ->where(function ($query): void {
-                $query->whereNull('effective_from')->orWhere('effective_from', '<=', now());
-            })
-            ->where(function ($query): void {
-                $query->whereNull('effective_to')->orWhere('effective_to', '>=', now());
-            })
-            ->latest('id')
-            ->first();
-
-        if (!$rule) {
-            return self::DEFAULT_COUNTRY_SPEED_LIMIT;
-        }
-
-        if (preg_match('/\d+(?:\.\d+)?/', (string) $rule->rule_value, $matches)) {
+        if (preg_match('/\d+(?:\.\d+)?/', (string) ($speedRule['rule_value'] ?? ''), $matches)) {
             return (float) $matches[0];
         }
 
@@ -243,9 +347,10 @@ class VehicleTelemetryController extends Controller
     private function createViolationReportFromTelemetry(
         VehicleTelemetry $telemetry,
         ?RoadSegment $segment,
-        float $speedLimit
+        float $speedLimit,
+        ?array $speedRule
     ): string {
-        $report = DB::transaction(function () use ($telemetry, $segment, $speedLimit) {
+        $report = DB::transaction(function () use ($telemetry, $segment, $speedLimit, $speedRule) {
             $violationType = ViolationType::firstOrCreate(
                 ['name' => 'Overspeeding'],
                 ['description' => 'Vehicle operating above posted speed limit.', 'is_active' => true]
@@ -256,7 +361,7 @@ class VehicleTelemetryController extends Controller
                 'violation_type_id' => $violationType->id,
                 'description' => sprintf(
                     'Telemetry red alert: %s moving at %.2f km/h above limit %.2f km/h.',
-                    $telemetry->vehicle_reg_no,
+                    $telemetry->citizen_device_no,
                     (float) $telemetry->current_speed,
                     $speedLimit
                 ),
@@ -268,20 +373,15 @@ class VehicleTelemetryController extends Controller
                 'reported_at' => now(),
             ]);
 
-            $rule = null;
-            if ($segment?->id) {
-                $rule = RoadRule::query()
-                    ->where('segment_id', $segment->id)
-                    ->where('rule_type', 'speed_limit')
-                    ->where('is_active', true)
-                    ->latest('id')
-                    ->first();
-            }
-
-            if ($rule) {
+            if ($segment?->id && $speedRule) {
                 RuleViolation::create([
                     'report_id' => $report->id,
-                    'rule_id' => $rule->id,
+                    'segment_id' => $segment->id,
+                    'segment_type_rule_id' => $speedRule['segment_type_rule_id'],
+                    'rule_name_snapshot' => $speedRule['rule_name'],
+                    'rule_type_snapshot' => $speedRule['rule_type'],
+                    'rule_value_snapshot' => $speedRule['rule_value'],
+                    'rule_description_snapshot' => $speedRule['description'],
                     'matched_automatically' => true,
                     'confidence_score' => 96.50,
                 ]);

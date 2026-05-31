@@ -30,13 +30,13 @@
                 'title' => 'Incident Reports',
                 'subtitle' => 'Review submitted cases, progress updates, and field reporting activity.',
             ],
-            request()->is('road-officer/road-rules*') || request()->is('roadofficer/examinations*') => [
-                'title' => 'Road Rules',
-                'subtitle' => 'Manage active road rules, enforcement details, and effective periods.',
-            ],
             request()->is('road-officer/road-segments*') || request()->is('roadofficer/classes*') => [
                 'title' => 'Road Segments',
                 'subtitle' => 'Maintain mapped road segments, boundary details, and segment descriptions.',
+            ],
+            request()->is('road-officer/segment-types*') => [
+                'title' => 'Segment Types',
+                'subtitle' => 'Manage segment categories and their reusable rule templates.',
             ],
             request()->is('road-officer/violation-types*') || request()->is('roadofficer/olevel-subject-management*') || request()->is('roadofficer/alevel-subjects*') => [
                 'title' => 'Violation Types',

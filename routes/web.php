@@ -11,7 +11,6 @@ use App\Http\Controllers\officer\OfficerProfileController;
 use App\Http\Controllers\officer\OfficerReportController;
 use App\Http\Controllers\officer\OfficerTelemetryMonitoringController;
 use App\Http\Controllers\officer\RoadSegmentController;
-use App\Http\Controllers\officer\RoadRuleController;
 use App\Http\Controllers\officer\SegmentTypeController;
 use App\Http\Controllers\officer\ViolationTypeController;
 use App\Http\Controllers\PublicHotspotController;
@@ -86,9 +85,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/road-officer/reports', [OfficerReportController::class, 'index'])->name('officer.reports.index');
     Route::get('/road-officer/reports/{report}', [OfficerReportController::class, 'show'])->name('officer.reports.show');
     Route::put('/road-officer/reports/{report}', [OfficerReportController::class, 'update'])->name('officer.reports.update');
-    Route::get('/road-officer/road-rules', [RoadRuleController::class, 'index'])->name('officer.road-rules.index');
-    Route::get('/road-officer/road-rules/data', [RoadRuleController::class, 'data'])->name('officer.road-rules.data');
-    Route::post('/road-officer/road-rules', [RoadRuleController::class, 'store'])->name('officer.road-rules.store');
+    Route::redirect('/road-officer/segment-rules', '/road-officer/segment-types')
+        ->name('officer.segment-rules.index');
+    Route::redirect('/road-officer/road-rules', '/road-officer/segment-types')
+        ->name('officer.road-rules.index');
     Route::get('/road-officer/road-segments', [RoadSegmentController::class, 'index'])->name('officer.road-segments.index');
     Route::post('/road-officer/road-segments', [RoadSegmentController::class, 'store'])->name('officer.road-segments.store');
     Route::put('/road-officer/road-segments/{roadSegment}', [RoadSegmentController::class, 'update'])->name('officer.road-segments.update');

@@ -48,9 +48,9 @@
                         <i class="bi bi-flag header-theme-icon"></i>
                         <span>Reports</span>
                     </a>
-                    <a href="{{ url('/road-officer/road-rules') }}" class="dropdown-item d-flex align-items-center gap-2 py-2">
+                    <a href="{{ route('officer.segment-types.index') }}" class="dropdown-item d-flex align-items-center gap-2 py-2">
                         <i class="bi bi-sign-turn-right header-theme-icon"></i>
-                        <span>Road Rules</span>
+                        <span>Segment Types</span>
                     </a>
                     <a href="{{ url('/road-officer/hotspots') }}" class="dropdown-item d-flex align-items-center gap-2 py-2">
                         <i class="bi bi-geo-alt header-theme-icon"></i>

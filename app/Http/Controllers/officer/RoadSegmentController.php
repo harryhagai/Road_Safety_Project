@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\officer;
 
 use App\Http\Controllers\Controller;
-use App\Models\RoadRule;
 use App\Models\RoadSegment;
 use App\Models\SegmentType;
 use App\Services\MapConfigService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -90,49 +88,17 @@ class RoadSegmentController extends Controller
 
         $segmentName = $this->generateUniqueSegmentName($validated['segment_name']);
         $segmentType = ! empty($validated['segment_type_id'])
-            ? SegmentType::query()->with('defaultRules')->find($validated['segment_type_id'])
+            ? SegmentType::query()->find($validated['segment_type_id'])
             : null;
 
-        DB::transaction(function () use ($segmentName, $segmentType, $validated, $geometry, $request): void {
-            $segment = RoadSegment::create([
-                'segment_name' => $segmentName,
-                'segment_type' => $segmentType?->name,
-                'segment_type_id' => $segmentType?->id,
-                'description' => $validated['description'] ?: null,
-                'length_km' => $validated['length_km'] ?: null,
-                'boundary_coordinates' => $geometry,
-                'created_by' => $request->user()?->id,
-            ]);
-
-            if (! $segmentType || $segmentType->defaultRules->isEmpty()) {
-                return;
-            }
-
-            $coordinates = data_get($geometry, 'geometry.coordinates', []);
-            $first = is_array($coordinates) && count($coordinates) > 0 ? $coordinates[0] : null;
-            $last = is_array($coordinates) && count($coordinates) > 1 ? $coordinates[count($coordinates) - 1] : null;
-            $latStart = is_array($first) && isset($first[1]) ? (float) $first[1] : null;
-            $lngStart = is_array($first) && isset($first[0]) ? (float) $first[0] : null;
-            $latEnd = is_array($last) && isset($last[1]) ? (float) $last[1] : null;
-            $lngEnd = is_array($last) && isset($last[0]) ? (float) $last[0] : null;
-
-            foreach ($segmentType->defaultRules as $template) {
-                RoadRule::create([
-                    'rule_name' => $template->rule_name,
-                    'rule_type' => $template->rule_type,
-                    'rule_value' => $template->rule_value,
-                    'description' => $template->description,
-                    'location_name' => $segment->segment_name,
-                    'latitude_start' => $latStart,
-                    'longitude_start' => $lngStart,
-                    'latitude_end' => $latEnd,
-                    'longitude_end' => $lngEnd,
-                    'is_active' => (bool) $template->is_active,
-                    'segment_id' => $segment->id,
-                    'created_by' => $request->user()?->id,
-                ]);
-            }
-        });
+        RoadSegment::create([
+            'segment_name' => $segmentName,
+            'segment_type_id' => $segmentType?->id,
+            'description' => $validated['description'] ?: null,
+            'length_km' => $validated['length_km'] ?: null,
+            'boundary_coordinates' => $geometry,
+            'created_by' => $request->user()?->id,
+        ]);
 
         return redirect()
             ->route('officer.road-segments.index')
@@ -163,13 +129,12 @@ class RoadSegmentController extends Controller
         $roadSegment->update([
             'segment_name' => trim($validated['segment_name']),
             'segment_type_id' => $segmentType?->id,
-            'segment_type' => $segmentType?->name,
             'description' => $validated['description'] ?: null,
             'length_km' => $validated['length_km'] ?: null,
         ]);
 
         return redirect()
-            ->route('officer.road-rules.index')
+            ->route('officer.road-segments.index')
             ->with('success', 'Road segment updated successfully.');
     }
 
@@ -181,7 +146,7 @@ class RoadSegmentController extends Controller
         $roadSegment->delete();
 
         return redirect()
-            ->route('officer.road-rules.index')
+            ->route('officer.road-segments.index')
             ->with('success', 'Road segment deleted successfully.');
     }
 

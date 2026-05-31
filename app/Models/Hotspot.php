@@ -25,7 +25,8 @@ class Hotspot extends Model
         'radius_meters',
         'frequency',
         'severity',
-        'rule_id',
+        'segment_id',
+        'segment_type_rule_id',
         'last_updated_at',
     ];
 
@@ -50,6 +51,11 @@ class Hotspot extends Model
 
     public function rule(): BelongsTo
     {
-        return $this->belongsTo(RoadRule::class, 'rule_id');
+        return $this->belongsTo(SegmentTypeRule::class, 'segment_type_rule_id');
+    }
+
+    public function segment(): BelongsTo
+    {
+        return $this->belongsTo(RoadSegment::class, 'segment_id');
     }
 }

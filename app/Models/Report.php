@@ -92,7 +92,7 @@ class Report extends Model
 
     public function violatedRules(): BelongsToMany
     {
-        return $this->belongsToMany(RoadRule::class, 'rule_violations', 'report_id', 'rule_id')
+        return $this->belongsToMany(SegmentTypeRule::class, 'rule_violations', 'report_id', 'segment_type_rule_id')
             ->withPivot(['matched_automatically', 'confidence_score', 'verified_by', 'verified_at'])
             ->withTimestamps();
     }

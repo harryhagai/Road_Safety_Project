@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Report;
-use App\Models\RoadRule;
 use App\Models\RoadSegment;
 use App\Models\RuleViolation;
 use App\Models\ViolationType;
+use App\Services\SegmentRuleResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -18,6 +18,8 @@ use Illuminate\Support\Str;
  */
 class AutoSpeedReportController extends Controller
 {
+    public function __construct(private readonly SegmentRuleResolver $segmentRuleResolver) {}
+
     private const ACTIVE_RULES_CACHE_SECONDS = 20;
     private const REQUIRED_EXCEEDED_SECONDS = 30;
     private const DUPLICATE_WINDOW_SECONDS = 600;
@@ -49,7 +51,7 @@ class AutoSpeedReportController extends Controller
 
         $speedKmh = (float) $validated['speed_kmh'];
         $exceeded = $speedKmh > $match['speed_limit_kmh'];
-        $sessionKey = $this->exceededSessionKey($match['rule']->id);
+        $sessionKey = $this->exceededSessionKey($match['segment']->id, $match['rule']->id);
 
         if ($exceeded) {
             $startedAt = session($sessionKey);
@@ -64,7 +66,7 @@ class AutoSpeedReportController extends Controller
         }
 
         $exceededSeconds = $startedAt ? max(0, now()->timestamp - (int) $startedAt) : 0;
-        $reporting = $this->reportingSnapshot((int) $match['rule']->id);
+        $reporting = $this->reportingSnapshot((int) $match['segment']->id, (int) $match['rule']->id);
 
         return response()->json([
             'matched' => true,
@@ -97,7 +99,7 @@ class AutoSpeedReportController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $this->validateTelemetry($request) + $request->validate([
-            'rule_id' => ['required', 'integer', 'exists:road_rules,id'],
+            'rule_id' => ['required', 'integer', 'exists:segment_type_rules,id'],
             'segment_id' => ['required', 'integer', 'exists:road_segments,id'],
         ]);
         $accuracy = (float) ($validated['accuracy'] ?? self::BASE_SEGMENT_TOLERANCE_METERS);
@@ -119,7 +121,7 @@ class AutoSpeedReportController extends Controller
         $speedKmh = (float) $validated['speed_kmh'];
 
         if ($speedKmh <= $match['speed_limit_kmh']) {
-            session()->forget($this->exceededSessionKey($match['rule']->id));
+            session()->forget($this->exceededSessionKey($match['segment']->id, $match['rule']->id));
 
             return response()->json([
                 'reported' => false,
@@ -128,7 +130,7 @@ class AutoSpeedReportController extends Controller
             ], 409);
         }
 
-        $startedAt = session($this->exceededSessionKey($match['rule']->id));
+        $startedAt = session($this->exceededSessionKey($match['segment']->id, $match['rule']->id));
         $exceededSeconds = is_numeric($startedAt) ? max(0, now()->timestamp - (int) $startedAt) : 0;
 
         if ($exceededSeconds < self::REQUIRED_EXCEEDED_SECONDS) {
@@ -140,7 +142,7 @@ class AutoSpeedReportController extends Controller
             ], 409);
         }
 
-        $duplicate = session($this->reportedSessionKey($match['rule']->id));
+        $duplicate = session($this->reportedSessionKey($match['segment']->id, $match['rule']->id));
         if (is_array($duplicate) && now()->timestamp - (int) ($duplicate['reported_at'] ?? 0) < self::DUPLICATE_WINDOW_SECONDS) {
             return response()->json([
                 'reported' => true,
@@ -178,7 +180,12 @@ class AutoSpeedReportController extends Controller
 
             RuleViolation::create([
                 'report_id' => $report->id,
-                'rule_id' => $match['rule']->id,
+                'segment_id' => $match['segment']->id,
+                'segment_type_rule_id' => $match['rule']->id,
+                'rule_name_snapshot' => $match['rule']->rule_name,
+                'rule_type_snapshot' => $match['rule']->rule_type,
+                'rule_value_snapshot' => $match['rule']->rule_value,
+                'rule_description_snapshot' => $match['rule']->description,
                 'matched_automatically' => true,
                 'confidence_score' => $this->confidenceForDistance($match['distance_meters']),
             ]);
@@ -186,11 +193,11 @@ class AutoSpeedReportController extends Controller
             return $report;
         });
 
-        session()->put($this->reportedSessionKey($match['rule']->id), [
+        session()->put($this->reportedSessionKey($match['segment']->id, $match['rule']->id), [
             'reference_no' => $report->reference_no,
             'reported_at' => now()->timestamp,
         ]);
-        session()->forget($this->exceededSessionKey($match['rule']->id));
+        session()->forget($this->exceededSessionKey($match['segment']->id, $match['rule']->id));
 
         return response()->json([
             'reported' => true,
@@ -221,32 +228,17 @@ class AutoSpeedReportController extends Controller
     private function matchSpeedRule(float $latitude, float $longitude, float $accuracy): ?array
     {
         $cacheKey = 'auto_speed.active_rules.snapshot';
-        $rules = Cache::remember($cacheKey, now()->addSeconds(self::ACTIVE_RULES_CACHE_SECONDS), function () {
-            return RoadRule::query()
-                ->select([
-                    'id',
-                    'rule_name',
-                    'rule_type',
-                    'rule_value',
-                    'latitude_start',
-                    'longitude_start',
-                    'latitude_end',
-                    'longitude_end',
-                    'effective_from',
-                    'effective_to',
-                    'is_active',
-                    'segment_id',
+        $segments = Cache::remember($cacheKey, now()->addSeconds(self::ACTIVE_RULES_CACHE_SECONDS), function () {
+            return RoadSegment::query()
+                ->whereNotNull('boundary_coordinates')
+                ->with([
+                    'segmentType:id,name',
+                    'segmentType.defaultRules' => function ($query) {
+                        $query->select('id', 'segment_type_id', 'rule_name', 'rule_type', 'rule_value', 'description', 'is_active', 'sort_order')
+                            ->orderBy('sort_order');
+                    },
                 ])
-                ->with('segment:id,segment_name,segment_type,boundary_coordinates')
-                ->where('is_active', true)
-                ->where('rule_type', 'speed_limit')
-                ->where(function ($query) {
-                    $query->whereNull('effective_from')->orWhere('effective_from', '<=', now());
-                })
-                ->where(function ($query) {
-                    $query->whereNull('effective_to')->orWhere('effective_to', '>=', now());
-                })
-                ->get();
+                ->get(['id', 'segment_name', 'segment_type_id', 'boundary_coordinates']);
         });
 
         $bestMatch = null;
@@ -256,33 +248,37 @@ class AutoSpeedReportController extends Controller
             max(self::BASE_SEGMENT_TOLERANCE_METERS, $accuracy + 80)
         );
 
-        foreach ($rules as $rule) {
-            if (! $rule->segment) {
+        foreach ($segments as $segment) {
+            $resolvedRule = $this->segmentRuleResolver->resolveSpeedLimitRuleForSegment($segment);
+            if (! $resolvedRule) {
                 continue;
             }
 
-            $speedLimit = $this->parseSpeedLimit($rule->rule_value);
+            $speedLimit = $this->parseSpeedLimit((string) ($resolvedRule['rule_value'] ?? ''));
             if (! $speedLimit) {
                 continue;
             }
 
-            $points = $this->segmentPoints($rule->segment->boundary_coordinates);
-            if (count($points) < 2) {
-                $points = $this->ruleEndpointPoints($rule);
-            }
-
+            $points = $this->segmentPoints($segment->boundary_coordinates);
             if (count($points) < 2) {
                 continue;
             }
 
             $distance = $this->distanceToPolylineMeters(['lat' => $latitude, 'lng' => $longitude], $points);
-            $segmentBuffer = $this->segmentBufferMeters($rule->segment);
+            $segmentBuffer = $this->segmentBufferMeters($segment);
             $matchingBuffer = max($tolerance, $segmentBuffer);
+            $ruleData = (object) [
+                'id' => (int) $resolvedRule['segment_type_rule_id'],
+                'rule_name' => $resolvedRule['rule_name'],
+                'rule_type' => $resolvedRule['rule_type'],
+                'rule_value' => $resolvedRule['rule_value'],
+                'description' => $resolvedRule['description'],
+            ];
 
             if (! $nearestMatch || $distance < $nearestMatch['distance_meters']) {
                 $nearestMatch = [
-                    'rule' => $rule,
-                    'segment' => $rule->segment,
+                    'rule' => $ruleData,
+                    'segment' => $segment,
                     'speed_limit_kmh' => $speedLimit,
                     'distance_meters' => $distance,
                     'matching_buffer_meters' => $matchingBuffer,
@@ -295,8 +291,8 @@ class AutoSpeedReportController extends Controller
 
             if (! $bestMatch || $distance < $bestMatch['distance_meters']) {
                 $bestMatch = [
-                    'rule' => $rule,
-                    'segment' => $rule->segment,
+                    'rule' => $ruleData,
+                    'segment' => $segment,
                     'speed_limit_kmh' => $speedLimit,
                     'distance_meters' => $distance,
                     'matching_buffer_meters' => $matchingBuffer,
@@ -316,7 +312,7 @@ class AutoSpeedReportController extends Controller
      */
     private function segmentBufferMeters(RoadSegment $segment): float
     {
-        $type = strtolower(trim((string) ($segment->segment_type_name ?? $segment->segment_type ?? '')));
+        $type = strtolower(trim((string) ($segment->segment_type_name ?? '')));
 
         if ($type === '') {
             return self::BASE_SEGMENT_TOLERANCE_METERS;
@@ -458,25 +454,6 @@ class AutoSpeedReportController extends Controller
     }
 
     /**
-     * Handle the ruleEndpointPoints workflow for this class.
-     */
-
-    private function ruleEndpointPoints(RoadRule $rule): array
-    {
-        $start = is_numeric($rule->latitude_start) && is_numeric($rule->longitude_start)
-            ? $this->validPoint((float) $rule->latitude_start, (float) $rule->longitude_start)
-            : null;
-        $end = is_numeric($rule->latitude_end) && is_numeric($rule->longitude_end)
-            ? $this->validPoint((float) $rule->latitude_end, (float) $rule->longitude_end)
-            : null;
-
-        return collect([$start, $end])
-            ->filter(fn (?array $point): bool => $point !== null)
-            ->values()
-            ->all();
-    }
-
-    /**
      * Handle the distanceToPolylineMeters workflow for this class.
      */
 
@@ -569,18 +546,18 @@ class AutoSpeedReportController extends Controller
      * Handle the exceededSessionKey workflow for this class.
      */
 
-    private function exceededSessionKey(int $ruleId): string
+    private function exceededSessionKey(int $segmentId, int $ruleId): string
     {
-        return "auto_speed.exceeded.{$ruleId}";
+        return "auto_speed.exceeded.{$segmentId}.{$ruleId}";
     }
 
     /**
      * Handle the reportedSessionKey workflow for this class.
      */
 
-    private function reportedSessionKey(int $ruleId): string
+    private function reportedSessionKey(int $segmentId, int $ruleId): string
     {
-        return "auto_speed.reported.{$ruleId}";
+        return "auto_speed.reported.{$segmentId}.{$ruleId}";
     }
 
     /**
@@ -599,16 +576,20 @@ class AutoSpeedReportController extends Controller
     /**
      * Build live reporting snapshot for the matched speed rule.
      */
-    private function reportingSnapshot(int $ruleId): array
+    private function reportingSnapshot(int $segmentId, int $segmentTypeRuleId): array
     {
         $latestViolation = RuleViolation::query()
-            ->where('rule_id', $ruleId)
+            ->where('segment_id', $segmentId)
+            ->where('segment_type_rule_id', $segmentTypeRuleId)
             ->with('report:id,reference_no,status,reported_at')
             ->latest('id')
             ->first();
 
         $latestReport = $latestViolation?->report;
-        $totalReports = RuleViolation::query()->where('rule_id', $ruleId)->count();
+        $totalReports = RuleViolation::query()
+            ->where('segment_id', $segmentId)
+            ->where('segment_type_rule_id', $segmentTypeRuleId)
+            ->count();
 
         return [
             'total_reports_for_rule' => $totalReports,

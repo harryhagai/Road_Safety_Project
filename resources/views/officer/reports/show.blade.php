@@ -157,7 +157,7 @@
                 <div class="report-detail-header">
                     <div>
                         <span class="report-detail-eyebrow">Rule Matching</span>
-                        <h3>Matched road rules</h3>
+                        <h3>Matched rules</h3>
                     </div>
                 </div>
 
@@ -176,10 +176,10 @@
                         <tbody>
                             @forelse ($report->ruleViolations as $ruleViolation)
                                 <tr>
-                                    <td>{{ $ruleViolation->rule?->rule_name ?? 'Rule removed' }}</td>
-                                    <td>{{ $ruleViolation->rule?->segment?->segment_name ?? 'Not linked' }}</td>
-                                    <td>{{ $statusLabel($ruleViolation->rule?->rule_type) }}</td>
-                                    <td>{{ $ruleViolation->rule?->rule_value ?: 'N/A' }}</td>
+                                    <td>{{ $ruleViolation->rule_name_snapshot ?: ($ruleViolation->rule?->rule_name ?? 'Rule removed') }}</td>
+                                    <td>{{ $ruleViolation->segment?->segment_name ?? 'Not linked' }}</td>
+                                    <td>{{ $statusLabel($ruleViolation->rule_type_snapshot ?: $ruleViolation->rule?->rule_type) }}</td>
+                                    <td>{{ $ruleViolation->rule_value_snapshot ?: ($ruleViolation->rule?->rule_value ?: 'N/A') }}</td>
                                     <td>{{ $ruleViolation->confidence_score ? number_format((float) $ruleViolation->confidence_score, 2) . '%' : 'N/A' }}</td>
                                     <td>
                                         <span class="report-badge report-badge--{{ $ruleViolation->matched_automatically ? 'info' : 'muted' }}">
@@ -189,7 +189,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted py-4">No road rule match has been attached to this report.</td>
+                                    <td colspan="6" class="text-center text-muted py-4">No rule match has been attached to this report.</td>
                                 </tr>
                             @endforelse
                         </tbody>

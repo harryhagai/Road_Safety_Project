@@ -39,7 +39,7 @@ class OfficerReportController extends Controller
         $reports = Report::query()
             ->with([
                 'violationType:id,name',
-                'ruleViolations.rule.segment:id,segment_name',
+                'ruleViolations.segment:id,segment_name',
             ])
             ->when($validated['search'] ?? null, function ($query, string $search) {
                 $like = '%'.trim($search).'%';
@@ -50,7 +50,13 @@ class OfficerReportController extends Controller
                         ->orWhere('location_name', 'like', $like)
                         ->orWhere('description', 'like', $like)
                         ->orWhereHas('violationType', fn ($typeQuery) => $typeQuery->where('name', 'like', $like))
-                        ->orWhereHas('ruleViolations.rule.segment', fn ($segmentQuery) => $segmentQuery->where('segment_name', 'like', $like));
+                        ->orWhereHas('ruleViolations.segment', fn ($segmentQuery) => $segmentQuery->where('segment_name', 'like', $like))
+                        ->orWhereHas('ruleViolations', function ($ruleViolationQuery) use ($like) {
+                            $ruleViolationQuery
+                                ->where('rule_name_snapshot', 'like', $like)
+                                ->orWhere('rule_type_snapshot', 'like', $like)
+                                ->orWhere('rule_value_snapshot', 'like', $like);
+                        });
                 });
             })
             ->when($validated['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
@@ -89,7 +95,9 @@ class OfficerReportController extends Controller
     {
         $report->load([
             'violationType:id,name,description',
-            'ruleViolations.rule.segment:id,segment_name,segment_type,boundary_coordinates,length_km,description',
+            'ruleViolations.segment:id,segment_name,segment_type_id,boundary_coordinates,length_km,description',
+            'ruleViolations.segment.segmentType:id,name',
+            'ruleViolations.rule:id,rule_name,rule_type,rule_value',
         ]);
 
         return view('officer.reports.show', [

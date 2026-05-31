@@ -354,8 +354,6 @@ namespace App\Models {
      * @property-read int|null $reports_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RoadSegment> $createdRoadSegments
      * @property-read int|null $created_road_segments_count
-     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RoadRule> $createdRoadRules
-     * @property-read int|null $created_road_rules_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RuleViolation> $verifiedRuleViolations
      * @property-read int|null $verified_rule_violations_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
@@ -1061,7 +1059,7 @@ namespace App\Models {
      * @property-read int|null $evidence_files_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RuleViolation> $ruleViolations
      * @property-read int|null $rule_violations_count
-     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RoadRule> $violatedRules
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SegmentTypeRule> $violatedRules
      * @property-read int|null $violated_rules_count
      * @method static \Illuminate\Database\Eloquent\Builder<Report>|Report whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Report>|Report whereReferenceNo($value)
@@ -1394,51 +1392,32 @@ namespace App\Models {
     }
 
     /**
-     * App\Models\RoadRule
+     * App\Models\SegmentTypeRule
      *
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
-     * @property int|null $created_by
-     * @property int|null $segment_id
+     * @property int $sort_order
      * @property boolean $is_active
-     * @property \Illuminate\Support\Carbon|null $effective_to
-     * @property \Illuminate\Support\Carbon|null $effective_from
      * @property string|null $description
      * @property string|null $rule_value
-     * @property string|null $location_name
-     * @property float|null $longitude_end
-     * @property float|null $latitude_end
-     * @property float|null $longitude_start
-     * @property float|null $latitude_start
      * @property string $rule_type
      * @property string $rule_name
+     * @property int $segment_type_id
      * @property int $id
-     * @property-read \App\Models\RoadSegment $segment
-     * @property-read \App\Models\Officer $creator
-     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RuleViolation> $ruleViolations
-     * @property-read int|null $rule_violations_count
-     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Hotspot> $hotspots
-     * @property-read int|null $hotspots_count
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereRuleName($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereRuleType($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereLatitudeStart($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereLongitudeStart($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereLatitudeEnd($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereLongitudeEnd($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereLocationName($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereRuleValue($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereDescription($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereEffectiveFrom($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereEffectiveTo($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereIsActive($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereSegmentId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereCreatedBy($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereCreatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule whereUpdatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule newModelQuery()
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule newQuery()
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule query()
+     * @property-read \App\Models\SegmentType $segmentType
+     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereSegmentTypeId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereRuleName($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereRuleType($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereRuleValue($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereDescription($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereIsActive($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereSortOrder($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereUpdatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule newModelQuery()
+     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule newQuery()
+     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule query()
      * @method static mixed select($columns)
      * @method static mixed selectSub($query, $as)
      * @method static mixed selectExpression($expression, $as)
@@ -1604,7 +1583,7 @@ namespace App\Models {
      * @method static mixed lock($value)
      * @method static mixed lockForUpdate()
      * @method static mixed sharedLock()
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadRule>|RoadRule timeout(int $seconds)
+     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule timeout(int $seconds)
      * @method static mixed beforeQuery(callable $callback)
      * @method static mixed applyBeforeQueryCallbacks()
      * @method static mixed afterQuery(Closure $callback)
@@ -1746,7 +1725,7 @@ namespace App\Models {
      * @method static mixed macroCall($method, $parameters)
      * @mixin \Illuminate\Database\Query\Builder
      */
-    class RoadRule extends \Illuminate\Database\Eloquent\Model
+    class SegmentTypeRule extends \Illuminate\Database\Eloquent\Model
     {
         //
     }
@@ -1761,17 +1740,13 @@ namespace App\Models {
      * @property float|null $length_km
      * @property array|null $boundary_coordinates
      * @property int|null $segment_type_id
-     * @property string|null $segment_type
      * @property string $segment_name
      * @property int $id
      * @property-read mixed $segment_type_name
      * @property-read \App\Models\Officer $creator
      * @property-read \App\Models\SegmentType $segmentType
-     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RoadRule> $roadRules
-     * @property-read int|null $road_rules_count
      * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereSegmentName($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereSegmentType($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereSegmentTypeId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereBoundaryCoordinates($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereLengthKm($value)
@@ -2435,15 +2410,26 @@ namespace App\Models {
      * @property int|null $verified_by
      * @property float|null $confidence_score
      * @property boolean $matched_automatically
-     * @property int $rule_id
+     * @property string|null $rule_description_snapshot
+     * @property string|null $rule_value_snapshot
+     * @property string|null $rule_type_snapshot
+     * @property string|null $rule_name_snapshot
+     * @property int|null $segment_type_rule_id
+     * @property int|null $segment_id
      * @property int $report_id
      * @property int $id
      * @property-read \App\Models\Report $report
-     * @property-read \App\Models\RoadRule $rule
+     * @property-read \App\Models\SegmentTypeRule $rule
+     * @property-read \App\Models\RoadSegment $segment
      * @property-read \App\Models\Officer $verifier
      * @method static \Illuminate\Database\Eloquent\Builder<RuleViolation>|RuleViolation whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RuleViolation>|RuleViolation whereReportId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RuleViolation>|RuleViolation whereRuleId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RuleViolation>|RuleViolation whereSegmentId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RuleViolation>|RuleViolation whereSegmentTypeRuleId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RuleViolation>|RuleViolation whereRuleNameSnapshot($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RuleViolation>|RuleViolation whereRuleTypeSnapshot($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RuleViolation>|RuleViolation whereRuleValueSnapshot($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RuleViolation>|RuleViolation whereRuleDescriptionSnapshot($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RuleViolation>|RuleViolation whereMatchedAutomatically($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RuleViolation>|RuleViolation whereConfidenceScore($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RuleViolation>|RuleViolation whereVerifiedBy($value)
@@ -2771,7 +2757,8 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
      * @property \Illuminate\Support\Carbon|null $last_updated_at
-     * @property int|null $rule_id
+     * @property int|null $segment_type_rule_id
+     * @property int|null $segment_id
      * @property string $severity
      * @property int $frequency
      * @property float $radius_meters
@@ -2779,7 +2766,8 @@ namespace App\Models {
      * @property float $latitude
      * @property string|null $name
      * @property int $id
-     * @property-read \App\Models\RoadRule $rule
+     * @property-read \App\Models\SegmentTypeRule $rule
+     * @property-read \App\Models\RoadSegment $segment
      * @method static \Illuminate\Database\Eloquent\Builder<Hotspot>|Hotspot whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Hotspot>|Hotspot whereName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Hotspot>|Hotspot whereLatitude($value)
@@ -2787,7 +2775,8 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<Hotspot>|Hotspot whereRadiusMeters($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Hotspot>|Hotspot whereFrequency($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Hotspot>|Hotspot whereSeverity($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Hotspot>|Hotspot whereRuleId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Hotspot>|Hotspot whereSegmentId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Hotspot>|Hotspot whereSegmentTypeRuleId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Hotspot>|Hotspot whereLastUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Hotspot>|Hotspot whereCreatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Hotspot>|Hotspot whereUpdatedAt($value)
@@ -4138,365 +4127,24 @@ namespace App\Models {
     }
 
     /**
-     * App\Models\SegmentTypeRule
-     *
-     * @property \Illuminate\Support\Carbon|null $updated_at
-     * @property \Illuminate\Support\Carbon|null $created_at
-     * @property int $sort_order
-     * @property boolean $is_active
-     * @property string|null $description
-     * @property string|null $rule_value
-     * @property string $rule_type
-     * @property string $rule_name
-     * @property int $segment_type_id
-     * @property int $id
-     * @property-read \App\Models\SegmentType $segmentType
-     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereSegmentTypeId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereRuleName($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereRuleType($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereRuleValue($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereDescription($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereIsActive($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereSortOrder($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereCreatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule whereUpdatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule newModelQuery()
-     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule newQuery()
-     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule query()
-     * @method static mixed select($columns)
-     * @method static mixed selectSub($query, $as)
-     * @method static mixed selectExpression($expression, $as)
-     * @method static mixed selectRaw($expression, array $bindings)
-     * @method static mixed fromSub($query, $as)
-     * @method static mixed fromRaw($expression, $bindings)
-     * @method static mixed createSub($query)
-     * @method static mixed parseSub($query)
-     * @method static mixed prependDatabaseNameIfCrossDatabaseQuery($query)
-     * @method static mixed addSelect($column)
-     * @method static mixed selectVectorDistance($column, $vector, $as)
-     * @method static mixed distinct()
-     * @method static mixed from($table, $as)
-     * @method static mixed useIndex($index)
-     * @method static mixed forceIndex($index)
-     * @method static mixed ignoreIndex($index)
-     * @method static mixed join($table, $first, $operator, $second, $type, $where)
-     * @method static mixed joinWhere($table, $first, $operator, $second, $type)
-     * @method static mixed joinSub($query, $as, $first, $operator, $second, $type, $where)
-     * @method static mixed joinLateral($query, string $as, string $type)
-     * @method static mixed leftJoinLateral($query, string $as)
-     * @method static mixed leftJoin($table, $first, $operator, $second)
-     * @method static mixed leftJoinWhere($table, $first, $operator, $second)
-     * @method static mixed leftJoinSub($query, $as, $first, $operator, $second)
-     * @method static mixed rightJoin($table, $first, $operator, $second)
-     * @method static mixed rightJoinWhere($table, $first, $operator, $second)
-     * @method static mixed rightJoinSub($query, $as, $first, $operator, $second)
-     * @method static mixed crossJoin($table, $first, $operator, $second)
-     * @method static mixed crossJoinSub($query, $as)
-     * @method static mixed newJoinClause(self $parentQuery, $type, $table)
-     * @method static mixed newJoinLateralClause(self $parentQuery, $type, $table)
-     * @method static mixed mergeWheres($wheres, $bindings)
-     * @method static mixed where($column, $operator, $value, $boolean)
-     * @method static mixed addArrayOfWheres($column, $boolean, $method)
-     * @method static mixed prepareValueAndOperator($value, $operator, $useDefault)
-     * @method static mixed invalidOperatorAndValue($operator, $value)
-     * @method static mixed invalidOperator($operator)
-     * @method static mixed isBitwiseOperator($operator)
-     * @method static mixed orWhere($column, $operator, $value)
-     * @method static mixed whereNot($column, $operator, $value, $boolean)
-     * @method static mixed orWhereNot($column, $operator, $value)
-     * @method static mixed whereColumn($first, $operator, $second, $boolean)
-     * @method static mixed orWhereColumn($first, $operator, $second)
-     * @method static mixed whereVectorSimilarTo($column, $vector, $minSimilarity, $order)
-     * @method static mixed whereVectorDistanceLessThan($column, $vector, $maxDistance, $boolean)
-     * @method static mixed orWhereVectorDistanceLessThan($column, $vector, $maxDistance)
-     * @method static mixed whereRaw($sql, $bindings, $boolean)
-     * @method static mixed orWhereRaw($sql, $bindings)
-     * @method static mixed whereLike($column, $value, $caseSensitive, $boolean, $not)
-     * @method static mixed orWhereLike($column, $value, $caseSensitive)
-     * @method static mixed whereNotLike($column, $value, $caseSensitive, $boolean)
-     * @method static mixed orWhereNotLike($column, $value, $caseSensitive)
-     * @method static mixed whereNullSafeEquals($column, $value, $boolean)
-     * @method static mixed orWhereNullSafeEquals($column, $value)
-     * @method static mixed whereIn($column, $values, $boolean, $not)
-     * @method static mixed orWhereIn($column, $values)
-     * @method static mixed whereNotIn($column, $values, $boolean)
-     * @method static mixed orWhereNotIn($column, $values)
-     * @method static mixed whereIntegerInRaw($column, $values, $boolean, $not)
-     * @method static mixed orWhereIntegerInRaw($column, $values)
-     * @method static mixed whereIntegerNotInRaw($column, $values, $boolean)
-     * @method static mixed orWhereIntegerNotInRaw($column, $values)
-     * @method static mixed whereNull($columns, $boolean, $not)
-     * @method static mixed orWhereNull($column)
-     * @method static mixed whereNotNull($columns, $boolean)
-     * @method static mixed whereBetween($column, iterable $values, $boolean, $not)
-     * @method static mixed whereBetweenColumns($column, array $values, $boolean, $not)
-     * @method static mixed orWhereBetween($column, iterable $values)
-     * @method static mixed orWhereBetweenColumns($column, array $values)
-     * @method static mixed whereNotBetween($column, iterable $values, $boolean)
-     * @method static mixed whereNotBetweenColumns($column, array $values, $boolean)
-     * @method static mixed orWhereNotBetween($column, iterable $values)
-     * @method static mixed orWhereNotBetweenColumns($column, array $values)
-     * @method static mixed whereValueBetween($value, array $columns, $boolean, $not)
-     * @method static mixed orWhereValueBetween($value, array $columns)
-     * @method static mixed whereValueNotBetween($value, array $columns, $boolean)
-     * @method static mixed orWhereValueNotBetween($value, array $columns)
-     * @method static mixed orWhereNotNull($column)
-     * @method static mixed whereDate($column, $operator, $value, $boolean)
-     * @method static mixed orWhereDate($column, $operator, $value)
-     * @method static mixed whereTime($column, $operator, $value, $boolean)
-     * @method static mixed orWhereTime($column, $operator, $value)
-     * @method static mixed whereDay($column, $operator, $value, $boolean)
-     * @method static mixed orWhereDay($column, $operator, $value)
-     * @method static mixed whereMonth($column, $operator, $value, $boolean)
-     * @method static mixed orWhereMonth($column, $operator, $value)
-     * @method static mixed whereYear($column, $operator, $value, $boolean)
-     * @method static mixed orWhereYear($column, $operator, $value)
-     * @method static mixed addDateBasedWhere($type, $column, $operator, $value, $boolean)
-     * @method static mixed whereNested(Closure $callback, $boolean)
-     * @method static mixed forNestedWhere()
-     * @method static mixed addNestedWhereQuery($query, $boolean)
-     * @method static mixed whereSub($column, $operator, $callback, $boolean)
-     * @method static mixed whereExists($callback, $boolean, $not)
-     * @method static mixed orWhereExists($callback, $not)
-     * @method static mixed whereNotExists($callback, $boolean)
-     * @method static mixed orWhereNotExists($callback)
-     * @method static mixed addWhereExistsQuery(self $query, $boolean, $not)
-     * @method static mixed whereRowValues($columns, $operator, $values, $boolean)
-     * @method static mixed orWhereRowValues($columns, $operator, $values)
-     * @method static mixed whereJsonContains($column, $value, $boolean, $not)
-     * @method static mixed orWhereJsonContains($column, $value)
-     * @method static mixed whereJsonDoesntContain($column, $value, $boolean)
-     * @method static mixed orWhereJsonDoesntContain($column, $value)
-     * @method static mixed whereJsonOverlaps($column, $value, $boolean, $not)
-     * @method static mixed orWhereJsonOverlaps($column, $value)
-     * @method static mixed whereJsonDoesntOverlap($column, $value, $boolean)
-     * @method static mixed orWhereJsonDoesntOverlap($column, $value)
-     * @method static mixed whereJsonContainsKey($column, $boolean, $not)
-     * @method static mixed orWhereJsonContainsKey($column)
-     * @method static mixed whereJsonDoesntContainKey($column, $boolean)
-     * @method static mixed orWhereJsonDoesntContainKey($column)
-     * @method static mixed whereJsonLength($column, $operator, $value, $boolean)
-     * @method static mixed orWhereJsonLength($column, $operator, $value)
-     * @method static mixed dynamicWhere($method, $parameters)
-     * @method static mixed addDynamic($segment, $connector, $parameters, $index)
-     * @method static mixed whereFullText($columns, $value, array $options, $boolean)
-     * @method static mixed orWhereFullText($columns, $value, array $options)
-     * @method static mixed whereAll($columns, $operator, $value, $boolean)
-     * @method static mixed orWhereAll($columns, $operator, $value)
-     * @method static mixed whereAny($columns, $operator, $value, $boolean)
-     * @method static mixed orWhereAny($columns, $operator, $value)
-     * @method static mixed whereNone($columns, $operator, $value, $boolean)
-     * @method static mixed orWhereNone($columns, $operator, $value)
-     * @method static mixed groupBy($groups)
-     * @method static mixed groupByRaw($sql, array $bindings)
-     * @method static mixed having($column, $operator, $value, $boolean)
-     * @method static mixed orHaving($column, $operator, $value)
-     * @method static mixed havingNested(Closure $callback, $boolean)
-     * @method static mixed addNestedHavingQuery($query, $boolean)
-     * @method static mixed havingNull($columns, $boolean, $not)
-     * @method static mixed orHavingNull($column)
-     * @method static mixed havingNotNull($columns, $boolean)
-     * @method static mixed orHavingNotNull($column)
-     * @method static mixed havingBetween($column, iterable $values, $boolean, $not)
-     * @method static mixed havingNotBetween($column, iterable $values, $boolean)
-     * @method static mixed orHavingBetween($column, iterable $values)
-     * @method static mixed orHavingNotBetween($column, iterable $values)
-     * @method static mixed resolveDatePeriodBounds(DatePeriod $period)
-     * @method static mixed havingRaw($sql, array $bindings, $boolean)
-     * @method static mixed orHavingRaw($sql, array $bindings)
-     * @method static mixed orderBy($column, $direction)
-     * @method static mixed orderByDesc($column)
-     * @method static mixed latest($column)
-     * @method static mixed oldest($column)
-     * @method static mixed orderByVectorDistance($column, $vector)
-     * @method static mixed inRandomOrder($seed)
-     * @method static mixed inOrderOf($column, $values)
-     * @method static mixed orderByRaw($sql, $bindings)
-     * @method static mixed skip($value)
-     * @method static mixed offset($value)
-     * @method static mixed take($value)
-     * @method static mixed limit($value)
-     * @method static mixed groupLimit($value, $column)
-     * @method static mixed forPage($page, $perPage)
-     * @method static mixed forPageBeforeId($perPage, $lastId, $column)
-     * @method static mixed forPageAfterId($perPage, $lastId, $column)
-     * @method static mixed reorder($column, $direction)
-     * @method static mixed reorderDesc($column)
-     * @method static mixed removeExistingOrdersFor($column)
-     * @method static mixed union($query, $all)
-     * @method static mixed unionAll($query)
-     * @method static mixed lock($value)
-     * @method static mixed lockForUpdate()
-     * @method static mixed sharedLock()
-     * @method static \Illuminate\Database\Eloquent\Builder<SegmentTypeRule>|SegmentTypeRule timeout(int $seconds)
-     * @method static mixed beforeQuery(callable $callback)
-     * @method static mixed applyBeforeQueryCallbacks()
-     * @method static mixed afterQuery(Closure $callback)
-     * @method static mixed applyAfterQueryCallbacks($result)
-     * @method static mixed toSql()
-     * @method static mixed toRawSql()
-     * @method static mixed find($id, $columns)
-     * @method static mixed findOr($id, $columns, Closure $callback)
-     * @method static mixed value($column)
-     * @method static mixed rawValue(string $expression, array $bindings)
-     * @method static mixed soleValue($column)
-     * @method static mixed get($columns)
-     * @method static mixed runSelect()
-     * @method static mixed withoutGroupLimitKeys($items)
-     * @method static mixed paginate($perPage, $columns, $pageName, $page, $total)
-     * @method static mixed simplePaginate($perPage, $columns, $pageName, $page)
-     * @method static mixed cursorPaginate($perPage, $columns, $cursorName, $cursor)
-     * @method static mixed ensureOrderForCursorPagination($shouldReverse)
-     * @method static mixed getCountForPagination($columns)
-     * @method static mixed runPaginationCountQuery($columns)
-     * @method static mixed cloneForPaginationCount()
-     * @method static mixed withoutSelectAliases(array $columns)
-     * @method static mixed cursor()
-     * @method static mixed enforceOrderBy()
-     * @method static mixed pluck($column, $key)
-     * @method static mixed stripTableForPluck($column)
-     * @method static mixed pluckFromObjectColumn($queryResult, $column, $key)
-     * @method static mixed pluckFromArrayColumn($queryResult, $column, $key)
-     * @method static mixed implode($column, $glue)
-     * @method static mixed exists()
-     * @method static mixed doesntExist()
-     * @method static mixed existsOr(Closure $callback)
-     * @method static mixed doesntExistOr(Closure $callback)
-     * @method static mixed count($columns)
-     * @method static mixed min($column)
-     * @method static mixed max($column)
-     * @method static mixed sum($column)
-     * @method static mixed avg($column)
-     * @method static mixed average($column)
-     * @method static mixed aggregate($function, $columns)
-     * @method static mixed numericAggregate($function, $columns)
-     * @method static mixed setAggregate($function, $columns)
-     * @method static mixed onceWithColumns($columns, $callback)
-     * @method static mixed insert(array $values)
-     * @method static mixed insertOrIgnore(array $values)
-     * @method static mixed insertGetId(array $values, $sequence)
-     * @method static mixed insertUsing(array $columns, $query)
-     * @method static mixed insertOrIgnoreUsing(array $columns, $query)
-     * @method static mixed update(array $values)
-     * @method static mixed updateFrom(array $values)
-     * @method static mixed updateOrInsert(array $attributes, callable|array $values)
-     * @method static mixed upsert(array $values, array|string $uniqueBy, array $update)
-     * @method static mixed increment($column, $amount, array $extra)
-     * @method static mixed incrementEach(array $columns, array $extra)
-     * @method static mixed decrement($column, $amount, array $extra)
-     * @method static mixed decrementEach(array $columns, array $extra)
-     * @method static mixed delete($id)
-     * @method static mixed truncate()
-     * @method static mixed newQuery()
-     * @method static mixed forSubQuery()
-     * @method static mixed getColumns()
-     * @method static mixed raw($value)
-     * @method static mixed getUnionBuilders()
-     * @method static mixed getLimit()
-     * @method static mixed getOffset()
-     * @method static mixed getBindings()
-     * @method static mixed getRawBindings()
-     * @method static mixed setBindings(array $bindings, $type)
-     * @method static mixed addBinding($value, $type)
-     * @method static mixed castBinding($value)
-     * @method static mixed mergeBindings(self $query)
-     * @method static mixed cleanBindings(array $bindings)
-     * @method static mixed flattenValue($value)
-     * @method static mixed defaultKeyName()
-     * @method static mixed getConnection()
-     * @method static mixed ensureConnectionSupportsVectors()
-     * @method static mixed getProcessor()
-     * @method static mixed getGrammar()
-     * @method static mixed useWritePdo()
-     * @method static mixed isQueryable($value)
-     * @method static mixed clone()
-     * @method static mixed cloneWithout(array $properties)
-     * @method static mixed cloneWithoutBindings(array $except)
-     * @method static mixed dump($args)
-     * @method static mixed dumpRawSql()
-     * @method static mixed dd()
-     * @method static mixed ddRawSql()
-     * @method static mixed wherePast($columns)
-     * @method static mixed whereNowOrPast($columns)
-     * @method static mixed orWherePast($columns)
-     * @method static mixed orWhereNowOrPast($columns)
-     * @method static mixed whereFuture($columns)
-     * @method static mixed whereNowOrFuture($columns)
-     * @method static mixed orWhereFuture($columns)
-     * @method static mixed orWhereNowOrFuture($columns)
-     * @method static mixed wherePastOrFuture($columns, $operator, $boolean)
-     * @method static mixed whereToday($columns, $boolean)
-     * @method static mixed whereBeforeToday($columns)
-     * @method static mixed whereTodayOrBefore($columns)
-     * @method static mixed whereAfterToday($columns)
-     * @method static mixed whereTodayOrAfter($columns)
-     * @method static mixed orWhereToday($columns)
-     * @method static mixed orWhereBeforeToday($columns)
-     * @method static mixed orWhereTodayOrBefore($columns)
-     * @method static mixed orWhereAfterToday($columns)
-     * @method static mixed orWhereTodayOrAfter($columns)
-     * @method static mixed whereTodayBeforeOrAfter($columns, $operator, $boolean)
-     * @method static mixed chunk($count, callable $callback)
-     * @method static mixed chunkMap(callable $callback, $count)
-     * @method static mixed each(callable $callback, $count)
-     * @method static mixed chunkById($count, callable $callback, $column, $alias)
-     * @method static mixed chunkByIdDesc($count, callable $callback, $column, $alias)
-     * @method static mixed orderedChunkById($count, callable $callback, $column, $alias, $descending)
-     * @method static mixed eachById(callable $callback, $count, $column, $alias)
-     * @method static mixed lazy($chunkSize)
-     * @method static mixed lazyById($chunkSize, $column, $alias)
-     * @method static mixed lazyByIdDesc($chunkSize, $column, $alias)
-     * @method static mixed orderedLazyById($chunkSize, $column, $alias, $descending)
-     * @method static mixed first($columns)
-     * @method static mixed firstOrFail($columns, $message)
-     * @method static mixed sole($columns)
-     * @method static mixed paginateUsingCursor($perPage, $columns, $cursorName, $cursor)
-     * @method static mixed getOriginalColumnNameForCursorPagination($builder, string $parameter)
-     * @method static mixed paginator($items, $total, $perPage, $currentPage, $options)
-     * @method static mixed simplePaginator($items, $perPage, $currentPage, $options)
-     * @method static mixed cursorPaginator($items, $perPage, $cursor, $options)
-     * @method static mixed tap($callback)
-     * @method static mixed pipe($callback)
-     * @method static mixed when($value, callable $callback, callable $default)
-     * @method static mixed unless($value, callable $callback, callable $default)
-     * @method static mixed explain()
-     * @method static mixed forwardCallTo($object, $method, $parameters)
-     * @method static mixed forwardDecoratedCallTo($object, $method, $parameters)
-     * @method static mixed throwBadMethodCallException($method)
-     * @method static mixed macro($name, $macro)
-     * @method static mixed mixin($mixin, $replace)
-     * @method static mixed hasMacro($name)
-     * @method static mixed flushMacros()
-     * @method static mixed macroCall($method, $parameters)
-     * @mixin \Illuminate\Database\Query\Builder
-     */
-    class SegmentTypeRule extends \Illuminate\Database\Eloquent\Model
-    {
-        //
-    }
-
-    /**
      * App\Models\VehicleTelemetry
      *
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
      * @property int|null $segment_id
-     * @property mixed $status_color
      * @property float|null $heading
      * @property float $current_speed
      * @property float $longitude
      * @property float $latitude
-     * @property string $vehicle_reg_no
+     * @property string|null $citizen_device_no
      * @property int $telemetry_id
      * @property-read \App\Models\RoadSegment $segment
      * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereTelemetryId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereVehicleRegNo($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereCitizenDeviceNo($value)
      * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereLatitude($value)
      * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereLongitude($value)
      * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereCurrentSpeed($value)
      * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereHeading($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereStatusColor($value)
      * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereSegmentId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereCreatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<VehicleTelemetry>|VehicleTelemetry whereUpdatedAt($value)

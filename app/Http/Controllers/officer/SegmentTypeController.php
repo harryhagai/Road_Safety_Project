@@ -4,6 +4,7 @@ namespace App\Http\Controllers\officer;
 
 use App\Http\Controllers\Controller;
 use App\Models\SegmentType;
+use App\Models\SegmentTypeRule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -51,7 +52,7 @@ class SegmentTypeController extends Controller
                 'is_active' => true,
             ]);
 
-            $this->syncDefaultRules($segmentType, $validated, $request);
+            $this->syncDefaultRules($segmentType, $validated);
         });
 
         return redirect()
@@ -87,7 +88,7 @@ class SegmentTypeController extends Controller
                 'is_active' => true,
             ]);
 
-            $this->syncDefaultRules($segmentType, $validated, $request);
+            $this->syncDefaultRules($segmentType, $validated);
         });
 
         return redirect()
@@ -137,7 +138,7 @@ class SegmentTypeController extends Controller
         return $slug;
     }
 
-    private function syncDefaultRules(SegmentType $segmentType, array $validated, Request $request): void
+    private function syncDefaultRules(SegmentType $segmentType, array $validated): void
     {
         $rules = [];
         $sort = 1;
@@ -170,10 +171,30 @@ class SegmentTypeController extends Controller
             ];
         }
 
-        $segmentType->defaultRules()->delete();
+        $existingRules = $segmentType->defaultRules()
+            ->get()
+            ->keyBy(function (SegmentTypeRule $rule): string {
+                return strtolower(sprintf('%s|%s', $rule->rule_type, trim($rule->rule_name)));
+            });
 
-        if ($rules !== []) {
-            $segmentType->defaultRules()->createMany($rules);
+        $seenRuleIds = [];
+
+        foreach ($rules as $payload) {
+            $key = strtolower(sprintf('%s|%s', $payload['rule_type'], trim((string) $payload['rule_name'])));
+            $existing = $existingRules->get($key);
+
+            if ($existing) {
+                $existing->update($payload);
+                $seenRuleIds[] = $existing->id;
+                continue;
+            }
+
+            $created = $segmentType->defaultRules()->create($payload);
+            $seenRuleIds[] = $created->id;
         }
+
+        $segmentType->defaultRules()
+            ->when($seenRuleIds !== [], fn ($query) => $query->whereNotIn('id', $seenRuleIds))
+            ->delete();
     }
 }

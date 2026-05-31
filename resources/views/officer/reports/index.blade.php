@@ -134,7 +134,7 @@
                         @php
                             $automaticMatch = $report->ruleViolations->firstWhere('matched_automatically', true);
                             $firstRuleViolation = $automaticMatch ?: $report->ruleViolations->first();
-                            $segmentName = $firstRuleViolation?->rule?->segment?->segment_name;
+                            $segmentName = $firstRuleViolation?->segment?->segment_name;
                         @endphp
                         <tr>
                             <td>

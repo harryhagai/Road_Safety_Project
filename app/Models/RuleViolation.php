@@ -20,7 +20,12 @@ class RuleViolation extends Model
      */
     protected $fillable = [
         'report_id',
-        'rule_id',
+        'segment_id',
+        'segment_type_rule_id',
+        'rule_name_snapshot',
+        'rule_type_snapshot',
+        'rule_value_snapshot',
+        'rule_description_snapshot',
         'matched_automatically',
         'confidence_score',
         'verified_by',
@@ -56,7 +61,12 @@ class RuleViolation extends Model
 
     public function rule(): BelongsTo
     {
-        return $this->belongsTo(RoadRule::class, 'rule_id');
+        return $this->belongsTo(SegmentTypeRule::class, 'segment_type_rule_id');
+    }
+
+    public function segment(): BelongsTo
+    {
+        return $this->belongsTo(RoadSegment::class, 'segment_id');
     }
 
     /**

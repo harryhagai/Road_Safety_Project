@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Eloquent model representing the RoadSegment domain record in RSRS.
@@ -21,7 +20,6 @@ class RoadSegment extends Model
      */
     protected $fillable = [
         'segment_name',
-        'segment_type',
         'segment_type_id',
         'boundary_coordinates',
         'length_km',
@@ -61,20 +59,11 @@ class RoadSegment extends Model
     }
 
     /**
-     * Handle the roadRules workflow for this class.
-     */
-
-    public function roadRules(): HasMany
-    {
-        return $this->hasMany(RoadRule::class, 'segment_id');
-    }
-
-    /**
      * Handle the getSegmentTypeNameAttribute workflow for this class.
      */
 
     public function getSegmentTypeNameAttribute(): ?string
     {
-        return $this->segmentType?->name ?: $this->segment_type;
+        return $this->segmentType?->name;
     }
 }

@@ -5,8 +5,8 @@ namespace App\Http\Controllers\officer;
 use App\Http\Controllers\Controller;
 use App\Models\Hotspot;
 use App\Models\Report;
-use App\Models\RoadRule;
 use App\Models\RoadSegment;
+use App\Models\SegmentTypeRule;
 use App\Models\ViolationType;
 use App\Services\MapConfigService;
 use Illuminate\Contracts\View\View;
@@ -36,8 +36,8 @@ class OfficerDashboardController extends Controller
                 'icon' => 'bi-signpost-split',
             ],
             [
-                'label' => 'Road Rules',
-                'value' => RoadRule::count(),
+                'label' => 'Segment Type Rules',
+                'value' => SegmentTypeRule::count(),
                 'icon' => 'bi-shield-check',
             ],
             [
@@ -60,12 +60,11 @@ class OfficerDashboardController extends Controller
         // Pull only the last 5 auto-speed reports linked to speed-limit rules for analytics.
         $autoSpeedReports = Report::query()
             ->join('rule_violations', 'rule_violations.report_id', '=', 'reports.id')
-            ->join('road_rules', 'road_rules.id', '=', 'rule_violations.rule_id')
             ->select('reports.id', 'reports.reference_no', 'reports.description', 'reports.reported_at', 'reports.location_name')
             ->distinct()
             ->whereNotNull('reports.description')
             ->where('reports.description', 'like', 'Automatic overspeeding report:%')
-            ->where('road_rules.rule_type', 'speed_limit')
+            ->where('rule_violations.rule_type_snapshot', 'speed_limit')
             ->orderByDesc('reports.id')
             ->limit(5)
             ->get();
@@ -179,8 +178,7 @@ class OfficerDashboardController extends Controller
         // Aggregate report pressure per segment to find areas needing attention.
         $segmentViolationSummary = Report::query()
             ->join('rule_violations', 'rule_violations.report_id', '=', 'reports.id')
-            ->join('road_rules', 'road_rules.id', '=', 'rule_violations.rule_id')
-            ->join('road_segments', 'road_segments.id', '=', 'road_rules.segment_id')
+            ->join('road_segments', 'road_segments.id', '=', 'rule_violations.segment_id')
             ->whereNotNull('reports.latitude')
             ->whereNotNull('reports.longitude')
             ->selectRaw('
