@@ -1,0 +1,161 @@
+.officer-reports-page {
+    color: #232c3a;
+}
+
+.report-stat,
+.report-panel {
+    background: #fff;
+    border: 1px solid rgba(35, 44, 58, 0.1);
+    box-shadow: 0 16px 36px rgba(27, 34, 48, 0.07);
+}
+
+.report-stat {
+    min-height: 112px;
+    border-radius: 18px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    position: relative;
+}
+
+.report-stat span,
+.report-panel__eyebrow {
+    display: block;
+    color: #667085;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.report-stat strong {
+    color: #232c3a;
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.report-stat span,
+.report-stat strong {
+    position: relative;
+    z-index: 1;
+}
+
+.report-stat__watermark {
+    position: absolute;
+    right: -0.45rem;
+    bottom: -0.9rem;
+    color: #232c3a;
+    font-size: 5.6rem;
+    line-height: 1;
+    opacity: 0.055;
+    pointer-events: none;
+    transform: rotate(-8deg);
+}
+
+.report-panel {
+    border-radius: 20px;
+    padding: 1.2rem;
+}
+
+.report-panel__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.report-panel__header h3 {
+    margin: 0.2rem 0 0;
+    font-size: 1.05rem;
+}
+
+.report-count {
+    color: #667085;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.report-table {
+    --bs-table-bg: transparent;
+    --bs-table-border-color: rgba(35, 44, 58, 0.08);
+    font-size: 0.88rem;
+}
+
+.report-table thead th {
+    color: #667085;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.report-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    padding: 0.34rem 0.65rem;
+    font-size: 0.74rem;
+    line-height: 1;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.report-badge--info {
+    background: rgba(30, 94, 255, 0.12);
+    color: #1e40af;
+}
+
+.report-badge--success {
+    background: rgba(22, 163, 74, 0.12);
+    color: #15803d;
+}
+
+.report-badge--warning {
+    background: rgba(245, 158, 11, 0.16);
+    color: #92400e;
+}
+
+.report-badge--danger {
+    background: rgba(220, 38, 38, 0.12);
+    color: #b91c1c;
+}
+
+.report-badge--muted {
+    background: rgba(71, 85, 105, 0.12);
+    color: #475569;
+}
+
+.report-lazy-load {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.5rem;
+}
+
+.report-lazy-load__spinner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #475569;
+    font-size: 0.86rem;
+}
+
+.report-lazy-load__sentinel {
+    width: 100%;
+    height: 1px;
+}
+
+@media (max-width: 767.98px) {
+    .report-panel {
+        padding: 1rem;
+    }
+
+    .report-panel__header {
+        flex-direction: column;
+    }
+}

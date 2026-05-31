@@ -9,6 +9,9 @@
         easeLinearity: 0.25,
     };
     const AUTO_EVALUATION_INTERVAL_MS = 3000;
+    const STATIONARY_SPEED_THRESHOLD_KMH = 0.8;
+    const STATIONARY_MOVEMENT_THRESHOLD_METERS = 2.5;
+    const LOW_CONFIDENCE_ACCURACY_METERS = 120;
 
     let mapInterface = null;
     let watchId = null;
@@ -34,6 +37,7 @@
     let autoReportInFlight = false;
     let lastAutoTelemetry = null;
     let pendingInitialPosition = null;
+    let reloadScheduled = false;
     const reportedRuleIds = new Set();
 
     // =========================
@@ -126,6 +130,27 @@
         }
 
         return (movedMeters / elapsedSeconds) * 3.6;
+    }
+
+    // Damp low-speed GPS jitter so static users do not appear to be moving.
+    function normalizeSpeedKmh(rawSpeedKmh, movedMeters, accuracyMeters) {
+        const speed = Number.isFinite(rawSpeedKmh) ? Math.max(0, rawSpeedKmh) : 0;
+        const movement = Number.isFinite(movedMeters) ? Math.max(0, movedMeters) : 0;
+        const accuracy = Number.isFinite(accuracyMeters) ? Math.max(0, accuracyMeters) : Infinity;
+
+        if (speed < STATIONARY_SPEED_THRESHOLD_KMH) {
+            return 0;
+        }
+
+        if (speed < 1.6 && movement < STATIONARY_MOVEMENT_THRESHOLD_METERS) {
+            return 0;
+        }
+
+        if (accuracy > LOW_CONFIDENCE_ACCURACY_METERS && speed < 2.5) {
+            return 0;
+        }
+
+        return speed;
     }
 
     // Emit one-time event when first usable location/speed payload is available.
@@ -245,6 +270,7 @@
         const config = getAutoReportingConfig();
         const ruleId = Number(evaluation?.rule?.id);
         const segmentId = Number(evaluation?.segment?.id);
+        const runtime = window.rsrsHomeRuntime || {};
 
         if (!config || !ruleId || !segmentId || autoReportInFlight || reportedRuleIds.has(ruleId)) {
             return;
@@ -271,6 +297,12 @@
                 location: evaluation?.segment?.name || 'matched road segment',
                 limit: `${Math.round(Number(evaluation.speed_limit_kmh))} km/h`,
             });
+
+            if (!result.duplicate && runtime.reloadAfterAutoReportSubmission && !reloadScheduled) {
+                reloadScheduled = true;
+                const delayMs = Math.max(300, Number(runtime.reloadDelayMs) || 1400);
+                setTimeout(() => window.location.reload(), delayMs);
+            }
 
         } catch (error) {
             const response = error.response || {};
@@ -484,9 +516,9 @@
         const now = Date.now();
         const currentPoint = { lat: latitude, lng: longitude };
         const speedKmh = resolveSpeedKmh(position, now, currentPoint);
-        const isMoving = speedKmh >= 1;
         const movedMeters = lastTrackedPoint ? distanceInMeters(lastTrackedPoint, currentPoint) : 0;
         const gpsHeading = Number(position.coords.heading);
+        const normalizedSpeedKmh = normalizeSpeedKmh(speedKmh, movedMeters, accuracy);
         const heading = Number.isFinite(gpsHeading) && gpsHeading >= 0
             ? gpsHeading
             : lastTrackedPoint && movedMeters >= 3
@@ -494,8 +526,9 @@
                 : null;
 
         if (lastTrackedPoint) {
-            if (movedMeters < 5 && now - lastTrackTimestamp < 1200) {
-                updateSpeedDisplay(speedKmh, isMoving ? 'Live movement detected' : 'Waiting for movement...', isMoving);
+            if (movedMeters < 1.2 && now - lastTrackTimestamp < 900) {
+                const transientMoving = normalizedSpeedKmh >= 1;
+                updateSpeedDisplay(normalizedSpeedKmh, transientMoving ? 'Live movement detected' : 'Waiting for movement...', transientMoving);
                 return;
             }
         }
@@ -506,9 +539,10 @@
         mapInterface.selectPoint(latitude, longitude, { resolveLocation: false });
         mapInterface.setUserLocation?.(latitude, longitude, { accuracy, heading });
         setLocatingState(false);
-        updateSpeedDisplay(speedKmh, isMoving ? 'Live movement detected' : 'You look stationary', isMoving);
-        publishLocationReady(position, speedKmh);
-        evaluateAutoReporting(position, speedKmh, now);
+        const isMoving = normalizedSpeedKmh >= 1;
+        updateSpeedDisplay(normalizedSpeedKmh, isMoving ? 'Live movement detected' : 'You look stationary', isMoving);
+        publishLocationReady(position, normalizedSpeedKmh);
+        evaluateAutoReporting(position, normalizedSpeedKmh, now);
 
         if (zoomToUserOnNextFix) {
             flyToUser(latitude, longitude, locationViewMode);

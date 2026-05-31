@@ -18,6 +18,9 @@ class VehicleTelemetryController extends Controller
     public function __construct(private readonly SegmentRuleResolver $segmentRuleResolver) {}
 
     private const DEFAULT_COUNTRY_SPEED_LIMIT = 80.0;
+    private const STATIONARY_SPEED_THRESHOLD_KMH = 2.0;
+    private const MIN_OVERSPEED_MARGIN_KMH = 3.0;
+    private const TELEMETRY_REPORT_COOLDOWN_SECONDS = 600;
 
     public function store(Request $request): JsonResponse
     {
@@ -39,7 +42,7 @@ class VehicleTelemetryController extends Controller
 
         $latitude = (float) $validated['latitude'];
         $longitude = (float) $validated['longitude'];
-        $speed = round((float) ($validated['current_speed'] ?? 0), 2);
+        $speed = $this->normalizeSpeedKmh((float) ($validated['current_speed'] ?? 0));
         $heading = isset($validated['heading']) ? round((float) $validated['heading'], 2) : null;
 
         $latestForVehicle = VehicleTelemetry::query()
@@ -333,15 +336,19 @@ class VehicleTelemetryController extends Controller
 
     private function resolveStatusColor(float $speed, float $speedLimit): string
     {
-        if ($speed < $speedLimit) {
+        if ($speed <= $speedLimit) {
             return 'green';
+        }
+
+        if ($this->shouldCreateTelemetryReport($speed, $speedLimit)) {
+            return 'red';
         }
 
         if (abs($speed - $speedLimit) < 0.0001) {
             return 'blue';
         }
 
-        return 'red';
+        return 'blue';
     }
 
     private function createViolationReportFromTelemetry(
@@ -350,6 +357,20 @@ class VehicleTelemetryController extends Controller
         float $speedLimit,
         ?array $speedRule
     ): string {
+        if (! $segment?->id || ! $speedRule) {
+            return '';
+        }
+
+        $existingReference = $this->findRecentTelemetryReportReference(
+            (string) $telemetry->citizen_device_no,
+            (int) $segment->id,
+            (int) $speedRule['segment_type_rule_id']
+        );
+
+        if ($existingReference) {
+            return $existingReference;
+        }
+
         $report = DB::transaction(function () use ($telemetry, $segment, $speedLimit, $speedRule) {
             $violationType = ViolationType::firstOrCreate(
                 ['name' => 'Overspeeding'],
@@ -373,24 +394,62 @@ class VehicleTelemetryController extends Controller
                 'reported_at' => now(),
             ]);
 
-            if ($segment?->id && $speedRule) {
-                RuleViolation::create([
-                    'report_id' => $report->id,
-                    'segment_id' => $segment->id,
-                    'segment_type_rule_id' => $speedRule['segment_type_rule_id'],
-                    'rule_name_snapshot' => $speedRule['rule_name'],
-                    'rule_type_snapshot' => $speedRule['rule_type'],
-                    'rule_value_snapshot' => $speedRule['rule_value'],
-                    'rule_description_snapshot' => $speedRule['description'],
-                    'matched_automatically' => true,
-                    'confidence_score' => 96.50,
-                ]);
-            }
+            RuleViolation::create([
+                'report_id' => $report->id,
+                'segment_id' => $segment->id,
+                'segment_type_rule_id' => $speedRule['segment_type_rule_id'],
+                'rule_name_snapshot' => $speedRule['rule_name'],
+                'rule_type_snapshot' => $speedRule['rule_type'],
+                'rule_value_snapshot' => $speedRule['rule_value'],
+                'rule_description_snapshot' => $speedRule['description'],
+                'matched_automatically' => true,
+                'confidence_score' => 96.50,
+            ]);
 
             return $report;
         });
 
         return $report->reference_no;
+    }
+
+    private function normalizeSpeedKmh(float $speed): float
+    {
+        $cleanSpeed = round(max(0, $speed), 2);
+
+        if ($cleanSpeed < self::STATIONARY_SPEED_THRESHOLD_KMH) {
+            return 0.0;
+        }
+
+        return $cleanSpeed;
+    }
+
+    private function shouldCreateTelemetryReport(float $speedKmh, float $speedLimit): bool
+    {
+        if ($speedKmh <= $speedLimit) {
+            return false;
+        }
+
+        if ($speedKmh < self::STATIONARY_SPEED_THRESHOLD_KMH) {
+            return false;
+        }
+
+        return ($speedKmh - $speedLimit) >= self::MIN_OVERSPEED_MARGIN_KMH;
+    }
+
+    private function findRecentTelemetryReportReference(string $deviceNo, int $segmentId, int $segmentTypeRuleId): ?string
+    {
+        $recent = Report::query()
+            ->where('reported_at', '>=', now()->subSeconds(self::TELEMETRY_REPORT_COOLDOWN_SECONDS))
+            ->where('description', 'like', 'Telemetry red alert: '.$deviceNo.'%')
+            ->whereHas('ruleViolations', function ($query) use ($segmentId, $segmentTypeRuleId): void {
+                $query
+                    ->where('segment_id', $segmentId)
+                    ->where('segment_type_rule_id', $segmentTypeRuleId);
+            })
+            ->latest('id')
+            ->first(['reference_no']);
+
+        return $recent?->reference_no;
     }
 
     private function makeReferenceNumber(): string

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Report;
 use App\Models\ViolationType;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -27,7 +28,7 @@ class OfficerReportController extends Controller
      * Prepare the data needed to render the listing page.
      */
 
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $validated = $request->validate([
             'search' => ['nullable', 'string', 'max:255'],
@@ -67,6 +68,20 @@ class OfficerReportController extends Controller
             ->latest('id')
             ->paginate(12)
             ->withQueryString();
+
+        if ($request->boolean('lazy')) {
+            return response()->json([
+                'rows_html' => $reports->isEmpty()
+                    ? ''
+                    : view('officer.reports.partials.rows', [
+                        'reports' => $reports,
+                        'showEmptyState' => false,
+                    ])->render(),
+                'next_page_url' => $reports->nextPageUrl(),
+                'has_more_pages' => $reports->hasMorePages(),
+                'current_page' => $reports->currentPage(),
+            ]);
+        }
 
         $summary = [
             'total' => Report::count(),

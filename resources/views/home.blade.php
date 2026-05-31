@@ -101,6 +101,12 @@
         })();
     </script>
     <script>
+        window.rsrsHomeRuntime = {
+            reloadAfterAutoReportSubmission: true,
+            reloadDelayMs: 1400,
+        };
+    </script>
+    <script>
         window.rsrsAutoSpeedReporting = {
             evaluateUrl: @json(route('auto-speed-reports.evaluate')),
             storeUrl: @json(route('auto-speed-reports.store')),
@@ -130,7 +136,8 @@
             if (!config || !('geolocation' in navigator)) {
                 return;
             }
-            let lastCoordinateKey = null;
+            let lastSubmittedCoordinateKey = null;
+            let telemetryInFlight = false;
 
             const sendTelemetry = (position) => {
                 const speedMs = Number(position?.coords?.speed ?? 0);
@@ -138,12 +145,17 @@
                 const heading = Number(position?.coords?.heading);
                 const latitude = Number(position?.coords?.latitude);
                 const longitude = Number(position?.coords?.longitude);
-                const coordinateKey = `${latitude.toFixed(6)}:${longitude.toFixed(6)}`;
 
-                if (coordinateKey === lastCoordinateKey) {
+                if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
                     return;
                 }
-                lastCoordinateKey = coordinateKey;
+
+                const coordinateKey = `${latitude.toFixed(6)}:${longitude.toFixed(6)}`;
+
+                if (telemetryInFlight || coordinateKey === lastSubmittedCoordinateKey) {
+                    return;
+                }
+                telemetryInFlight = true;
 
                 fetch(config.submitUrl, {
                     method: 'POST',
@@ -161,7 +173,21 @@
                         current_speed: Number(speedKmh.toFixed(2)),
                         heading: Number.isFinite(heading) ? Number(heading.toFixed(2)) : null,
                     }),
-                }).catch(() => null);
+                })
+                    .then(async (response) => {
+                        if (!response.ok) {
+                            throw new Error('Telemetry submit failed');
+                        }
+
+                        const payload = await response.json().catch(() => ({}));
+                        if (payload?.saved) {
+                            lastSubmittedCoordinateKey = coordinateKey;
+                        }
+                    })
+                    .catch(() => null)
+                    .finally(() => {
+                        telemetryInFlight = false;
+                    });
             };
 
             const pullAndSend = () => {
