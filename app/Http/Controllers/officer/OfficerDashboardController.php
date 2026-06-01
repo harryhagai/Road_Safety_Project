@@ -153,7 +153,14 @@ class OfficerDashboardController extends Controller
         $recentReports = Report::query()
             ->with('violationType:id,name')
             ->latest('id')
-            ->limit(5)
+            ->limit(10)
+            ->get();
+
+        // Lightweight report cards for the attention panel.
+        $attentionReports = Report::query()
+            ->with('violationType:id,name')
+            ->latest('id')
+            ->limit(6)
             ->get();
 
         // Latest hotspot records used by map/list sections.
@@ -245,6 +252,7 @@ class OfficerDashboardController extends Controller
             'reportStatuses',
             'speedAnalytics',
             'recentReports',
+            'attentionReports',
             'hotspots',
             'hotspotPayload',
             'attentionSegments',

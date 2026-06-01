@@ -2,6 +2,11 @@
 
 @extends('layouts.officerDashboardLayout')
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/rsrsOfficerDashboard.css') }}?v={{ filemtime(public_path('css/rsrsOfficerDashboard.css')) }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+@endpush
+
 @section('content')
     <div class="container-fluid px-3 px-lg-4 py-4 roadofficer-dashboard-page">
         <div class="roadofficer-dashboard-stats">
@@ -136,38 +141,34 @@
                 </div>
 
                 <div class="roadofficer-panel-body roadofficer-panel-body--attention">
-                    @if ($attentionSegments->isNotEmpty())
+                    @if ($attentionReports->isNotEmpty())
                         <div class="roadofficer-hotspot-list">
-                            @foreach ($attentionSegments as $segment)
+                            @foreach ($attentionReports as $report)
                                 <article class="roadofficer-hotspot-card">
                                     <div class="roadofficer-hotspot-card__top">
                                         <div>
-                                            <h4 class="roadofficer-hotspot-card__title">{{ $segment['segment_name'] }}</h4>
+                                            <h4 class="roadofficer-hotspot-card__title">{{ $report->reference_no ?: 'Report #' . $report->id }}</h4>
                                         </div>
                                     </div>
 
                                     <div class="roadofficer-hotspot-card__details">
                                         <span>
-                                            Violations: {{ number_format($segment['violations_count']) }} | Priority:
-                                            <span class="roadofficer-severity-badge roadofficer-severity-badge--{{ str_replace('_', '-', $segment['priority']) }}">
-                                                {{ str($segment['priority'])->title() }}
+                                            Violation: {{ $report->violationType?->name ?? 'Unassigned' }} | Status:
+                                            <span class="roadofficer-table-badge">
+                                                {{ str($report->status ?: 'unknown')->replace('_', ' ')->title() }}
                                             </span>
                                         </span>
-                                        <span>Last report: {{ $segment['last_reported_at'] }}</span>
+                                        <span>Reported: {{ optional($report->reported_at)->format('d M Y, H:i') ?? optional($report->created_at)->format('d M Y, H:i') ?? 'N/A' }}</span>
+                                        <span>Location: {{ $report->location_name ?: 'Unknown location' }}</span>
                                     </div>
-
-                                    <button type="button" class="roadofficer-focus-btn" data-hotspot-focus="{{ $segment['segment_id'] }}">
-                                        <i class="bi bi-crosshair"></i>
-                                        <span>Focus on map</span>
-                                    </button>
                                 </article>
                             @endforeach
                         </div>
                     @else
                         <div class="roadofficer-empty-state">
                             <i class="bi bi-geo"></i>
-                            <h4>No segment risk data available</h4>
-                            <p>Segments with repeated violations will be listed here automatically.</p>
+                            <h4>No reports yet</h4>
+                            <p>Recent reports that need attention will appear here automatically.</p>
                         </div>
                     @endif
                 </div>
@@ -175,11 +176,6 @@
         </div>
     </div>
 @endsection
-
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/rsrsOfficerDashboard.css') }}?v={{ filemtime(public_path('css/rsrsOfficerDashboard.css')) }}">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-@endpush
 
 @section('scripts')
     @if (($speedAnalytics['sample_count'] ?? 0) > 0)
