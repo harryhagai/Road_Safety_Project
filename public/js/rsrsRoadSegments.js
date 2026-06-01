@@ -7,6 +7,15 @@
     const SEARCH_MIN_CHARS = 2;
     const MAX_SEGMENT_DETOUR_FACTOR = 2.8;
     const MAX_MIDPOINT_DRIFT_METERS = 30;
+    const PRIMARY_SEGMENT_COLORS = [
+        '#1d4ed8', // blue
+        '#111827', // black
+        '#6b4f2a', // brown
+        '#15803d', // green
+        '#2563eb', // blue-alt
+        '#0f172a', // black-alt
+        '#7a5a2c', // brown-alt
+    ];
     function escapeHtml(value) {
         return String(value ?? '')
             .replace(/&/g, '&amp;')
@@ -110,10 +119,8 @@
     function resolveSegmentColor(segment) {
         const key = String(segment?.id ?? segment?.segment_name ?? 'segment');
         const hash = stableHash(key);
-        const hue = hash % 360;
-        const saturation = 68;
-        const lightness = 44;
-        return `hsl(${hue} ${saturation}% ${lightness}%)`;
+        const index = hash % PRIMARY_SEGMENT_COLORS.length;
+        return PRIMARY_SEGMENT_COLORS[index];
     }
 
     function createExistingSegmentIcon(color, isActive = false) {

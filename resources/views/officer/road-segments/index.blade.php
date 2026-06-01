@@ -56,7 +56,7 @@
                         <div id="roadSegmentLocationSearchResults" class="geo-map-search__results" hidden></div>
                     </div>
 
-                    <x-map.canvas id="roadSegmentMapLab" :config="$mapConfig" height="calc(100vh - 235px)" :show-toolbar="false"
+                    <x-map.canvas id="roadSegmentMapLab" :config="$mapConfig" height="100%" :show-toolbar="false"
                         mode="segment-builder" />
                 </section>
             </div>
@@ -219,6 +219,17 @@
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
     <link rel="stylesheet" href="{{ asset('css/rsrsMap.css') }}">
     <style>
+        .geo-card--map .geo-map-shell {
+            height: 100%;
+            min-height: 0;
+        }
+
+        .geo-card--map .geo-map-canvas {
+            flex: 1 1 auto;
+            min-height: 0;
+            height: 100% !important;
+        }
+
         .geo-map-search__result.is-active {
             border-color: #0d6efd;
             background: rgba(13, 110, 253, 0.08);
