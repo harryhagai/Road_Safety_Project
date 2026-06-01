@@ -23,8 +23,10 @@ class AutoSpeedReportController extends Controller
     private const ACTIVE_RULES_CACHE_SECONDS = 20;
     private const REQUIRED_EXCEEDED_SECONDS = 30;
     private const DUPLICATE_WINDOW_SECONDS = 600;
-    private const BASE_SEGMENT_TOLERANCE_METERS = 30;
-    private const MAX_SEGMENT_TOLERANCE_METERS = 120;
+    private const BASE_SEGMENT_TOLERANCE_METERS = 3;
+    private const ACCURACY_MARGIN_METERS = 0;
+    private const MAX_SEGMENT_TOLERANCE_METERS = 6;
+    private const MAX_ACCEPTABLE_GPS_ACCURACY_METERS = 6;
 
     /**
      * Handle the evaluate workflow for this class.
@@ -33,11 +35,23 @@ class AutoSpeedReportController extends Controller
     public function evaluate(Request $request): JsonResponse
     {
         $validated = $this->validateTelemetry($request);
-        $accuracy = (float) ($validated['accuracy'] ?? self::BASE_SEGMENT_TOLERANCE_METERS);
+        $accuracy = isset($validated['accuracy']) ? (float) $validated['accuracy'] : null;
+        if (! $this->isAccuracyReliable($accuracy)) {
+            $this->clearExceededSession();
+
+            return response()->json([
+                'matched' => false,
+                'reason' => 'low_accuracy',
+                'accuracy_meters' => $accuracy,
+                'required_accuracy_meters' => self::MAX_ACCEPTABLE_GPS_ACCURACY_METERS,
+                'message' => 'GPS accuracy is too low for reliable segment matching.',
+            ]);
+        }
+
         $match = $this->matchSpeedRule(
             (float) $validated['latitude'],
             (float) $validated['longitude'],
-            $accuracy
+            (float) $accuracy
         );
 
         if (! $match) {
@@ -102,12 +116,21 @@ class AutoSpeedReportController extends Controller
             'rule_id' => ['required', 'integer', 'exists:segment_type_rules,id'],
             'segment_id' => ['required', 'integer', 'exists:road_segments,id'],
         ]);
-        $accuracy = (float) ($validated['accuracy'] ?? self::BASE_SEGMENT_TOLERANCE_METERS);
+        $accuracy = isset($validated['accuracy']) ? (float) $validated['accuracy'] : null;
+        if (! $this->isAccuracyReliable($accuracy)) {
+            return response()->json([
+                'reported' => false,
+                'reason' => 'low_accuracy',
+                'accuracy_meters' => $accuracy,
+                'required_accuracy_meters' => self::MAX_ACCEPTABLE_GPS_ACCURACY_METERS,
+                'message' => 'GPS accuracy is too low for reliable report submission.',
+            ], 409);
+        }
 
         $match = $this->matchSpeedRule(
             (float) $validated['latitude'],
             (float) $validated['longitude'],
-            $accuracy
+            (float) $accuracy
         );
 
         if (! $match || (int) $validated['rule_id'] !== (int) $match['rule']->id || (int) $validated['segment_id'] !== (int) $match['segment']->id) {
@@ -245,7 +268,7 @@ class AutoSpeedReportController extends Controller
         $nearestMatch = null;
         $tolerance = min(
             self::MAX_SEGMENT_TOLERANCE_METERS,
-            max(self::BASE_SEGMENT_TOLERANCE_METERS, $accuracy + 80)
+            max(self::BASE_SEGMENT_TOLERANCE_METERS, $accuracy + self::ACCURACY_MARGIN_METERS)
         );
 
         foreach ($segments as $segment) {
@@ -265,8 +288,7 @@ class AutoSpeedReportController extends Controller
             }
 
             $distance = $this->distanceToPolylineMeters(['lat' => $latitude, 'lng' => $longitude], $points);
-            $segmentBuffer = $this->segmentBufferMeters($segment);
-            $matchingBuffer = max($tolerance, $segmentBuffer);
+            $matchingBuffer = $tolerance;
             $ruleData = (object) [
                 'id' => (int) $resolvedRule['segment_type_rule_id'],
                 'rule_name' => $resolvedRule['rule_name'],
@@ -350,6 +372,18 @@ class AutoSpeedReportController extends Controller
         $speedLimit = (float) $matches[0];
 
         return $speedLimit > 0 ? $speedLimit : null;
+    }
+
+    /**
+     * Require GPS precision good enough for realistic segment matching.
+     */
+    private function isAccuracyReliable(?float $accuracy): bool
+    {
+        if (! is_finite((float) $accuracy)) {
+            return false;
+        }
+
+        return $accuracy > 0 && $accuracy <= self::MAX_ACCEPTABLE_GPS_ACCURACY_METERS;
     }
 
     /**

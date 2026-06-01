@@ -327,10 +327,18 @@
             if (telemetry.speed_kmh >= 1) {
                 updateSpeedDisplay(telemetry.speed_kmh, 'No monitored speed rule nearby', true);
             }
+            const lowAccuracy = evaluation?.reason === 'low_accuracy';
+            const requiredAccuracy = Number(evaluation?.required_accuracy_meters);
+            const accuracyNow = Number(evaluation?.accuracy_meters);
+            const lowAccuracyMessage = Number.isFinite(accuracyNow) && Number.isFinite(requiredAccuracy)
+                ? `GPS accuracy is ${Math.round(accuracyNow)}m. Move to open sky until it improves to ${Math.round(requiredAccuracy)}m or better.`
+                : 'GPS accuracy is too low for reliable segment matching.';
             updateSpeedAlert({
                 state: 'idle',
-                label: 'No nearby speed rule',
-                message: 'Your location did not match any road segment with a speed limit in the database.',
+                label: lowAccuracy ? 'Low GPS accuracy' : 'No nearby speed rule',
+                message: lowAccuracy
+                    ? lowAccuracyMessage
+                    : (evaluation?.message || 'Your location did not match any road segment with a speed limit in the database.'),
                 location: 'not matched',
                 limit: 'unknown',
             });

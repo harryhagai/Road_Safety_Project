@@ -23,7 +23,14 @@ class RoadSegmentController extends Controller
     public function index(MapConfigService $mapConfigService): View
     {
         $segments = RoadSegment::query()
-            ->with('segmentType:id,name')
+            ->with([
+                'segmentType:id,name',
+                'segmentType.defaultRules' => function ($query) {
+                    $query->select('id', 'segment_type_id', 'rule_name', 'rule_type', 'rule_value', 'is_active')
+                        ->where('is_active', true)
+                        ->orderBy('sort_order');
+                },
+            ])
             ->latest()
             ->get()
             ->map(function (RoadSegment $segment) {
@@ -34,6 +41,16 @@ class RoadSegmentController extends Controller
                     'description' => $segment->description,
                     'length_km' => $segment->length_km,
                     'boundary_coordinates' => $segment->boundary_coordinates,
+                    'rules' => $segment->segmentType?->defaultRules
+                        ?->map(function ($rule) {
+                            return [
+                                'rule_name' => $rule->rule_name,
+                                'rule_type' => $rule->rule_type,
+                                'rule_value' => $rule->rule_value,
+                            ];
+                        })
+                        ->values()
+                        ->all() ?? [],
                     'created_at' => optional($segment->created_at)?->format('d M Y, H:i'),
                 ];
             });
