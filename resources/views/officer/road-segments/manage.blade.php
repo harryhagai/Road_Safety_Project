@@ -231,5 +231,8 @@
         };
     </script>
     <script src="{{ asset('js/rsrsMapPicker.js') }}"></script>
+    <script src="{{ asset('js/rsrsRoadSegmentsShared.js') }}"></script>
+    <script src="{{ asset('js/rsrsRoadSegmentsExisting.js') }}"></script>
+    <script src="{{ asset('js/rsrsRoadSegmentsForms.js') }}"></script>
     <script src="{{ asset('js/rsrsRoadSegmentsManage.js') }}"></script>
 @endpush
