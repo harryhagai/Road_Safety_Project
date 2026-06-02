@@ -79,18 +79,105 @@
             fadeAnimation: true,
             markerZoomAnimation: true,
             preferCanvas: true,
+            rotate: mode === 'segment-builder',
+            bearing: 0,
         }).setView(
             [config.defaultCenter.lat, config.defaultCenter.lng],
             config.defaultZoom
         );
 
-        L.control.zoom({ position: 'bottomright' }).addTo(map);
+        L.control.zoom({
+            position: mode === 'segment-builder' ? 'topright' : 'bottomright',
+        }).addTo(map);
         L.control.scale({
             metric: true,
             imperial: false,
             position: 'bottomleft',
             maxWidth: 140,
         }).addTo(map);
+
+        function normalizeBearing(value) {
+            const bearing = Number(value);
+            if (!Number.isFinite(bearing)) {
+                return 0;
+            }
+
+            return ((bearing % 360) + 360) % 360;
+        }
+
+        function getMapBearing() {
+            if (typeof map.getBearing === 'function') {
+                return normalizeBearing(map.getBearing());
+            }
+
+            return normalizeBearing(map._bearing || 0);
+        }
+
+        function setMapBearing(value) {
+            if (typeof map.setBearing !== 'function') {
+                return;
+            }
+
+            map.setBearing(normalizeBearing(value));
+        }
+
+        function addRotationControl() {
+            if (mode !== 'segment-builder' || typeof map.setBearing !== 'function') {
+                return;
+            }
+
+            const RotationControl = L.Control.extend({
+                options: {
+                    position: 'bottomright',
+                },
+                onAdd() {
+                    const container = L.DomUtil.create('div', 'leaflet-bar geo-map-rotate-control');
+                    const rotateLeft = L.DomUtil.create('button', 'geo-map-rotate-control__btn', container);
+                    const reset = L.DomUtil.create('button', 'geo-map-rotate-control__btn geo-map-rotate-control__btn--bearing', container);
+                    const rotateRight = L.DomUtil.create('button', 'geo-map-rotate-control__btn', container);
+
+                    rotateLeft.type = 'button';
+                    rotateLeft.title = 'Rotate map left';
+                    rotateLeft.innerHTML = '<i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>';
+
+                    reset.type = 'button';
+                    reset.title = 'Reset map north';
+
+                    rotateRight.type = 'button';
+                    rotateRight.title = 'Rotate map right';
+                    rotateRight.innerHTML = '<i class="bi bi-arrow-clockwise" aria-hidden="true"></i>';
+
+                    function updateBearingLabel() {
+                        reset.textContent = `${Math.round(getMapBearing())}°`;
+                    }
+
+                    L.DomEvent.disableClickPropagation(container);
+                    L.DomEvent.disableScrollPropagation(container);
+
+                    L.DomEvent.on(rotateLeft, 'click', function () {
+                        setMapBearing(getMapBearing() - 15);
+                        updateBearingLabel();
+                    });
+                    L.DomEvent.on(reset, 'click', function () {
+                        setMapBearing(0);
+                        updateBearingLabel();
+                    });
+                    L.DomEvent.on(rotateRight, 'click', function () {
+                        setMapBearing(getMapBearing() + 15);
+                        updateBearingLabel();
+                    });
+
+                    map.on('rotate', updateBearingLabel);
+                    updateBearingLabel();
+
+                    return container;
+                },
+            });
+
+            map.addControl(new RotationControl());
+        }
+
+        addRotationControl();
 
         L.tileLayer(config.tiles.url, {
             minZoom: config.minZoom,
@@ -347,6 +434,8 @@
             setUserLocation,
             previewLocation,
             clearPreviewLocation,
+            getBearing: getMapBearing,
+            setBearing: setMapBearing,
             centerOn(lat, lng, zoom = map.getZoom(), animate = true) {
                 map.flyTo([lat, lng], zoom, {
                     animate,

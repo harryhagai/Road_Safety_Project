@@ -678,6 +678,45 @@
     font: inherit;
 }
 
+.geo-map-rotate-control {
+    display: flex;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.geo-map-rotate-control__btn {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-right: 1px solid rgba(31, 49, 79, 0.14);
+    background: #ffffff;
+    color: #1f314f;
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.geo-map-rotate-control__btn:last-child {
+    border-right: 0;
+}
+
+.geo-map-rotate-control__btn:hover,
+.geo-map-rotate-control__btn:focus {
+    background: #f3f6fb;
+    color: #0d6efd;
+}
+
+.geo-map-rotate-control__btn--bearing {
+    min-width: 46px;
+    width: auto;
+    padding: 0 0.55rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
 .geo-card--map .geo-card__header,
 .geo-card--inspector .geo-card__header {
     flex-shrink: 0;
