@@ -2,8 +2,10 @@
 
 (function () {
     const namespace = window.RsrsRoadSegments = window.RsrsRoadSegments || {};
-    const MAX_SEGMENT_DETOUR_FACTOR = 2.8;
-    const MAX_MIDPOINT_DRIFT_METERS = 30;
+    const MAX_SEGMENT_DETOUR_FACTOR = 1.8;
+    const MAX_MIDPOINT_DRIFT_METERS = 14;
+    const MAX_ENDPOINT_DRIFT_METERS = 12;
+    const MAX_SNAP_DRIFT_METERS = 10;
 
     function joinMatchedCoordinates(matchings) {
         const merged = [];
@@ -68,6 +70,21 @@
             return false;
         }
 
+        const firstCoord = segmentCoords[0];
+        const lastCoord = segmentCoords[segmentCoords.length - 1];
+        const firstPoint = { lng: Number(firstCoord?.[0]), lat: Number(firstCoord?.[1]) };
+        const lastPoint = { lng: Number(lastCoord?.[0]), lat: Number(lastCoord?.[1]) };
+        if (
+            !Number.isFinite(firstPoint.lat)
+            || !Number.isFinite(firstPoint.lng)
+            || !Number.isFinite(lastPoint.lat)
+            || !Number.isFinite(lastPoint.lng)
+            || namespace.distanceMeters(start, firstPoint) > MAX_ENDPOINT_DRIFT_METERS
+            || namespace.distanceMeters(end, lastPoint) > MAX_ENDPOINT_DRIFT_METERS
+        ) {
+            return false;
+        }
+
         const directMeters = Math.max(1, namespace.distanceMeters(start, end));
         const segmentMeters = namespace.lineLengthKm(segmentCoords) * 1000;
         const detourFactor = segmentMeters / directMeters;
@@ -107,7 +124,7 @@
                 continue;
             }
 
-            if (namespace.distanceMeters(point, snappedPoint) <= 45) {
+            if (namespace.distanceMeters(point, snappedPoint) <= MAX_SNAP_DRIFT_METERS) {
                 return snappedPoint;
             }
         }
@@ -127,14 +144,16 @@
 
         const merged = [];
         for (let index = 1; index < snappedPoints.length; index += 1) {
+            const originalStart = points[index - 1];
+            const originalEnd = points[index];
             const start = snappedPoints[index - 1];
             const end = snappedPoints[index];
             const segmentCoords = await fetchPairMatch(start, end);
 
-            if (isSegmentGeometryReasonable(start, end, segmentCoords)) {
+            if (isSegmentGeometryReasonable(originalStart, originalEnd, segmentCoords)) {
                 mergeCoordinates(merged, segmentCoords);
             } else {
-                mergeCoordinates(merged, [[start.lng, start.lat], [end.lng, end.lat]]);
+                mergeCoordinates(merged, [[originalStart.lng, originalStart.lat], [originalEnd.lng, originalEnd.lat]]);
             }
         }
 
