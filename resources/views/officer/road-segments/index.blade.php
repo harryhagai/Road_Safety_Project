@@ -7,8 +7,7 @@
         <i class="bi bi-layout-sidebar"></i>
         <span>Manage Segments</span>
     </a>
-    <button type="button" class="btn geo-header-btn" data-bs-toggle="modal" data-bs-target="#createRoadSegmentModal"
-        id="openSegmentModalBtn">
+    <button type="button" class="btn geo-header-btn" id="openSegmentModalBtn">
         <i class="bi bi-plus-circle"></i>
         <span>New Segment</span>
     </button>
@@ -326,16 +325,51 @@
                         </p>
                     </div>
                     <div class="modal-footer geo-modal__footer">
-                        <button type="button" class="btn geo-modal__secondary-btn" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" data-bs-dismiss="modal">
                             <i class="bi bi-arrow-left-circle"></i>
                             <span>Keep segment</span>
                         </button>
-                        <button type="submit" class="btn btn-outline-danger geo-modal__danger-outline-btn">
+                        <button type="submit" class="btn btn-outline-danger d-inline-flex align-items-center gap-2">
                             <i class="bi bi-trash3"></i>
                             <span>Archive segment</span>
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="roadSegmentWarningModal" tabindex="-1" aria-labelledby="roadSegmentWarningTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content geo-modal">
+                <div class="modal-header geo-modal__header">
+                    <div class="geo-modal__title-wrap">
+                        <span class="geo-modal__icon">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </span>
+                        <div>
+                            <h5 class="modal-title geo-modal__title" id="roadSegmentWarningTitle">Road shape required</h5>
+                            <div class="geo-modal__subtitle">Complete the map step before opening the form.</div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body geo-modal__body">
+                    <p class="mb-0" id="roadSegmentWarningMessage">
+                        Generate Road Shape first so the system can save full coordinates every 3 meters.
+                    </p>
+                </div>
+                <div class="modal-footer geo-modal__footer">
+                    <button type="button" class="btn geo-modal__secondary-btn" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i>
+                        <span>Cancel</span>
+                    </button>
+                    <button type="button" class="btn geo-modal__primary-btn" id="roadSegmentWarningGenerateBtn">
+                        <i class="bi bi-bezier2"></i>
+                        <span>Generate Road Shape</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

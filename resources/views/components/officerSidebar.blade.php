@@ -1,15 +1,18 @@
 {{-- Reusable Blade component used across multiple RSRS pages. --}}
 
 @php
-    $isOperationsMenuOpen = request()->is('road-officer/road-segments*') ||
+    $isOperationsMenuOpen =
+        request()->is('road-officer/road-segments*') ||
         request()->is('road-officer/segment-types*') ||
         request()->is('road-officer/violation-types*');
     $isReportsMenuOpen = request()->is('road-officer/reports*');
-    $isMonitoringMenuOpen = request()->is('road-officer/hotspots*') ||
+    $isMonitoringMenuOpen =
+        request()->is('road-officer/hotspots*') ||
         request()->is('road-officer/telemetry-monitoring*') ||
         request()->is('road-officer/contact-messages*') ||
         request()->is('road-officer/notifications*');
-    $isAdministrationMenuOpen = request()->is('road-officer/officers*') ||
+    $isAdministrationMenuOpen =
+        request()->is('road-officer/officers*') ||
         request()->is('road-officer/settings*') ||
         request()->is('road-officer/profile*');
 @endphp
@@ -36,8 +39,7 @@
             <li class="nav-item">
                 <a class="nav-link officer-sidebar-toggle d-flex justify-content-between align-items-center {{ $isOperationsMenuOpen ? 'active' : '' }}"
                     data-bs-toggle="collapse" href="#operationsMenu" role="button"
-                    aria-expanded="{{ $isOperationsMenuOpen ? 'true' : 'false' }}"
-                    aria-controls="operationsMenu">
+                    aria-expanded="{{ $isOperationsMenuOpen ? 'true' : 'false' }}" aria-controls="operationsMenu">
                     <span class="officer-sidebar-link-content">
                         <i class="bi bi-cone-striped"></i>
                         <span class="officer-sidebar-link-label">Operations</span>
@@ -53,15 +55,15 @@
                             </a>
                         </li>
                         <li class="nav-item mb-1">
-                            <a href="{{ route('officer.road-segments.index') }}"
-                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/road-segments') ? 'active is-current fw-bold shadow-sm' : '' }}">
-                                <i class="bi bi-signpost-split"></i> Map Segment
-                            </a>
-                        </li>
-                        <li class="nav-item mb-1">
                             <a href="{{ route('officer.segment-types.index') }}"
                                 class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/segment-types*') ? 'active is-current fw-bold shadow-sm' : '' }}">
                                 <i class="bi bi-diagram-3"></i> Rules
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a href="{{ route('officer.road-segments.index') }}"
+                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/road-segments') ? 'active is-current fw-bold shadow-sm' : '' }}">
+                                <i class="bi bi-signpost-split"></i> Map Segment
                             </a>
                         </li>
                         <li class="nav-item mb-1">
@@ -77,8 +79,7 @@
             <li class="nav-item">
                 <a class="nav-link officer-sidebar-toggle d-flex justify-content-between align-items-center {{ $isReportsMenuOpen ? 'active' : '' }}"
                     data-bs-toggle="collapse" href="#reportsMenu" role="button"
-                    aria-expanded="{{ $isReportsMenuOpen ? 'true' : 'false' }}"
-                    aria-controls="reportsMenu">
+                    aria-expanded="{{ $isReportsMenuOpen ? 'true' : 'false' }}" aria-controls="reportsMenu">
                     <span class="officer-sidebar-link-content">
                         <i class="bi bi-file-earmark-text"></i>
                         <span class="officer-sidebar-link-label">Reports</span>
@@ -100,8 +101,7 @@
             <li class="nav-item">
                 <a class="nav-link officer-sidebar-toggle d-flex justify-content-between align-items-center {{ $isMonitoringMenuOpen ? 'active' : '' }}"
                     data-bs-toggle="collapse" href="#monitoringMenu" role="button"
-                    aria-expanded="{{ $isMonitoringMenuOpen ? 'true' : 'false' }}"
-                    aria-controls="monitoringMenu">
+                    aria-expanded="{{ $isMonitoringMenuOpen ? 'true' : 'false' }}" aria-controls="monitoringMenu">
                     <span class="officer-sidebar-link-content">
                         <i class="bi bi-geo-alt-fill"></i>
                         <span class="officer-sidebar-link-label">Monitoring</span>

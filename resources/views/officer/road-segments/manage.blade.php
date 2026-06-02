@@ -198,11 +198,11 @@
                         </p>
                     </div>
                     <div class="modal-footer geo-modal__footer">
-                        <button type="button" class="btn geo-modal__secondary-btn" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" data-bs-dismiss="modal">
                             <i class="bi bi-arrow-left-circle"></i>
                             <span>Keep segment</span>
                         </button>
-                        <button type="submit" class="btn btn-outline-danger geo-modal__danger-outline-btn">
+                        <button type="submit" class="btn btn-outline-danger d-inline-flex align-items-center gap-2">
                             <i class="bi bi-trash3"></i>
                             <span>Archive segment</span>
                         </button>

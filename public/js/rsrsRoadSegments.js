@@ -28,6 +28,11 @@
         const undoBtn = document.getElementById('undoSegmentPointBtn');
         const clearBtn = document.getElementById('clearSegmentPointsBtn');
         const openModalBtn = document.getElementById('openSegmentModalBtn');
+        const createModalEl = document.getElementById('createRoadSegmentModal');
+        const warningModalEl = document.getElementById('roadSegmentWarningModal');
+        const warningTitleTarget = document.getElementById('roadSegmentWarningTitle');
+        const warningMessageTarget = document.getElementById('roadSegmentWarningMessage');
+        const warningGenerateBtn = document.getElementById('roadSegmentWarningGenerateBtn');
         const form = document.getElementById('roadSegmentForm');
         const segmentTypeSelect = document.getElementById('segment_type_id');
         const segmentTypeRulesPreview = document.getElementById('segmentTypeRulesPreview');
@@ -55,6 +60,51 @@
         const segmentTypesWithRules = Array.isArray(pageConfig.segmentTypesWithRules) ? pageConfig.segmentTypesWithRules : [];
         const updateUrlTemplate = String(pageConfig.updateUrlTemplate || '');
         const destroyUrlTemplate = String(pageConfig.destroyUrlTemplate || '');
+
+        function showWarningModal(message, title = 'Road shape required', options = {}) {
+            if (warningTitleTarget) {
+                warningTitleTarget.textContent = title;
+            }
+            if (warningMessageTarget) {
+                warningMessageTarget.textContent = message;
+            }
+            if (warningGenerateBtn) {
+                warningGenerateBtn.hidden = !options.showGenerateAction;
+            }
+
+            if (warningModalEl && window.bootstrap?.Modal) {
+                window.bootstrap.Modal.getOrCreateInstance(warningModalEl).show();
+                return;
+            }
+
+            if (window.Swal) {
+                window.Swal.fire({
+                    icon: 'warning',
+                    title,
+                    text: message,
+                    confirmButtonText: 'OK',
+                });
+                return;
+            }
+
+            console.warn(message);
+        }
+
+        function showCreateSegmentModal() {
+            if (!createModalEl || !window.bootstrap?.Modal) {
+                return;
+            }
+
+            window.bootstrap.Modal.getOrCreateInstance(createModalEl).show();
+        }
+
+        function hideWarningModal() {
+            if (!warningModalEl || !window.bootstrap?.Modal) {
+                return;
+            }
+
+            window.bootstrap.Modal.getOrCreateInstance(warningModalEl).hide();
+        }
 
         const existingSegmentsController = segments.createExistingSegmentsController({
             map,
@@ -244,9 +294,13 @@
             resetGenerated();
         });
 
-        generateBtn?.addEventListener('click', async function () {
+        async function generateRoadShape() {
+            if (generateBtn?.disabled) {
+                return;
+            }
+
             if (selectedPoints.length < segments.MIN_POINTS_FOR_ROUTE) {
-                alert('Select at least two points first.');
+                showWarningModal('Select at least two points first.', 'Select points first');
                 return;
             }
 
@@ -264,25 +318,49 @@
                     map.fitBounds(bounds, { padding: [26, 26], maxZoom: 18 });
                 }
             } catch (error) {
-                alert(error.message || 'Failed to generate road shape.');
+                showWarningModal(error.message || 'Failed to generate road shape.', 'Road shape unavailable');
             } finally {
                 generateBtn.disabled = false;
                 generateBtn.innerHTML = '<i class="bi bi-bezier2"></i><span>Generate Road Shape</span>';
                 updatePanels();
             }
+        }
+
+        generateBtn?.addEventListener('click', generateRoadShape);
+
+        warningGenerateBtn?.addEventListener('click', function () {
+            if (selectedPoints.length < segments.MIN_POINTS_FOR_ROUTE) {
+                showWarningModal('Select at least two points first.', 'Select points first');
+                return;
+            }
+
+            hideWarningModal();
+            generateRoadShape();
         });
 
         openModalBtn?.addEventListener('click', function (event) {
+            event.preventDefault();
+
             if (interpolatedCoordinates.length < 2) {
-                event.preventDefault();
-                alert('Generate Road Shape first so the system can save full coordinates every 3 meters.');
+                showWarningModal(
+                    'Generate Road Shape first so the system can save full coordinates every 3 meters.',
+                    'Road shape required',
+                    { showGenerateAction: true }
+                );
+                return;
             }
+
+            showCreateSegmentModal();
         });
 
         form?.addEventListener('submit', function (event) {
             if (interpolatedCoordinates.length < 2 || !boundaryInput?.value) {
                 event.preventDefault();
-                alert('Generate Road Shape first before saving.');
+                showWarningModal(
+                    'Generate Road Shape first before saving.',
+                    'Road shape required',
+                    { showGenerateAction: true }
+                );
             }
         });
 

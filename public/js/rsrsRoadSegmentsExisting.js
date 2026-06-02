@@ -19,6 +19,23 @@
         const existingSegmentButtonsById = new Map();
         let activeExistingSegmentId = null;
 
+        function segmentMidpointLatLng(lineCoordinates, latLngs) {
+            if (window.turf && Array.isArray(lineCoordinates) && lineCoordinates.length >= 2) {
+                const line = turf.lineString(lineCoordinates);
+                const totalKm = turf.length(line, { units: 'kilometers' });
+
+                if (Number.isFinite(totalKm) && totalKm > 0) {
+                    const midpoint = turf.along(line, totalKm / 2, { units: 'kilometers' });
+                    const coordinates = midpoint?.geometry?.coordinates;
+                    if (Array.isArray(coordinates) && coordinates.length >= 2) {
+                        return [coordinates[1], coordinates[0]];
+                    }
+                }
+            }
+
+            return latLngs[Math.floor((latLngs.length - 1) / 2)] || latLngs[0];
+        }
+
         function applyExistingSegmentVisual(segmentMeta, isActive) {
             if (!segmentMeta) return;
 
@@ -134,8 +151,7 @@
                     opacity: 0.95,
                 });
 
-                const center = L.latLngBounds(latLngs).getCenter();
-                const marker = L.marker(center, {
+                const marker = L.marker(segmentMidpointLatLng(coordinates, latLngs), {
                     icon: namespace.createExistingSegmentIcon(segmentTypeColor),
                     zIndexOffset: 650,
                 }).addTo(layer);
