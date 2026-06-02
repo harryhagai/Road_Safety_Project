@@ -25,7 +25,8 @@ Main files:
 - `app/Http/Controllers/PublicHotspotController.php`
 - `app/Http/Controllers/officer/OfficerDashboardController.php`
 - `app/Http/Controllers/officer/RoadSegmentController.php`
-- `app/Http/Controllers/officer/RoadRuleController.php`
+- `app/Http/Controllers/officer/SegmentTypeController.php`
+- `app/Services/SegmentRuleResolver.php`
 - `resources/views/components/map/canvas.blade.php`
 - `resources/views/home.blade.php`
 - `resources/views/hotspots/index.blade.php`
@@ -308,7 +309,14 @@ Files:
 
 - `app/Http/Controllers/officer/RoadSegmentController.php`
 - `resources/views/officer/road-segments/index.blade.php`
+- `resources/views/officer/road-segments/manage.blade.php`
+- `public/js/rsrsRoadSegmentsShared.js`
+- `public/js/rsrsRoadSegmentsRouting.js`
+- `public/js/rsrsRoadSegmentsSearch.js`
+- `public/js/rsrsRoadSegmentsExisting.js`
+- `public/js/rsrsRoadSegmentsForms.js`
 - `public/js/rsrsRoadSegments.js`
+- `public/js/rsrsRoadSegmentsManage.js`
 
 Purpose:
 
@@ -347,79 +355,44 @@ Important note:
 
 GeoJSON stores coordinates as `[lng, lat]`, not `[lat, lng]`.
 
-## 8. Road Rule Map Integration
+## 8. Segment Type Rule Integration
 
 Files:
 
-- `app/Http/Controllers/officer/RoadRuleController.php`
-- `resources/views/officer/road-rules/index.blade.php`
-- `public/js/rsrsRoadRules.js`
+- `app/Http/Controllers/officer/SegmentTypeController.php`
+- `app/Services/SegmentRuleResolver.php`
+- `resources/views/officer/segment-types/index.blade.php`
 
 Purpose:
 
-Road rules are attached to road segments. Speed limit rules are later used by automatic speed reporting.
+Default rules are attached to segment types. When an officer assigns a segment type to a road segment, the system resolves the effective rules from that segment type. Speed limit rules are later used by automatic speed reporting.
 
 Important endpoints:
 
-### Road Rule Page
+### Segment Type Page
 
 ```php
-GET /road-officer/road-rules
-name: officer.road-rules.index
+GET /road-officer/segment-types
+name: officer.segment-types.index
 middleware: auth
 ```
 
-Loads first page of road segments and their rules.
+Loads segment types and their default rules.
 
-### Road Rule Data API
+### Store Segment Type Rules
 
 ```php
-GET /road-officer/road-rules/data
-name: officer.road-rules.data
+POST /road-officer/segment-types
+name: officer.segment-types.store
 middleware: auth
 ```
 
-Query params:
+When storing or updating a segment type:
 
-| Field | Purpose |
-| --- | --- |
-| `search` | Filters segments/rules by name/type/value/location. |
-| `page` | Pagination page. |
-
-Response shape:
-
-```json
-{
-  "items": [
-    {
-      "id": 1,
-      "segment_name": "Morogoro Road",
-      "segment_type": "Highway",
-      "description": null,
-      "length_km": "2.50",
-      "boundary_coordinates": {},
-      "road_rules_count": 1,
-      "rules": []
-    }
-  ],
-  "meta": {
-    "current_page": 1,
-    "last_page": 2,
-    "per_page": 10,
-    "total": 12,
-    "has_more": true,
-    "search": ""
-  }
-}
-```
-
-When storing a road rule:
-
-- The selected `segment_id` is required.
-- Controller reads the segment geometry.
-- It extracts first and last coordinates.
-- It stores them as `latitude_start`, `longitude_start`, `latitude_end`, `longitude_end`.
-- The full segment geometry remains in `road_segments.boundary_coordinates`.
+- `speed_limit_kmh` creates or updates a `speed_limit` default rule.
+- Each line in `other_rules` creates or updates an `other` default rule.
+- `SegmentRuleResolver` reads the assigned segment type and returns active effective rules for a segment.
+- Old `/road-officer/road-rules` and `/road-officer/segment-rules` URLs redirect to `/road-officer/segment-types`.
 
 ## 9. Public Home Map and GPS Speed Integration
 

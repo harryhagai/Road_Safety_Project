@@ -49,25 +49,25 @@
                         <li class="nav-item mb-1">
                             <a href="{{ url('/road-officer/violation-types') }}"
                                 class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/violation-types*') ? 'active is-current fw-bold shadow-sm' : '' }}">
-                                <i class="bi bi-exclamation-triangle"></i> Violation Types
-                            </a>
-                        </li>
-                        <li class="nav-item mb-1">
-                            <a href="{{ route('officer.segment-types.index') }}"
-                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/segment-types*') ? 'active is-current fw-bold shadow-sm' : '' }}">
-                                <i class="bi bi-diagram-3"></i> Segment Types & Rules
+                                <i class="bi bi-exclamation-triangle"></i> Violations
                             </a>
                         </li>
                         <li class="nav-item mb-1">
                             <a href="{{ route('officer.road-segments.index') }}"
                                 class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/road-segments') ? 'active is-current fw-bold shadow-sm' : '' }}">
-                                <i class="bi bi-signpost-split"></i> Road Segments
+                                <i class="bi bi-signpost-split"></i> Map Segment
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a href="{{ route('officer.segment-types.index') }}"
+                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/segment-types*') ? 'active is-current fw-bold shadow-sm' : '' }}">
+                                <i class="bi bi-diagram-3"></i> Rules
                             </a>
                         </li>
                         <li class="nav-item mb-1">
                             <a href="{{ route('officer.road-segments.manage') }}"
                                 class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/road-segments/manage*') ? 'active is-current fw-bold shadow-sm' : '' }}">
-                                <i class="bi bi-map"></i> Segment Management
+                                <i class="bi bi-map"></i> Manage Segments
                             </a>
                         </li>
                     </ul>

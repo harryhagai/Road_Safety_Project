@@ -30,15 +30,22 @@
                 'title' => 'Incident Reports',
                 'subtitle' => 'Review submitted cases, progress updates, and field reporting activity.',
             ],
+            request()->is('road-officer/road-segments/manage') => [
+                'title' => 'Segment Management',
+                'subtitle' => 'Preview, update, and remove saved road segments from one workspace.',
+            ],
             request()->is('road-officer/road-segments*') || request()->is('roadofficer/classes*') => [
                 'title' => 'Road Segments',
                 'subtitle' => 'Maintain mapped road segments, boundary details, and segment descriptions.',
             ],
             request()->is('road-officer/segment-types*') => [
-                'title' => 'Segment Types',
+                'title' => 'Segment Types & Rules',
                 'subtitle' => 'Manage segment categories and their reusable rule templates.',
             ],
-            request()->is('road-officer/violation-types*') || request()->is('roadofficer/olevel-subject-management*') || request()->is('roadofficer/alevel-subjects*') => [
+            request()->is('road-officer/violation-types*') ||
+                request()->is('roadofficer/olevel-subject-management*') ||
+                request()->is('roadofficer/alevel-subjects*')
+                => [
                 'title' => 'Violation Types',
                 'subtitle' => 'Manage report categories used for road incidents and traffic violations.',
             ],
@@ -84,7 +91,7 @@
     @include('components.academicHeader')
     @include('components.officerSidebar')
 
-    <main class="officer-page-content" @if($roadofficerPageHeader) data-officer-page-header="true" @endif>
+    <main class="officer-page-content" @if ($roadofficerPageHeader) data-officer-page-header="true" @endif>
         @if ($roadofficerPageHeader)
             <div class="px-3 px-lg-4 pt-4">
                 <section class="officer-shared-page-header">
@@ -116,10 +123,12 @@
             margin-bottom: 1.2rem;
             border-bottom: 1px solid rgba(35, 44, 58, 0.14);
         }
+
         .officer-shared-page-header__content {
             min-width: 0;
             flex: 1 1 auto;
         }
+
         .officer-shared-page-header__actions {
             display: flex;
             align-items: center;
@@ -127,6 +136,7 @@
             gap: 0.75rem;
             flex-shrink: 0;
         }
+
         .officer-shared-page-header__title {
             margin: 0;
             font-size: clamp(1.35rem, 1.5vw, 1.8rem);
@@ -134,6 +144,7 @@
             font-weight: 700;
             color: #232c3a;
         }
+
         .officer-shared-page-header__subtitle {
             max-width: 720px;
             margin: 0.35rem 0 0;
@@ -141,24 +152,29 @@
             font-size: 0.95rem;
             line-height: 1.6;
         }
-        .officer-page-content[data-officer-page-header="true"] .officer-page-body > .container:first-child > :is(h1, h2, h3, h4):first-child,
-        .officer-page-content[data-officer-page-header="true"] .officer-page-body > .container-fluid:first-child > :is(h1, h2, h3, h4):first-child {
+
+        .officer-page-content[data-officer-page-header="true"] .officer-page-body>.container:first-child> :is(h1, h2, h3, h4):first-child,
+        .officer-page-content[data-officer-page-header="true"] .officer-page-body>.container-fluid:first-child> :is(h1, h2, h3, h4):first-child {
             display: none !important;
         }
-        .officer-page-content[data-officer-page-header="true"] .officer-page-body > .container:first-child > .d-flex:first-child > :is(h1, h2, h3, h4):first-child,
-        .officer-page-content[data-officer-page-header="true"] .officer-page-body > .container-fluid:first-child > .d-flex:first-child > :is(h1, h2, h3, h4):first-child {
+
+        .officer-page-content[data-officer-page-header="true"] .officer-page-body>.container:first-child>.d-flex:first-child> :is(h1, h2, h3, h4):first-child,
+        .officer-page-content[data-officer-page-header="true"] .officer-page-body>.container-fluid:first-child>.d-flex:first-child> :is(h1, h2, h3, h4):first-child {
             display: none !important;
         }
+
         @media (max-width: 768px) {
             .officer-shared-page-header {
                 flex-direction: column;
                 align-items: stretch;
                 padding-bottom: 1rem;
             }
+
             .officer-shared-page-header__actions {
                 justify-content: flex-start;
                 flex-wrap: wrap;
             }
+
             .officer-shared-page-header__subtitle {
                 font-size: 0.92rem;
             }
@@ -171,7 +187,7 @@
     <script src="{{ asset('js/rsrsOfficerAlerts.js') }}"></script>
     @yield('scripts')
 
-    @if (session('success') && ! View::hasSection('disable_success_swal'))
+    @if (session('success') && !View::hasSection('disable_success_swal'))
         <script>
             showroadofficerUiAlert({
                 theme: 'success',
@@ -197,4 +213,5 @@
 
     @stack('scripts')
 </body>
+
 </html>

@@ -5,7 +5,7 @@
 @section('page_header_actions')
     <button type="button" class="btn geo-header-btn" data-bs-toggle="modal" data-bs-target="#createSegmentTypeModal">
         <i class="bi bi-plus-circle"></i>
-        <span>New Segment Type</span>
+        <span>New Segment Types</span>
     </button>
 @endsection
 
