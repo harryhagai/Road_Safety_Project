@@ -42,15 +42,31 @@
                         </div>
                     </div>
 
+                    @if ($segments->isNotEmpty())
+                        <div class="geo-map-search geo-map-search--segments">
+                            <label for="segmentManageSearch" class="geo-map-search__label">Find segment</label>
+                            <div class="geo-map-search__input-wrap">
+                                <i class="bi bi-search"></i>
+                                <input type="search" id="segmentManageSearch" class="form-control"
+                                    placeholder="Search by name, type, or notes">
+                                <button type="button" id="segmentManageSearchClear" class="geo-map-search__clear" hidden
+                                    aria-label="Clear segment search">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                            <div id="segmentManageSearchStatus" class="geo-map-search__status">Showing all saved segments.</div>
+                        </div>
+                    @endif
+
                     <div class="geo-segment-list">
                         <div class="geo-segment-list__header">
                             <span>Saved segments</span>
-                            <span class="geo-segment-list__count">{{ $segments->count() }}</span>
+                            <span id="segmentManageVisibleCount" class="geo-segment-list__count">{{ $segments->count() }}</span>
                         </div>
 
                         <div class="geo-segment-list__body">
                             @forelse ($segments as $segment)
-                                <article class="geo-segment-item">
+                                <article class="geo-segment-item" data-segment-list-item>
                                     <button type="button" class="geo-segment-item__focus"
                                         data-existing-segment-focus
                                         data-existing-segment='@json($segment)'>
@@ -78,6 +94,9 @@
                             @empty
                                 <div class="geo-segment-list__empty">No road segments saved yet.</div>
                             @endforelse
+                            @if ($segments->isNotEmpty())
+                                <div id="segmentManageNoResults" class="geo-segment-list__empty" hidden>No matching segments found.</div>
+                            @endif
                         </div>
                     </div>
                 </section>
@@ -212,6 +231,25 @@
 
         .geo-manage-workspace .geo-segment-list__body {
             max-height: calc(100vh - 340px);
+        }
+
+        .geo-manage-workspace .geo-map-search--segments {
+            margin: 0.8rem 0 0.95rem;
+        }
+
+        .geo-manage-workspace .geo-map-search--segments .geo-map-search__input-wrap .form-control {
+            border-color: rgba(122, 90, 44, 0.38);
+            box-shadow: inset 0 0 0 1px rgba(122, 90, 44, 0.06);
+        }
+
+        .geo-manage-workspace .geo-map-search--segments .geo-map-search__input-wrap .form-control:focus {
+            border-color: #7a5a2c;
+            box-shadow: 0 0 0 0.2rem rgba(122, 90, 44, 0.14);
+        }
+
+        .geo-manage-workspace .geo-map-search--segments .geo-map-search__input-wrap .bi,
+        .geo-manage-workspace .geo-map-search--segments .geo-map-search__label {
+            color: #7a5a2c;
         }
     </style>
 @endpush

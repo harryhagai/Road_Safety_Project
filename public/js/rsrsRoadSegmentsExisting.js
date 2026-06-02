@@ -57,6 +57,29 @@
             onHighlight?.(nextLayer?.segment || null);
         }
 
+        function setSegmentMetaVisibility(segmentMeta, isVisible) {
+            if (!segmentMeta) return;
+
+            segmentMeta.isVisible = isVisible;
+            segmentMeta.article?.toggleAttribute('hidden', !isVisible);
+
+            if (segmentMeta.polyline) {
+                if (isVisible && !layer.hasLayer(segmentMeta.polyline)) {
+                    layer.addLayer(segmentMeta.polyline);
+                } else if (!isVisible && layer.hasLayer(segmentMeta.polyline)) {
+                    layer.removeLayer(segmentMeta.polyline);
+                }
+            }
+
+            if (segmentMeta.marker) {
+                if (isVisible && !layer.hasLayer(segmentMeta.marker)) {
+                    layer.addLayer(segmentMeta.marker);
+                } else if (!isVisible && layer.hasLayer(segmentMeta.marker)) {
+                    layer.removeLayer(segmentMeta.marker);
+                }
+            }
+        }
+
         function focusExistingSegment(segment) {
             const segmentId = namespace.segmentIdKey(segment);
             if (!segmentId) return;
@@ -129,6 +152,9 @@
                         polyline,
                         marker,
                         baseColor: segmentTypeColor,
+                        article: null,
+                        button: null,
+                        isVisible: true,
                     };
                     existingSegmentLayers.set(segmentId, segmentMeta);
                     polyline.on('click', () => highlightExistingSegment(segmentId));
@@ -147,8 +173,14 @@
             existingSegmentButtons.forEach((button) => {
                 const segment = namespace.parseSegmentFromButton(button, 'data-existing-segment');
                 const segmentId = namespace.segmentIdKey(segment);
+                const article = button.closest('.geo-segment-item');
                 if (segmentId) {
                     existingSegmentButtonsById.set(segmentId, button);
+                    const segmentMeta = existingSegmentLayers.get(segmentId);
+                    if (segmentMeta) {
+                        segmentMeta.button = button;
+                        segmentMeta.article = article;
+                    }
                 }
 
                 button.addEventListener('click', function () {
@@ -158,13 +190,41 @@
             });
         }
 
+        function filterSegments(predicate) {
+            let visibleCount = 0;
+
+            existingSegments.forEach((segment) => {
+                const segmentId = namespace.segmentIdKey(segment);
+                if (!segmentId) return;
+
+                const segmentMeta = existingSegmentLayers.get(segmentId);
+                if (!segmentMeta) return;
+
+                const matches = predicate(segment);
+                setSegmentMetaVisibility(segmentMeta, matches);
+                if (matches) {
+                    visibleCount += 1;
+                }
+            });
+
+            if (activeExistingSegmentId) {
+                const activeMeta = existingSegmentLayers.get(activeExistingSegmentId);
+                if (activeMeta && activeMeta.isVisible === false) {
+                    highlightExistingSegment(null);
+                }
+            }
+
+            return visibleCount;
+        }
+
         function init() {
-            registerExistingSegmentButtons();
             drawExistingSegments();
+            registerExistingSegmentButtons();
         }
 
         return {
             drawExistingSegments,
+            filterSegments,
             focusExistingSegment,
             highlightExistingSegment,
             init,
