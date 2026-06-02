@@ -22,6 +22,32 @@ class RoadSegmentController extends Controller
      */
     public function index(MapConfigService $mapConfigService): View
     {
+        return view('officer.road-segments.index', [
+            'mapConfig' => $mapConfigService->forFrontend(),
+            'segments' => $this->segmentsPayload(),
+            'segmentTypes' => $this->activeSegmentTypes(),
+            'segmentTypesWithRules' => $this->activeSegmentTypesWithRules(),
+        ]);
+    }
+
+    /**
+     * Render the dedicated segment management workspace.
+     */
+    public function manage(MapConfigService $mapConfigService): View
+    {
+        return view('officer.road-segments.manage', [
+            'mapConfig' => $mapConfigService->forFrontend(),
+            'segments' => $this->segmentsPayload(),
+            'segmentTypes' => $this->activeSegmentTypes(),
+            'segmentTypesWithRules' => $this->activeSegmentTypesWithRules(),
+        ]);
+    }
+
+    /**
+     * Build a normalized payload for map/list rendering.
+     */
+    private function segmentsPayload()
+    {
         $segments = RoadSegment::query()
             ->with([
                 'segmentType:id,name',
@@ -37,6 +63,7 @@ class RoadSegmentController extends Controller
                 return [
                     'id' => $segment->id,
                     'segment_name' => $segment->segment_name,
+                    'segment_type_id' => $segment->segment_type_id,
                     'segment_type' => $segment->segment_type_name,
                     'description' => $segment->description,
                     'length_km' => $segment->length_km,
@@ -55,22 +82,27 @@ class RoadSegmentController extends Controller
                 ];
             });
 
-        return view('officer.road-segments.index', [
-            'mapConfig' => $mapConfigService->forFrontend(),
-            'segments' => $segments,
-            'segmentTypes' => SegmentType::query()
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get(['id', 'name']),
-            'segmentTypesWithRules' => SegmentType::query()
-                ->where('is_active', true)
-                ->with(['defaultRules' => function ($query) {
-                    $query->select('id', 'segment_type_id', 'rule_name', 'rule_type', 'rule_value', 'description', 'is_active', 'sort_order')
-                        ->orderBy('sort_order');
-                }])
-                ->orderBy('name')
-                ->get(['id', 'name']),
-        ]);
+        return $segments;
+    }
+
+    private function activeSegmentTypes()
+    {
+        return SegmentType::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+    }
+
+    private function activeSegmentTypesWithRules()
+    {
+        return SegmentType::query()
+            ->where('is_active', true)
+            ->with(['defaultRules' => function ($query) {
+                $query->select('id', 'segment_type_id', 'rule_name', 'rule_type', 'rule_value', 'description', 'is_active', 'sort_order')
+                    ->orderBy('sort_order');
+            }])
+            ->orderBy('name')
+            ->get(['id', 'name']);
     }
 
     /**
@@ -151,19 +183,19 @@ class RoadSegmentController extends Controller
         ]);
 
         return redirect()
-            ->route('officer.road-segments.index')
+            ->to($this->resolveSegmentsRedirectTarget($request))
             ->with('success', 'Road segment updated successfully.');
     }
 
     /**
      * Delete a road segment record.
      */
-    public function destroy(RoadSegment $roadSegment): RedirectResponse
+    public function destroy(Request $request, RoadSegment $roadSegment): RedirectResponse
     {
         $roadSegment->delete();
 
         return redirect()
-            ->route('officer.road-segments.index')
+            ->to($this->resolveSegmentsRedirectTarget($request))
             ->with('success', 'Road segment deleted successfully.');
     }
 
@@ -188,5 +220,21 @@ class RoadSegmentController extends Controller
         } while ($exists);
 
         return $nextCandidate;
+    }
+
+    private function resolveSegmentsRedirectTarget(Request $request): string
+    {
+        $redirectTo = (string) $request->input('redirect_to', '');
+
+        if ($redirectTo !== '' && str_starts_with($redirectTo, '/road-officer/road-segments')) {
+            return $redirectTo;
+        }
+
+        $refererPath = parse_url((string) $request->headers->get('referer'), PHP_URL_PATH) ?: '';
+        if (is_string($refererPath) && str_starts_with($refererPath, '/road-officer/road-segments')) {
+            return $refererPath;
+        }
+
+        return route('officer.road-segments.index');
     }
 }

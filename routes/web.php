@@ -90,6 +90,7 @@ Route::middleware('auth')->group(function () {
     Route::redirect('/road-officer/road-rules', '/road-officer/segment-types')
         ->name('officer.road-rules.index');
     Route::get('/road-officer/road-segments', [RoadSegmentController::class, 'index'])->name('officer.road-segments.index');
+    Route::get('/road-officer/road-segments/manage', [RoadSegmentController::class, 'manage'])->name('officer.road-segments.manage');
     Route::post('/road-officer/road-segments', [RoadSegmentController::class, 'store'])->name('officer.road-segments.store');
     Route::put('/road-officer/road-segments/{roadSegment}', [RoadSegmentController::class, 'update'])->name('officer.road-segments.update');
     Route::delete('/road-officer/road-segments/{roadSegment}', [RoadSegmentController::class, 'destroy'])->name('officer.road-segments.destroy');

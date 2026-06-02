@@ -217,14 +217,12 @@
 .geo-segment-item {
     width: 100%;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.2rem;
-    padding: 0.95rem;
-    border: 0;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0;
     border-bottom: 1px solid rgba(31, 49, 79, 0.08);
     background: #fff;
-    text-align: left;
 }
 
 .geo-segment-item:hover {
@@ -240,6 +238,54 @@
     color: #1f314f;
     font-size: 0.96rem;
     font-weight: 400;
+}
+
+.geo-segment-item__focus {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    padding: 0.95rem;
+    border: 0;
+    background: transparent;
+    text-align: left;
+}
+
+.geo-segment-item__focus:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: -2px;
+}
+
+.geo-segment-item__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.75rem 0.85rem 0.75rem 0;
+}
+
+.geo-segment-item__action-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid rgba(31, 49, 79, 0.14);
+    background: #ffffff;
+    color: #1f314f;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.geo-segment-item__action-btn:hover {
+    background: #eef5ff;
+    border-color: rgba(13, 110, 253, 0.24);
+    color: #0d4eb3;
+}
+
+.geo-segment-item__action-btn--danger:hover {
+    background: #fff3f3;
+    border-color: rgba(185, 28, 28, 0.22);
+    color: #991b1b;
 }
 
 .geo-segment-item__meta {
@@ -332,7 +378,8 @@
 }
 
 .geo-modal__primary-btn,
-.geo-modal__secondary-btn {
+.geo-modal__secondary-btn,
+.geo-modal__danger-outline-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;

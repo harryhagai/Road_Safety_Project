@@ -384,11 +384,19 @@
         const form = document.getElementById('roadSegmentForm');
         const segmentTypeSelect = document.getElementById('segment_type_id');
         const segmentTypeRulesPreview = document.getElementById('segmentTypeRulesPreview');
+        const editForm = document.getElementById('editRoadSegmentForm');
+        const editNameInput = document.getElementById('edit_segment_name');
+        const editTypeSelect = document.getElementById('edit_segment_type_id');
+        const editTypeRulesPreview = document.getElementById('editSegmentTypeRulesPreview');
+        const editDescriptionInput = document.getElementById('edit_description');
+        const editLengthInput = document.getElementById('edit_length_km');
+        const deleteForm = document.getElementById('deleteRoadSegmentForm');
+        const deleteNameTarget = document.getElementById('deleteRoadSegmentName');
         const locationSearchInput = document.getElementById('roadSegmentLocationSearch');
         const locationSearchResults = document.getElementById('roadSegmentLocationSearchResults');
         const locationSearchStatus = document.getElementById('roadSegmentLocationSearchStatus');
         const locationSearchClear = document.getElementById('roadSegmentLocationSearchClear');
-        const existingSegmentButtons = Array.from(document.querySelectorAll('[data-existing-segment]'));
+        const existingSegmentButtons = Array.from(document.querySelectorAll('[data-existing-segment-focus]'));
 
         const pickedLayer = L.layerGroup().addTo(map);
         const routeLayer = L.layerGroup().addTo(map);
@@ -405,34 +413,44 @@
         const existingSegmentLayers = new Map();
         const existingSegmentButtonsById = new Map();
         let activeExistingSegmentId = null;
+        const updateUrlTemplate = String(window.roadSegmentPage?.updateUrlTemplate || '');
+        const destroyUrlTemplate = String(window.roadSegmentPage?.destroyUrlTemplate || '');
         const segmentTypesWithRules = Array.isArray(window.roadSegmentPage?.segmentTypesWithRules)
             ? window.roadSegmentPage.segmentTypesWithRules
             : [];
 
-        function renderSegmentTypeRulesPreview() {
-            if (!segmentTypeRulesPreview || !segmentTypeSelect) return;
+        function renderSegmentTypeRulesPreviewForSelect(selectEl, previewEl, emptyMessage) {
+            if (!previewEl || !selectEl) return;
 
-            const selectedId = Number(segmentTypeSelect.value);
+            const selectedId = Number(selectEl.value);
             const selectedType = segmentTypesWithRules.find((item) => Number(item?.id) === selectedId);
             const rules = Array.isArray(selectedType?.default_rules) ? selectedType.default_rules : [];
 
             if (!selectedId) {
-                segmentTypeRulesPreview.innerHTML = 'Select a segment type to preview default rules that will be auto-created.';
+                previewEl.innerHTML = emptyMessage;
                 return;
             }
 
             if (rules.length === 0) {
-                segmentTypeRulesPreview.innerHTML = 'No default rules for this segment type. Segment will be saved without auto-generated rules.';
+                previewEl.innerHTML = 'No default rules for this segment type. Segment will be saved without auto-generated rules.';
                 return;
             }
 
-            segmentTypeRulesPreview.innerHTML = rules
+            previewEl.innerHTML = rules
                 .map((rule, index) => {
                     const value = rule?.rule_value ? ` (${escapeHtml(rule.rule_value)})` : '';
                     const description = rule?.description ? ` - ${escapeHtml(rule.description)}` : '';
                     return `${index + 1}. <strong>${escapeHtml(rule.rule_name || 'Rule')}</strong>${value}${description}`;
                 })
                 .join('<br>');
+        }
+
+        function renderSegmentTypeRulesPreview() {
+            renderSegmentTypeRulesPreviewForSelect(
+                segmentTypeSelect,
+                segmentTypeRulesPreview,
+                'Select a segment type to preview default rules that will be auto-created.'
+            );
         }
 
         function segmentIdKey(segment) {
@@ -476,7 +494,7 @@
             const currentLayer = activeExistingSegmentId ? existingSegmentLayers.get(activeExistingSegmentId) : null;
             applyExistingSegmentVisual(currentLayer, false);
 
-            existingSegmentButtons.forEach((button) => button.classList.remove('is-active'));
+            existingSegmentButtons.forEach((button) => button.closest('.geo-segment-item')?.classList.remove('is-active'));
 
             activeExistingSegmentId = segmentId || null;
             if (!activeExistingSegmentId) {
@@ -489,7 +507,7 @@
 
             const activeButton = existingSegmentButtonsById.get(activeExistingSegmentId);
             if (activeButton) {
-                activeButton.classList.add('is-active');
+                activeButton.closest('.geo-segment-item')?.classList.add('is-active');
             }
         }
 
@@ -594,6 +612,79 @@
                 button.addEventListener('click', function () {
                     if (!segmentId) return;
                     focusExistingSegment(segment || { id: segmentId });
+                });
+            });
+        }
+
+        function buildSegmentActionUrl(template, segmentId) {
+            if (!template || !segmentId) return '';
+            return template.replace('__SEGMENT_ID__', encodeURIComponent(segmentId));
+        }
+
+        function parseSegmentFromButton(button, attributeName = 'data-segment') {
+            try {
+                return JSON.parse(button.getAttribute(attributeName) || '{}');
+            } catch (error) {
+                return {};
+            }
+        }
+
+        function prepareEditModal(segment) {
+            const segmentId = segmentIdKey(segment);
+            if (!segmentId || !editForm) return;
+
+            const updateUrl = buildSegmentActionUrl(updateUrlTemplate, segmentId);
+            if (updateUrl) {
+                editForm.setAttribute('action', updateUrl);
+            }
+
+            if (editNameInput) {
+                editNameInput.value = String(segment?.segment_name || '');
+            }
+            if (editTypeSelect) {
+                editTypeSelect.value = segment?.segment_type_id ? String(segment.segment_type_id) : '';
+            }
+            if (editDescriptionInput) {
+                editDescriptionInput.value = String(segment?.description || '');
+            }
+            if (editLengthInput) {
+                const length = Number(segment?.length_km);
+                editLengthInput.value = Number.isFinite(length) && length > 0 ? length.toFixed(2) : '';
+            }
+
+            renderSegmentTypeRulesPreviewForSelect(
+                editTypeSelect,
+                editTypeRulesPreview,
+                'Select a segment type to preview default rules.'
+            );
+        }
+
+        function prepareDeleteModal(segment) {
+            const segmentId = segmentIdKey(segment);
+            if (!segmentId || !deleteForm) return;
+
+            const destroyUrl = buildSegmentActionUrl(destroyUrlTemplate, segmentId);
+            if (destroyUrl) {
+                deleteForm.setAttribute('action', destroyUrl);
+            }
+
+            if (deleteNameTarget) {
+                deleteNameTarget.textContent = String(segment?.segment_name || 'this segment');
+            }
+        }
+
+        function registerSegmentActionTriggers() {
+            document.querySelectorAll('[data-edit-segment-trigger]').forEach((button) => {
+                button.addEventListener('click', function () {
+                    const segment = parseSegmentFromButton(button, 'data-segment');
+                    prepareEditModal(segment);
+                });
+            });
+
+            document.querySelectorAll('[data-delete-segment-trigger]').forEach((button) => {
+                button.addEventListener('click', function () {
+                    const segment = parseSegmentFromButton(button, 'data-segment');
+                    prepareDeleteModal(segment);
                 });
             });
         }
@@ -911,6 +1002,15 @@
             segmentTypeSelect.addEventListener('change', renderSegmentTypeRulesPreview);
             renderSegmentTypeRulesPreview();
         }
+        if (editTypeSelect) {
+            editTypeSelect.addEventListener('change', function () {
+                renderSegmentTypeRulesPreviewForSelect(
+                    editTypeSelect,
+                    editTypeRulesPreview,
+                    'Select a segment type to preview default rules.'
+                );
+            });
+        }
 
         if (locationSearchInput) {
             locationSearchInput.addEventListener('input', function () {
@@ -1007,6 +1107,7 @@
         }
 
         registerExistingSegmentButtons();
+        registerSegmentActionTriggers();
         drawExistingSegments();
         updatePanels();
     }

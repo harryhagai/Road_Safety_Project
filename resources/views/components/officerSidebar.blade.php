@@ -60,8 +60,14 @@
                         </li>
                         <li class="nav-item mb-1">
                             <a href="{{ route('officer.road-segments.index') }}"
-                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/road-segments*') ? 'active is-current fw-bold shadow-sm' : '' }}">
+                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/road-segments') ? 'active is-current fw-bold shadow-sm' : '' }}">
                                 <i class="bi bi-signpost-split"></i> Road Segments
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a href="{{ route('officer.road-segments.manage') }}"
+                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/road-segments/manage*') ? 'active is-current fw-bold shadow-sm' : '' }}">
+                                <i class="bi bi-map"></i> Segment Management
                             </a>
                         </li>
                     </ul>
