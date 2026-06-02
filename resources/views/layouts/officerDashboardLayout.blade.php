@@ -108,6 +108,16 @@
             </div>
         @endif
 
+        @if (session('success') && !View::hasSection('disable_success_swal'))
+            <div class="px-3 px-lg-4">
+                <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-3" role="alert">
+                    <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                    <span>{{ session('success') }}</span>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
+
         <div class="officer-page-body">
             @yield('content')
         </div>
@@ -186,18 +196,6 @@
     <script src="{{ asset('js/rsrsButtonSpinner.js') }}"></script>
     <script src="{{ asset('js/rsrsOfficerAlerts.js') }}"></script>
     @yield('scripts')
-
-    @if (session('success') && !View::hasSection('disable_success_swal'))
-        <script>
-            showroadofficerUiAlert({
-                theme: 'success',
-                title: 'Action completed',
-                text: @js(session('success')),
-                timer: 2600,
-                showConfirmButton: false
-            });
-        </script>
-    @endif
 
     @if (session('error'))
         <script>

@@ -165,13 +165,6 @@
 
 @section('content')
 <div class="container-fluid px-3 px-lg-4 py-4 officer-report-detail-page">
-    @if (session('success'))
-        <div class="alert alert-success d-flex align-items-center gap-2" role="alert">
-            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
     <div class="row g-3 g-xl-4">
         <div class="col-12 col-xl-5">
             <section class="report-detail-panel report-map-preview-panel h-100">
