@@ -85,7 +85,7 @@
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
                                         <button type="button" class="geo-segment-item__action-btn geo-segment-item__action-btn--danger"
-                                            title="Delete segment" data-delete-segment-trigger data-segment='@json($segment)'
+                                            title="Archive segment" data-delete-segment-trigger data-segment='@json($segment)'
                                             data-bs-toggle="modal" data-bs-target="#deleteRoadSegmentModal">
                                             <i class="bi bi-trash3"></i>
                                         </button>
@@ -181,8 +181,8 @@
                             <i class="bi bi-trash3"></i>
                         </span>
                         <div>
-                            <h5 class="modal-title geo-modal__title" id="deleteRoadSegmentModalLabel">Delete road segment</h5>
-                            <div class="geo-modal__subtitle">This action cannot be undone.</div>
+                            <h5 class="modal-title geo-modal__title" id="deleteRoadSegmentModalLabel">Archive road segment</h5>
+                            <div class="geo-modal__subtitle">This removes the segment from active workflows while keeping historical report links.</div>
                         </div>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -193,7 +193,7 @@
                     <input type="hidden" name="redirect_to" value="{{ request()->getPathInfo() }}">
                     <div class="modal-body geo-modal__body">
                         <p class="mb-0">
-                            You are about to delete <strong id="deleteRoadSegmentName">this segment</strong>.
+                            You are about to archive <strong id="deleteRoadSegmentName">this segment</strong>.
                             Continue?
                         </p>
                     </div>
@@ -204,7 +204,7 @@
                         </button>
                         <button type="submit" class="btn btn-outline-danger geo-modal__danger-outline-btn">
                             <i class="bi bi-trash3"></i>
-                            <span>Delete segment</span>
+                            <span>Archive segment</span>
                         </button>
                     </div>
                 </form>

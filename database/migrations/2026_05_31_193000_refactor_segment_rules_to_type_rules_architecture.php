@@ -9,6 +9,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (! Schema::hasColumn('road_segments', 'segment_type_id')) {
+            Schema::table('road_segments', function (Blueprint $table): void {
+                $table->foreignId('segment_type_id')->nullable()->constrained('segment_types')->nullOnDelete();
+            });
+        }
+
         if (! Schema::hasTable('segment_rule_overrides')) {
             Schema::create('segment_rule_overrides', function (Blueprint $table): void {
                 $table->id();

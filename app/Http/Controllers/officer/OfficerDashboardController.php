@@ -186,6 +186,7 @@ class OfficerDashboardController extends Controller
         $segmentViolationSummary = Report::query()
             ->join('rule_violations', 'rule_violations.report_id', '=', 'reports.id')
             ->join('road_segments', 'road_segments.id', '=', 'rule_violations.segment_id')
+            ->whereNull('road_segments.deleted_at')
             ->whereNotNull('reports.latitude')
             ->whereNotNull('reports.longitude')
             ->selectRaw('

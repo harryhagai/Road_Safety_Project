@@ -196,7 +196,7 @@ class RoadSegmentController extends Controller
 
         return redirect()
             ->to($this->resolveSegmentsRedirectTarget($request))
-            ->with('success', 'Road segment deleted successfully.');
+            ->with('success', 'Road segment archived successfully.');
     }
 
     /**

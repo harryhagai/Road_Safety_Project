@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Eloquent model representing the RoadSegment domain record in RSRS.
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class RoadSegment extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.

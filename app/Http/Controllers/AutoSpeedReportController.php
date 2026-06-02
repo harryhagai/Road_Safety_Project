@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 /**
  * Web controller that coordinates the AutoSpeedReportController request lifecycle.
@@ -114,7 +115,7 @@ class AutoSpeedReportController extends Controller
     {
         $validated = $this->validateTelemetry($request) + $request->validate([
             'rule_id' => ['required', 'integer', 'exists:segment_type_rules,id'],
-            'segment_id' => ['required', 'integer', 'exists:road_segments,id'],
+            'segment_id' => ['required', 'integer', Rule::exists('road_segments', 'id')->whereNull('deleted_at')],
         ]);
         $accuracy = isset($validated['accuracy']) ? (float) $validated['accuracy'] : null;
         if (! $this->isAccuracyReliable($accuracy)) {
