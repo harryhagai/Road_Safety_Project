@@ -70,6 +70,7 @@
     function bindMap(root) {
         const config = JSON.parse(root.dataset.mapConfig || '{}');
         const mode = root.dataset.mapMode || 'picker';
+        const canRotate = mode === 'segment-builder' || mode === 'segment-manager';
         const shell = root.closest('[data-map-shell]');
         const coordinatesLabel = shell?.querySelector('[data-map-coordinates]');
         const recenterButton = shell?.querySelector('[data-map-recenter]');
@@ -79,7 +80,7 @@
             fadeAnimation: true,
             markerZoomAnimation: true,
             preferCanvas: true,
-            rotate: mode === 'segment-builder',
+            rotate: canRotate,
             bearing: 0,
         }).setView(
             [config.defaultCenter.lat, config.defaultCenter.lng],
@@ -87,7 +88,7 @@
         );
 
         L.control.zoom({
-            position: mode === 'segment-builder' ? 'topright' : 'bottomright',
+            position: canRotate ? 'topright' : 'bottomright',
         }).addTo(map);
         L.control.scale({
             metric: true,
@@ -122,7 +123,7 @@
         }
 
         function addRotationControl() {
-            if (mode !== 'segment-builder' || typeof map.setBearing !== 'function') {
+            if (!canRotate || typeof map.setBearing !== 'function') {
                 return;
             }
 

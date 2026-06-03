@@ -380,15 +380,25 @@
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
     <link rel="stylesheet" href="{{ asset('css/rsrsMap.css') }}">
     <style>
+        .geo-workspace__grid {
+            align-items: flex-start;
+        }
+
+        .geo-card--map,
+        .geo-card--inspector {
+            height: auto;
+        }
+
         .geo-card--map .geo-map-shell {
-            height: 100%;
+            height: 420px;
             min-height: 0;
+            padding-top: 0.75rem;
         }
 
         .geo-card--map .geo-map-canvas {
             flex: 1 1 auto;
             min-height: 0;
-            height: 100% !important;
+            height: auto !important;
         }
 
         .geo-map-search__result.is-active {

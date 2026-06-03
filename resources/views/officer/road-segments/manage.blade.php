@@ -218,19 +218,35 @@
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
     <link rel="stylesheet" href="{{ asset('css/rsrsMap.css') }}">
     <style>
+        .geo-manage-workspace .geo-workspace__grid {
+            align-items: flex-start;
+        }
+
+        .geo-manage-workspace .geo-card--map,
+        .geo-manage-workspace .geo-card--inspector {
+            height: auto;
+        }
+
         .geo-manage-workspace .geo-card--map .geo-map-shell {
-            height: 100%;
+            height: 520px;
             min-height: 0;
+            padding-top: 0.75rem;
         }
 
         .geo-manage-workspace .geo-card--map .geo-map-canvas {
             flex: 1 1 auto;
             min-height: 0;
-            height: 100% !important;
+            height: auto !important;
         }
 
         .geo-manage-workspace .geo-segment-list__body {
-            max-height: calc(100vh - 340px);
+            --segment-row-height: 74px;
+            max-height: calc(var(--segment-row-height) * 8);
+            overflow-y: auto;
+        }
+
+        .geo-manage-workspace .geo-segment-item {
+            min-height: var(--segment-row-height);
         }
 
         .geo-manage-workspace .geo-map-search--segments {
@@ -257,6 +273,7 @@
 @section('scripts')
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
 @endsection
 
 @push('scripts')

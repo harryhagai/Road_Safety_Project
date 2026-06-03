@@ -30,7 +30,33 @@
         const editLengthInput = document.getElementById('edit_length_km');
         const deleteForm = document.getElementById('deleteRoadSegmentForm');
         const deleteNameTarget = document.getElementById('deleteRoadSegmentName');
+        const mapShell = mapRoot.closest('.geo-map-shell');
         const existingSegmentsLayer = L.layerGroup().addTo(map);
+
+        function fitMapToViewport() {
+            if (!mapShell) {
+                return;
+            }
+
+            if (window.innerWidth < 1200) {
+                mapShell.style.height = '420px';
+                mapRoot.mapApi.ensureSize?.();
+                return;
+            }
+
+            const viewportBottomPadding = 24;
+            const shellTop = mapShell.getBoundingClientRect().top;
+            const availableHeight = window.innerHeight - shellTop - viewportBottomPadding;
+            const targetHeight = Math.max(320, Math.floor(availableHeight));
+
+            mapShell.style.height = `${targetHeight}px`;
+            mapRoot.mapApi.ensureSize?.();
+        }
+
+        function bindMapViewportFit() {
+            fitMapToViewport();
+            window.addEventListener('resize', fitMapToViewport);
+        }
 
         function setStatus(segment) {
             if (!statusTarget) return;
@@ -133,6 +159,7 @@
         });
         applySearch();
         setStatus(null);
+        bindMapViewportFit();
     }
 
     segments.initWhenMapReady?.('roadSegmentManagementMap', initializeRoadSegmentManagementMap);

@@ -49,6 +49,9 @@
         const locationSearchStatus = document.getElementById('roadSegmentLocationSearchStatus');
         const locationSearchClear = document.getElementById('roadSegmentLocationSearchClear');
         const existingSegmentButtons = Array.from(document.querySelectorAll('[data-existing-segment-focus]'));
+        const mapShell = mapRoot.closest('.geo-map-shell');
+        const mapCard = mapRoot.closest('.geo-card--map');
+        const inspectorCard = document.querySelector('.geo-card--inspector');
 
         const pickedLayer = L.layerGroup().addTo(map);
         const routeLayer = L.layerGroup().addTo(map);
@@ -96,6 +99,37 @@
             }
 
             window.bootstrap.Modal.getOrCreateInstance(createModalEl).show();
+        }
+
+        function syncMapHeightToInspector() {
+            if (!mapShell || !mapCard || !inspectorCard) {
+                return;
+            }
+
+            if (window.innerWidth < 1200) {
+                mapShell.style.height = '420px';
+                mapRoot.mapApi.ensureSize?.();
+                return;
+            }
+
+            const inspectorHeight = inspectorCard.getBoundingClientRect().height;
+            const mapCardTop = mapCard.getBoundingClientRect().top;
+            const mapShellTop = mapShell.getBoundingClientRect().top;
+            const contentAboveMap = Math.max(0, mapShellTop - mapCardTop);
+            const targetHeight = Math.max(220, Math.floor(inspectorHeight - contentAboveMap));
+
+            mapShell.style.height = `${targetHeight}px`;
+            mapRoot.mapApi.ensureSize?.();
+        }
+
+        function bindMapHeightSync() {
+            syncMapHeightToInspector();
+            window.addEventListener('resize', syncMapHeightToInspector);
+
+            if (typeof ResizeObserver !== 'undefined' && inspectorCard) {
+                const observer = new ResizeObserver(syncMapHeightToInspector);
+                observer.observe(inspectorCard);
+            }
         }
 
         function hideWarningModal() {
@@ -370,6 +404,7 @@
         existingSegmentsController.init();
         modalActions.register();
         updatePanels();
+        bindMapHeightSync();
     }
 
     segments.initWhenMapReady?.('roadSegmentMapLab', initializeRoadSegmentMap);
