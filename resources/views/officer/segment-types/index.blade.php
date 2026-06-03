@@ -115,7 +115,7 @@
                             </div>
                             <div class="col-12 col-md-4">
                                 <label for="speed_limit_kmh" class="form-label">Speed limit (km/h)</label>
-                                <input type="number" class="form-control" id="speed_limit_kmh" name="speed_limit_kmh" min="1" max="320" step="1" placeholder="e.g. 30">
+                                <input type="number" class="form-control" id="speed_limit_kmh" name="speed_limit_kmh" min="0" max="320" step="1" value="{{ old('speed_limit_kmh') }}" placeholder="0 or e.g. 30">
                             </div>
                             <div class="col-12">
                                 <label for="segment_type_description" class="form-label">Description</label>
@@ -124,7 +124,7 @@
                             <div class="col-12">
                                 <label for="other_rules" class="form-label">Other rules (one per line)</label>
                                 <textarea class="form-control" id="other_rules" name="other_rules" rows="3"
-                                    placeholder="No stopping&#10;No heavy trucks 6am-9pm"></textarea>
+                                    placeholder="No parking&#10;No stopping&#10;No heavy trucks 6am-9pm"></textarea>
                             </div>
                         </div>
                     </div>
@@ -180,7 +180,7 @@
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <label for="edit_speed_limit_kmh_{{ $segmentType->id }}" class="form-label">Speed limit (km/h)</label>
-                                    <input type="number" class="form-control" id="edit_speed_limit_kmh_{{ $segmentType->id }}" name="speed_limit_kmh" min="1" max="320" step="1" value="{{ $speedValue }}">
+                                    <input type="number" class="form-control" id="edit_speed_limit_kmh_{{ $segmentType->id }}" name="speed_limit_kmh" min="0" max="320" step="1" value="{{ $speedValue }}" placeholder="0 or e.g. 30">
                                 </div>
                                 <div class="col-12">
                                     <label for="edit_segment_type_description_{{ $segmentType->id }}" class="form-label">Description</label>
@@ -188,7 +188,7 @@
                                 </div>
                                 <div class="col-12">
                                     <label for="edit_other_rules_{{ $segmentType->id }}" class="form-label">Other rules (one per line)</label>
-                                    <textarea class="form-control" id="edit_other_rules_{{ $segmentType->id }}" name="other_rules" rows="3">{{ $otherRules }}</textarea>
+                                    <textarea class="form-control" id="edit_other_rules_{{ $segmentType->id }}" name="other_rules" rows="3" placeholder="No parking&#10;No stopping&#10;No heavy trucks 6am-9pm">{{ $otherRules }}</textarea>
                                 </div>
                             </div>
                         </div>

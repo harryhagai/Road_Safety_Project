@@ -117,7 +117,7 @@
         window.rsrsVehicleTelemetry = {
             submitUrl: @json(route('vehicle-telemetry.store')),
             csrfToken: @json(csrf_token()),
-            intervalMs: 30000,
+            intervalMs: 10000,
             defaultCitizenDeviceNo: (function() {
                 const key = 'rsrs_citizen_device_no';
                 const existing = localStorage.getItem(key);
@@ -136,23 +136,67 @@
             if (!config || !('geolocation' in navigator)) {
                 return;
             }
-            let lastSubmittedCoordinateKey = null;
+            let lastSubmittedTelemetryKey = null;
             let telemetryInFlight = false;
+            let lastTelemetryPoint = null;
+            let lastTelemetryAt = 0;
+
+            const telemetryDistanceMeters = (a, b) => {
+                const toRad = (value) => (value * Math.PI) / 180;
+                const earthRadius = 6371000;
+                const dLat = toRad(b.latitude - a.latitude);
+                const dLng = toRad(b.longitude - a.longitude);
+                const lat1 = toRad(a.latitude);
+                const lat2 = toRad(b.latitude);
+                const h = Math.sin(dLat / 2) ** 2 +
+                    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+
+                return 2 * earthRadius * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+            };
+
+            const resolveTelemetrySpeedKmh = (position, point, now) => {
+                const speedMs = Number(position?.coords?.speed);
+                if (Number.isFinite(speedMs) && speedMs >= 0) {
+                    return speedMs * 3.6;
+                }
+
+                if (!lastTelemetryPoint || !lastTelemetryAt) {
+                    return null;
+                }
+
+                const elapsedSeconds = (now - lastTelemetryAt) / 1000;
+                if (elapsedSeconds <= 0) {
+                    return null;
+                }
+
+                return (telemetryDistanceMeters(lastTelemetryPoint, point) / elapsedSeconds) * 3.6;
+            };
 
             const sendTelemetry = (position) => {
-                const speedMs = Number(position?.coords?.speed ?? 0);
-                const speedKmh = speedMs > 0 ? speedMs * 3.6 : 0;
-                const heading = Number(position?.coords?.heading);
                 const latitude = Number(position?.coords?.latitude);
                 const longitude = Number(position?.coords?.longitude);
+                const heading = Number(position?.coords?.heading);
+                const now = Date.now();
 
                 if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
                     return;
                 }
 
-                const coordinateKey = `${latitude.toFixed(6)}:${longitude.toFixed(6)}`;
+                const currentPoint = { latitude, longitude };
+                const resolvedSpeedKmh = resolveTelemetrySpeedKmh(position, currentPoint, now);
+                lastTelemetryPoint = currentPoint;
+                lastTelemetryAt = now;
 
-                if (telemetryInFlight || coordinateKey === lastSubmittedCoordinateKey) {
+                if (!Number.isFinite(resolvedSpeedKmh)) {
+                    return;
+                }
+
+                const speedKmh = resolvedSpeedKmh < 1 ? 0 : resolvedSpeedKmh;
+                const coordinateKey = `${latitude.toFixed(6)}:${longitude.toFixed(6)}`;
+                const telemetryKey = `${coordinateKey}:${speedKmh.toFixed(2)}`;
+                const stationaryHeartbeat = speedKmh < 1;
+
+                if (telemetryInFlight || (!stationaryHeartbeat && telemetryKey === lastSubmittedTelemetryKey)) {
                     return;
                 }
                 telemetryInFlight = true;
@@ -181,7 +225,16 @@
 
                         const payload = await response.json().catch(() => ({}));
                         if (payload?.saved) {
-                            lastSubmittedCoordinateKey = coordinateKey;
+                            lastSubmittedTelemetryKey = telemetryKey;
+                        }
+                        if (payload?.rule_alert || payload?.report_reference_no) {
+                            const detail = {
+                                ...payload,
+                                current_speed: Number(speedKmh.toFixed(2)),
+                            };
+
+                            window.rsrsLastVehicleTelemetry = detail;
+                            document.dispatchEvent(new CustomEvent('rsrs:vehicle-telemetry', { detail }));
                         }
                     })
                     .catch(() => null)
@@ -210,5 +263,10 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
     <script src="{{ asset('js/rsrsMapPicker.js') }}"></script>
+    <script src="{{ asset('js/rsrsHomeMap.shared.js') }}"></script>
+    <script src="{{ asset('js/rsrsHomeMap.ui.js') }}"></script>
+    <script src="{{ asset('js/rsrsHomeMap.geo.js') }}"></script>
+    <script src="{{ asset('js/rsrsHomeMap.reporting.js') }}"></script>
+    <script src="{{ asset('js/rsrsHomeMap.controls.js') }}"></script>
     <script src="{{ asset('js/rsrsHomeMap.js') }}"></script>
 @endsection

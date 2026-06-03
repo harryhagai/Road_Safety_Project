@@ -24,10 +24,10 @@ class AutoSpeedReportController extends Controller
     private const ACTIVE_RULES_CACHE_SECONDS = 20;
     private const REQUIRED_EXCEEDED_SECONDS = 30;
     private const DUPLICATE_WINDOW_SECONDS = 600;
-    private const BASE_SEGMENT_TOLERANCE_METERS = 3;
-    private const ACCURACY_MARGIN_METERS = 0;
-    private const MAX_SEGMENT_TOLERANCE_METERS = 6;
-    private const MAX_ACCEPTABLE_GPS_ACCURACY_METERS = 6;
+    private const BASE_SEGMENT_TOLERANCE_METERS = 15;
+    private const ACCURACY_MARGIN_METERS = 0.5;
+    private const MAX_SEGMENT_TOLERANCE_METERS = 50;
+    private const MAX_ACCEPTABLE_GPS_ACCURACY_METERS = 80;
 
     /**
      * Handle the evaluate workflow for this class.
@@ -283,13 +283,17 @@ class AutoSpeedReportController extends Controller
                 continue;
             }
 
-            $points = $this->segmentPoints($segment->boundary_coordinates);
-            if (count($points) < 2) {
+            $distance = $this->distanceToSegmentGeometryMeters(
+                $latitude,
+                $longitude,
+                $segment->boundary_coordinates ?? []
+            );
+
+            if (! is_finite($distance)) {
                 continue;
             }
 
-            $distance = $this->distanceToPolylineMeters(['lat' => $latitude, 'lng' => $longitude], $points);
-            $matchingBuffer = $tolerance;
+            $matchingBuffer = max($tolerance, $this->segmentBufferMeters($segment));
             $ruleData = (object) [
                 'id' => (int) $resolvedRule['segment_type_rule_id'],
                 'rule_name' => $resolvedRule['rule_name'],
@@ -385,6 +389,120 @@ class AutoSpeedReportController extends Controller
         }
 
         return $accuracy > 0 && $accuracy <= self::MAX_ACCEPTABLE_GPS_ACCURACY_METERS;
+    }
+
+    private function distanceToSegmentGeometryMeters(float $latitude, float $longitude, ?array $geometry): float
+    {
+        if (! is_array($geometry) || $geometry === []) {
+            return INF;
+        }
+
+        $coordinates = data_get($geometry, 'geometry.coordinates')
+            ?? data_get($geometry, 'features.0.geometry.coordinates')
+            ?? data_get($geometry, 'coordinates')
+            ?? $geometry;
+        $geometryType = strtolower((string) (
+            data_get($geometry, 'geometry.type')
+            ?? data_get($geometry, 'features.0.geometry.type')
+            ?? data_get($geometry, 'type')
+            ?? ''
+        ));
+
+        if (! is_array($coordinates) || $coordinates === []) {
+            return INF;
+        }
+
+        $target = ['lat' => $latitude, 'lng' => $longitude];
+        $minimum = INF;
+
+        foreach ($this->coordinateLines($coordinates) as $linePoints) {
+            if (str_contains($geometryType, 'polygon') && count($linePoints) >= 3 && $this->pointInsidePolygon($target, $linePoints)) {
+                return 0.0;
+            }
+
+            if (count($linePoints) < 2) {
+                continue;
+            }
+
+            $minimum = min($minimum, $this->distanceToPolylineMeters($target, $linePoints));
+        }
+
+        return $minimum;
+    }
+
+    private function coordinateLines(array $coordinates): array
+    {
+        if ($this->isCoordinatePair($coordinates)) {
+            $point = $this->normalizeCoordinate($coordinates);
+
+            return $point ? [[$point]] : [];
+        }
+
+        $looksLikeLine = $coordinates !== [] && collect($coordinates)
+            ->every(fn ($coordinate): bool => $this->isCoordinatePair($coordinate));
+
+        if ($looksLikeLine) {
+            $line = collect($coordinates)
+                ->map(fn ($coordinate) => $this->normalizeCoordinate($coordinate))
+                ->filter(fn (?array $point): bool => $point !== null)
+                ->values()
+                ->all();
+
+            return $line !== [] ? [$line] : [];
+        }
+
+        $lines = [];
+
+        foreach ($coordinates as $coordinateGroup) {
+            if (is_array($coordinateGroup)) {
+                array_push($lines, ...$this->coordinateLines($coordinateGroup));
+            }
+        }
+
+        return $lines;
+    }
+
+    private function isCoordinatePair(mixed $coordinate): bool
+    {
+        if (! is_array($coordinate)) {
+            return false;
+        }
+
+        if (isset($coordinate['lat'], $coordinate['lng']) || isset($coordinate['latitude'], $coordinate['longitude'])) {
+            return true;
+        }
+
+        $values = array_values($coordinate);
+
+        return count($values) >= 2
+            && is_numeric($values[0])
+            && is_numeric($values[1]);
+    }
+
+    private function pointInsidePolygon(array $point, array $polygonPoints): bool
+    {
+        if (count($polygonPoints) < 3) {
+            return false;
+        }
+
+        $inside = false;
+        $total = count($polygonPoints);
+
+        for ($i = 0, $j = $total - 1; $i < $total; $j = $i++) {
+            $xi = (float) $polygonPoints[$i]['lng'];
+            $yi = (float) $polygonPoints[$i]['lat'];
+            $xj = (float) $polygonPoints[$j]['lng'];
+            $yj = (float) $polygonPoints[$j]['lat'];
+
+            $crosses = (($yi > $point['lat']) !== ($yj > $point['lat']))
+                && ($point['lng'] < (($xj - $xi) * ($point['lat'] - $yi) / (($yj - $yi) ?: 0.0000001) + $xi));
+
+            if ($crosses) {
+                $inside = ! $inside;
+            }
+        }
+
+        return $inside;
     }
 
     /**

@@ -40,7 +40,7 @@ class SegmentTypeController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:segment_types,name'],
             'description' => ['nullable', 'string', 'max:2000'],
-            'speed_limit_kmh' => ['nullable', 'numeric', 'min:1', 'max:320'],
+            'speed_limit_kmh' => ['nullable', 'numeric', 'min:0', 'max:320'],
             'other_rules' => ['nullable', 'string', 'max:4000'],
         ]);
 
@@ -74,7 +74,7 @@ class SegmentTypeController extends Controller
                 Rule::unique('segment_types', 'name')->ignore($segmentType->id),
             ],
             'description' => ['nullable', 'string', 'max:2000'],
-            'speed_limit_kmh' => ['nullable', 'numeric', 'min:1', 'max:320'],
+            'speed_limit_kmh' => ['nullable', 'numeric', 'min:0', 'max:320'],
             'other_rules' => ['nullable', 'string', 'max:4000'],
         ]);
 
@@ -143,8 +143,10 @@ class SegmentTypeController extends Controller
         $rules = [];
         $sort = 1;
 
-        if (! empty($validated['speed_limit_kmh'])) {
-            $speed = (float) $validated['speed_limit_kmh'];
+        $speedLimit = $validated['speed_limit_kmh'] ?? null;
+
+        if ($speedLimit !== null && (float) $speedLimit > 0) {
+            $speed = (float) $speedLimit;
             $rules[] = [
                 'rule_name' => 'Speed limit',
                 'rule_type' => 'speed_limit',

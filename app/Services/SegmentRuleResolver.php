@@ -41,8 +41,33 @@ class SegmentRuleResolver
             ->first(fn (array $rule): bool => (string) $rule['rule_type'] === 'speed_limit');
     }
 
+    public function resolveNoParkingRuleForSegment(RoadSegment $segment): ?array
+    {
+        return $this->resolveEffectiveRulesForSegment($segment)
+            ->first(fn (array $rule): bool => $this->isNoParkingRule($rule));
+    }
+
     private function isRuleActiveNow(array $rule): bool
     {
         return (bool) ($rule['is_active'] ?? false);
+    }
+
+    private function isNoParkingRule(array $rule): bool
+    {
+        $searchText = strtolower(trim(implode(' ', array_filter([
+            (string) ($rule['rule_name'] ?? ''),
+            (string) ($rule['rule_type'] ?? ''),
+            (string) ($rule['rule_value'] ?? ''),
+            (string) ($rule['description'] ?? ''),
+        ]))));
+
+        if ($searchText === '') {
+            return false;
+        }
+
+        return str_contains($searchText, 'no parking')
+            || str_contains($searchText, 'no-parking')
+            || str_contains($searchText, 'parking prohibited')
+            || str_contains($searchText, 'prohibited parking');
     }
 }
