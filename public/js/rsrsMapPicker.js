@@ -82,6 +82,9 @@
             markerZoomAnimation: true,
             preferCanvas: true,
             rotate: canRotate,
+            rotateControl: canRotate && !showRotationControl
+                ? { position: 'bottomright', closeOnZeroBearing: false }
+                : false,
             bearing: 0,
         }).setView(
             [config.defaultCenter.lat, config.defaultCenter.lng],
@@ -89,7 +92,7 @@
         );
 
         L.control.zoom({
-            position: canRotate ? 'topright' : 'bottomright',
+            position: showRotationControl ? 'topright' : 'bottomright',
         }).addTo(map);
         L.control.scale({
             metric: true,

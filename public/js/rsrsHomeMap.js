@@ -519,14 +519,39 @@
         const control = new LocationControl();
         control.addTo(mapInterface.map);
 
-        const container = control.getContainer();
-        const corner = container?.parentElement;
-        const zoomControl = corner?.querySelector('.leaflet-control-zoom');
-        if (corner && zoomControl) {
-            corner.insertBefore(container, zoomControl);
+        setLocationButtonMode(locationViewMode);
+    }
+
+    // Make the plugin rotation control read like a map compass control.
+    function customizeRotateControl() {
+        const mapRoot = mapInterface?.map?.getContainer?.();
+        const rotateControl = mapRoot?.querySelector('.leaflet-control-rotate');
+        const rotateToggle = rotateControl?.querySelector('.leaflet-control-rotate-toggle');
+
+        if (!rotateControl || !rotateToggle || rotateControl.dataset.homeRotateReady === 'true') {
+            return;
         }
 
-        setLocationButtonMode(locationViewMode);
+        rotateControl.dataset.homeRotateReady = 'true';
+        rotateToggle.title = 'Rotate map';
+        rotateToggle.setAttribute('aria-label', 'Rotate map');
+        rotateToggle.innerHTML = `
+            <span class="home-compass-icon" aria-hidden="true">
+                <span class="home-compass-icon__needle"></span>
+                <span class="home-compass-icon__center"></span>
+            </span>
+        `;
+
+        const compassNeedle = rotateToggle.querySelector('.home-compass-icon__needle');
+        const syncCompassBearing = () => {
+            if (!compassNeedle) return;
+
+            const bearing = Number(mapInterface?.map?.getBearing?.() || 0);
+            compassNeedle.style.transform = `translate(-50%, -50%) rotate(${Number.isFinite(bearing) ? bearing : 0}deg)`;
+        };
+
+        mapInterface.map.on('rotate', syncCompassBearing);
+        syncCompassBearing();
     }
 
     // Apply new position fix to map marker, speed UI, centering logic, and auto-eval.
@@ -696,6 +721,7 @@
             mapInterface = mapEl.mapApi;
             mapInterface.ensureSize();
             createLocationControl();
+            customizeRotateControl();
 
             const markUserAdjusted = () => {
                 if (hasCentered) {
