@@ -543,13 +543,13 @@ main.flex-grow-1 {
 }
 
 .home-geo-card .leaflet-bar .leaflet-control-rotate-toggle {
-    width: 62px !important;
-    height: 62px !important;
+    width: 44px !important;
+    height: 44px !important;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border: 0;
-    border-radius: 18px;
+    border-radius: 14px;
     background: linear-gradient(180deg, #ffffff 0%, #f7f8fb 100%) !important;
     color: #232c3a;
     font-size: 1rem;
@@ -560,8 +560,8 @@ main.flex-grow-1 {
 
 .home-compass-icon {
     position: relative;
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
     display: block;
     border: 1px solid rgba(35, 44, 58, 0.18);
     border-radius: 50%;
@@ -592,18 +592,18 @@ main.flex-grow-1 {
 }
 
 .home-compass-icon__needle::before {
-    top: -19px;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-bottom: 23px solid #f3b74a;
+    top: -14px;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 17px solid #f3b74a;
     filter: drop-shadow(0 2px 3px rgba(27, 35, 48, 0.18));
 }
 
 .home-compass-icon__needle::after {
-    top: 2px;
-    border-left: 7px solid transparent;
-    border-right: 7px solid transparent;
-    border-top: 19px solid #232c3a;
+    top: 1px;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 14px solid #232c3a;
 }
 
 .home-compass-icon__center {
@@ -898,15 +898,15 @@ main.flex-grow-1 {
     }
 
     .home-geo-card .leaflet-bar .leaflet-control-rotate-toggle {
-        width: 62px !important;
-        height: 62px !important;
-        border-radius: 18px;
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 16px;
         font-size: 1rem;
     }
 
     .home-compass-icon {
-        width: 44px;
-        height: 44px;
+        width: 34px;
+        height: 34px;
     }
 
     .home-geo-card .leaflet-control-zoom a {
