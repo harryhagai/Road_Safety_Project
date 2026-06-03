@@ -12,6 +12,8 @@
     const STATIONARY_SPEED_THRESHOLD_KMH = 0.8;
     const STATIONARY_MOVEMENT_THRESHOLD_METERS = 2.5;
     const LOW_CONFIDENCE_ACCURACY_METERS = 120;
+    const AUTO_ROTATE_MIN_SPEED_KMH = 1;
+    const AUTO_ROTATE_MIN_MOVEMENT_METERS = 3;
 
     let mapInterface = null;
     let watchId = null;
@@ -451,6 +453,19 @@
         mapInterface.map.flyTo([lat, lng], getTargetZoom(mode), FLY_ANIMATION);
     }
 
+    function rotateMapToHeading(heading, speedKmh, movedMeters) {
+        if (!mapInterface?.setBearing || !Number.isFinite(heading)) {
+            return;
+        }
+
+        const isMovingEnough = speedKmh >= AUTO_ROTATE_MIN_SPEED_KMH || movedMeters >= AUTO_ROTATE_MIN_MOVEMENT_METERS;
+        if (!isMovingEnough) {
+            return;
+        }
+
+        mapInterface.setBearing(heading);
+    }
+
     // Disable location button while geolocation request is in progress.
     function setLocatingState(isLocating) {
         if (!locationButton) return;
@@ -545,6 +560,7 @@
         lastTrackTimestamp = now;
 
         mapInterface.selectPoint(latitude, longitude, { resolveLocation: false });
+        rotateMapToHeading(heading, normalizedSpeedKmh, movedMeters);
         mapInterface.setUserLocation?.(latitude, longitude, { accuracy, heading });
         setLocatingState(false);
         const isMoving = normalizedSpeedKmh >= 1;

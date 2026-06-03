@@ -208,6 +208,7 @@
     </script>
     <script src="{{ asset('js/rsrsHomeLoader.js') }}"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
     <script src="{{ asset('js/rsrsMapPicker.js') }}"></script>
     <script src="{{ asset('js/rsrsHomeMap.js') }}"></script>
 @endsection

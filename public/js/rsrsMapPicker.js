@@ -70,7 +70,8 @@
     function bindMap(root) {
         const config = JSON.parse(root.dataset.mapConfig || '{}');
         const mode = root.dataset.mapMode || 'picker';
-        const canRotate = mode === 'segment-builder' || mode === 'segment-manager';
+        const canRotate = mode === 'segment-builder' || mode === 'segment-manager' || mode === 'viewer';
+        const showRotationControl = mode === 'segment-builder' || mode === 'segment-manager';
         const shell = root.closest('[data-map-shell]');
         const coordinatesLabel = shell?.querySelector('[data-map-coordinates]');
         const recenterButton = shell?.querySelector('[data-map-recenter]');
@@ -123,7 +124,7 @@
         }
 
         function addRotationControl() {
-            if (!canRotate || typeof map.setBearing !== 'function') {
+            if (!showRotationControl || typeof map.setBearing !== 'function') {
                 return;
             }
 
@@ -356,7 +357,7 @@
                 const hasHeading = Number.isFinite(heading);
                 markerEl.classList.toggle('has-heading', hasHeading);
                 if (hasHeading) {
-                    markerEl.style.setProperty('--geo-user-heading', `${heading}deg`);
+                    markerEl.style.setProperty('--geo-user-heading', `${normalizeBearing(heading - getMapBearing())}deg`);
                 }
             }
 

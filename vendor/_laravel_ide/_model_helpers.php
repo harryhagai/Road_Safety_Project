@@ -1733,13 +1733,14 @@ namespace App\Models {
     /**
      * App\Models\RoadSegment
      *
-     * @property int|null $segment_type_id
+     * @property \Illuminate\Support\Carbon|null $deleted_at
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
      * @property int|null $created_by
      * @property string|null $description
      * @property float|null $length_km
      * @property array|null $boundary_coordinates
+     * @property int|null $segment_type_id
      * @property string $segment_name
      * @property int $id
      * @property-read mixed $segment_type_name
@@ -1747,13 +1748,14 @@ namespace App\Models {
      * @property-read \App\Models\SegmentType $segmentType
      * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereSegmentName($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereSegmentTypeId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereBoundaryCoordinates($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereLengthKm($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereDescription($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereCreatedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereCreatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereUpdatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereSegmentTypeId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment whereDeletedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<RoadSegment>|RoadSegment query()
