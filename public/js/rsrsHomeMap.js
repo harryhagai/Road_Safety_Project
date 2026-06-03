@@ -19,6 +19,10 @@
     let watchId = null;
     let hasCentered = false;
     let userHasAdjustedView = false;
+    let autoRotateEnabled = true;
+    let rotateControlEl = null;
+    let rotateToggleEl = null;
+    let lastAutoRotateHeading = null;
     let lastTrackedPoint = null;
     let lastTrackTimestamp = 0;
     let locationButton = null;
@@ -453,8 +457,47 @@
         mapInterface.map.flyTo([lat, lng], getTargetZoom(mode), FLY_ANIMATION);
     }
 
+    function setAutoRotateEnabled(enabled) {
+        autoRotateEnabled = Boolean(enabled);
+
+        if (rotateControlEl) {
+            rotateControlEl.classList.toggle('is-auto-rotate-paused', !autoRotateEnabled);
+        }
+
+        if (rotateToggleEl) {
+            const title = autoRotateEnabled ? 'Pause auto rotate' : 'Resume auto rotate';
+            rotateToggleEl.title = title;
+            rotateToggleEl.setAttribute('aria-label', title);
+            rotateToggleEl.setAttribute('aria-pressed', String(autoRotateEnabled));
+        }
+
+        const map = mapInterface?.map;
+        if (!map) return;
+
+        if (autoRotateEnabled) {
+            if (map.compassBearing && typeof map.compassBearing.enable === 'function') {
+                map.compassBearing.enable();
+            }
+
+            if (Number.isFinite(lastAutoRotateHeading)) {
+                mapInterface.setBearing?.(lastAutoRotateHeading);
+            }
+            return;
+        }
+
+        if (map.compassBearing && typeof map.compassBearing.disable === 'function') {
+            map.compassBearing.disable();
+        }
+    }
+
     function rotateMapToHeading(heading, speedKmh, movedMeters) {
         if (!mapInterface?.setBearing || !Number.isFinite(heading)) {
+            return;
+        }
+
+        lastAutoRotateHeading = heading;
+
+        if (!autoRotateEnabled) {
             return;
         }
 
@@ -532,20 +575,33 @@
             return;
         }
 
+        rotateControlEl = rotateControl;
+        rotateToggleEl = rotateToggle;
+
         const locationControl = locationButton?.closest('.home-location-control');
         if (locationControl?.parentElement === rotateControl.parentElement) {
             rotateControl.parentElement.insertBefore(rotateControl, locationControl);
         }
 
         rotateControl.dataset.homeRotateReady = 'true';
-        rotateToggle.title = 'Rotate map';
-        rotateToggle.setAttribute('aria-label', 'Rotate map');
         rotateToggle.innerHTML = `
             <span class="home-compass-icon" aria-hidden="true">
                 <span class="home-compass-icon__needle"></span>
                 <span class="home-compass-icon__center"></span>
             </span>
         `;
+
+        const stopDefaultRotateControl = (event) => {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        };
+
+        rotateToggle.addEventListener('mousedown', stopDefaultRotateControl, true);
+        rotateToggle.addEventListener('dblclick', stopDefaultRotateControl, true);
+        rotateToggle.addEventListener('click', (event) => {
+            stopDefaultRotateControl(event);
+            setAutoRotateEnabled(!autoRotateEnabled);
+        }, true);
 
         const compassNeedle = rotateToggle.querySelector('.home-compass-icon__needle');
         const syncCompassBearing = () => {
@@ -557,6 +613,7 @@
 
         mapInterface.map.on('rotate', syncCompassBearing);
         syncCompassBearing();
+        setAutoRotateEnabled(autoRotateEnabled);
     }
 
     // Apply new position fix to map marker, speed UI, centering logic, and auto-eval.
