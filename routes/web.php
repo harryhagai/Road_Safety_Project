@@ -42,6 +42,8 @@ foreach ($routeFiles as $routeFile) {
 Route::view('/', 'home')->name('home');
 Route::view('/home', 'home');
 Route::view('/about', 'about')->name('about');
+Route::view('/privacy', 'privacy')->name('privacy');
+Route::redirect('/help', '/contact')->name('help');
 Route::get('/contact', [ContactMessageController::class, 'create'])->name('contact');
 Route::post('/contact', [ContactMessageController::class, 'store'])
     ->middleware('throttle:5,1')
