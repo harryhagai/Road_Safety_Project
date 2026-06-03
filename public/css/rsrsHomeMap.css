@@ -532,16 +532,14 @@ main.flex-grow-1 {
     margin-bottom: 0.55rem;
 }
 
-.home-geo-card .leaflet-control-rotate.leaflet-bar {
-    position: absolute;
-    right: 4.55rem;
-    bottom: 3.1rem;
+.home-geo-card .leaflet-bottom.leaflet-right .leaflet-control-rotate.leaflet-bar {
+    position: static;
     overflow: visible;
     border: 0;
     border-radius: 16px;
     background: transparent;
     box-shadow: none;
-    margin: 0 0 1rem;
+    margin-bottom: 0.55rem;
 }
 
 .home-geo-card .leaflet-bar .leaflet-control-rotate-toggle {
@@ -895,9 +893,7 @@ main.flex-grow-1 {
         margin-bottom: 0.42rem;
     }
 
-    .home-geo-card .leaflet-control-rotate.leaflet-bar {
-        right: 4.05rem;
-        bottom: 3.2rem;
+    .home-geo-card .leaflet-bottom.leaflet-right .leaflet-control-rotate.leaflet-bar {
         margin-bottom: 0.35rem;
     }
 

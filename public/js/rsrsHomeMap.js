@@ -532,6 +532,11 @@
             return;
         }
 
+        const locationControl = locationButton?.closest('.home-location-control');
+        if (locationControl?.parentElement === rotateControl.parentElement) {
+            rotateControl.parentElement.insertBefore(rotateControl, locationControl);
+        }
+
         rotateControl.dataset.homeRotateReady = 'true';
         rotateToggle.title = 'Rotate map';
         rotateToggle.setAttribute('aria-label', 'Rotate map');
