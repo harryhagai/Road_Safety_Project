@@ -40,55 +40,79 @@
     }
 
     function setAutoRotateEnabled(enabled) {
-        state.autoRotateEnabled = Boolean(enabled);
+        state.autoRotateEnabled = false;
 
         if (state.rotateControlEl) {
-            state.rotateControlEl.classList.toggle('is-auto-rotate-paused', !state.autoRotateEnabled);
+            state.rotateControlEl.classList.add('is-auto-rotate-paused');
         }
 
         if (state.rotateToggleEl) {
-            const title = state.autoRotateEnabled ? 'Pause auto rotate' : 'Resume auto rotate';
+            const title = 'Reset map north';
             state.rotateToggleEl.title = title;
             state.rotateToggleEl.setAttribute('aria-label', title);
-            state.rotateToggleEl.setAttribute('aria-pressed', String(state.autoRotateEnabled));
+            state.rotateToggleEl.setAttribute('aria-pressed', 'false');
         }
 
         const map = state.mapInterface?.map;
         if (!map) return;
-
-        if (state.autoRotateEnabled) {
-            if (map.compassBearing && typeof map.compassBearing.enable === 'function') {
-                map.compassBearing.enable();
-            }
-
-            if (Number.isFinite(state.lastAutoRotateHeading)) {
-                state.mapInterface.setBearing?.(state.lastAutoRotateHeading);
-            }
-            return;
-        }
 
         if (map.compassBearing && typeof map.compassBearing.disable === 'function') {
             map.compassBearing.disable();
         }
     }
 
-    function rotateMapToHeading(heading, speedKmh, movedMeters) {
+    function resetMapNorth() {
+        const map = state.mapInterface?.map;
+
+        state.autoRotateEnabled = false;
+        state.lastAutoRotateHeading = null;
+
+        if (map?.compassBearing && typeof map.compassBearing.disable === 'function') {
+            map.compassBearing.disable();
+        }
+
+        state.mapInterface?.setBearing?.(0);
+        setAutoRotateEnabled(false);
+    }
+
+    function rotateMapToHeading(heading, speedKmh, movedMeters, accuracyMeters, motionState) {
         if (!state.mapInterface?.setBearing || !Number.isFinite(heading)) {
             return;
         }
-
-        state.lastAutoRotateHeading = heading;
 
         if (!state.autoRotateEnabled) {
             return;
         }
 
-        const isMovingEnough = speedKmh >= constants.AUTO_ROTATE_MIN_SPEED_KMH || movedMeters >= constants.AUTO_ROTATE_MIN_MOVEMENT_METERS;
+        const accuracy = Number.isFinite(accuracyMeters) ? Math.max(0, accuracyMeters) : Infinity;
+        const isMovingEnough =
+            motionState?.confirmedMotion &&
+            speedKmh >= constants.AUTO_ROTATE_MIN_SPEED_KMH &&
+            movedMeters >= constants.AUTO_ROTATE_MIN_MOVEMENT_METERS &&
+            accuracy <= constants.AUTO_ROTATE_MAX_ACCURACY_METERS;
+
         if (!isMovingEnough) {
             return;
         }
 
-        state.mapInterface.setBearing(heading);
+        const previousHeading = Number.isFinite(state.lastAutoRotateHeading)
+            ? state.lastAutoRotateHeading
+            : null;
+
+        if (previousHeading !== null) {
+            const delta = Math.abs(app.geo.angleDeltaDegrees(previousHeading, heading));
+
+            if (delta < constants.AUTO_ROTATE_HEADING_DEADZONE_DEGREES) {
+                return;
+            }
+        }
+
+        const nextHeading = previousHeading === null
+            ? heading
+            : app.geo.smoothHeadingDegrees(previousHeading, heading, constants.AUTO_ROTATE_SMOOTHING);
+
+        state.lastAutoRotateHeading = nextHeading;
+        state.mapInterface.setBearing(nextHeading);
     }
 
     function setLocatingState(isLocating) {
@@ -182,7 +206,7 @@
         rotateToggle.addEventListener('dblclick', stopDefaultRotateControl, true);
         rotateToggle.addEventListener('click', (event) => {
             stopDefaultRotateControl(event);
-            setAutoRotateEnabled(!state.autoRotateEnabled);
+            resetMapNorth();
         }, true);
 
         const compassNeedle = rotateToggle.querySelector('.home-compass-icon__needle');
@@ -195,7 +219,7 @@
 
         state.mapInterface.map.on('rotate', syncCompassBearing);
         syncCompassBearing();
-        setAutoRotateEnabled(state.autoRotateEnabled);
+        resetMapNorth();
     }
 
     function applyPosition(position) {
@@ -206,20 +230,28 @@
         const accuracy = Number(position.coords.accuracy);
         const now = Date.now();
         const currentPoint = { lat: latitude, lng: longitude };
-        const speedKmh = app.geo.resolveSpeedKmh(position, now, currentPoint);
+        const motion = app.geo.resolveMotion(position, now, currentPoint);
+        const speedKmh = motion.speedKmh;
         const movedMeters = state.lastTrackedPoint ? app.geo.distanceInMeters(state.lastTrackedPoint, currentPoint) : 0;
         const gpsHeading = Number(position.coords.heading);
-        const normalizedSpeedKmh = app.geo.normalizeSpeedKmh(speedKmh, movedMeters, accuracy);
-        const heading = Number.isFinite(gpsHeading) && gpsHeading >= 0
+        const normalizedSpeedKmh = app.geo.normalizeSpeedKmh(
+            speedKmh,
+            movedMeters,
+            accuracy,
+            motion.source,
+            motion.elapsedSeconds
+        );
+        const motionState = app.geo.updateMotionConfidence(normalizedSpeedKmh, movedMeters, accuracy, now, motion.source);
+        const heading = motionState.confirmedMotion && Number.isFinite(gpsHeading) && gpsHeading >= 0
             ? gpsHeading
-            : state.lastTrackedPoint && movedMeters >= 3
+            : state.lastTrackedPoint && motionState.confirmedMotion && app.geo.isReliableMovement(movedMeters, accuracy)
                 ? app.geo.bearingDegrees(state.lastTrackedPoint, currentPoint)
                 : null;
 
         if (state.lastTrackedPoint && movedMeters < 1.2 && now - state.lastTrackTimestamp < 900) {
-            const transientMoving = normalizedSpeedKmh >= 1;
+            const transientMoving = motionState.isMovingCandidate && normalizedSpeedKmh >= constants.AUTO_REPORT_MIN_CONFIRMED_SPEED_KMH;
 
-            app.ui.updateSpeedDisplay(normalizedSpeedKmh, transientMoving ? 'Live movement detected' : 'Waiting for movement...', transientMoving);
+            app.ui.updateSpeedDisplay(transientMoving ? normalizedSpeedKmh : 0, transientMoving ? 'Confirming movement...' : 'Waiting for movement...', transientMoving);
             return;
         }
 
@@ -227,15 +259,28 @@
         state.lastTrackTimestamp = now;
 
         state.mapInterface.selectPoint(latitude, longitude, { resolveLocation: false });
-        rotateMapToHeading(heading, normalizedSpeedKmh, movedMeters);
+        rotateMapToHeading(heading, normalizedSpeedKmh, movedMeters, accuracy, motionState);
         state.mapInterface.setUserLocation?.(latitude, longitude, { accuracy, heading });
         setLocatingState(false);
 
-        const isMoving = normalizedSpeedKmh >= 1;
-        app.ui.updateSpeedDisplay(normalizedSpeedKmh, isMoving ? 'Live movement detected' : 'You look stationary', isMoving);
+        const isMoving = motionState.confirmedMotion && normalizedSpeedKmh >= constants.AUTO_REPORT_MIN_CONFIRMED_SPEED_KMH;
+        const isMovingCandidate = motionState.isMovingCandidate && normalizedSpeedKmh >= constants.AUTO_REPORT_MIN_CONFIRMED_SPEED_KMH;
+        const displaySpeedKmh = isMoving || isMovingCandidate ? normalizedSpeedKmh : 0;
+        const movementStatus = isMoving
+            ? 'Live movement detected'
+            : isMovingCandidate
+                ? 'Confirming movement...'
+                : 'You look stationary';
 
-        app.geo.publishLocationReady(position, normalizedSpeedKmh);
-        app.reporting.evaluateAutoReporting(position, normalizedSpeedKmh, now);
+        app.ui.updateSpeedDisplay(displaySpeedKmh, movementStatus, isMoving);
+
+        app.geo.publishLocationReady(position, displaySpeedKmh);
+        app.reporting.evaluateAutoReporting(position, displaySpeedKmh, now, {
+            confirmedMotion: motionState.confirmedMotion,
+            movedMeters,
+            accuracy,
+            movementThresholdMeters: motionState.movementThresholdMeters,
+        });
 
         if (state.zoomToUserOnNextFix) {
             flyToUser(latitude, longitude, state.locationViewMode);

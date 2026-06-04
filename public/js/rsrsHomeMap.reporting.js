@@ -39,18 +39,20 @@
         return data;
     }
 
-    function buildAutoReportSample(position, speedKmh) {
+    function buildAutoReportSample(position, speedKmh, context = {}) {
         const latitude = Number(position.coords.latitude);
         const longitude = Number(position.coords.longitude);
         const accuracy = Number(position.coords.accuracy);
         const heading = Number(position.coords.heading);
+        const confirmedMotion = context.confirmedMotion === true;
 
         return {
             latitude,
             longitude,
-            speed_kmh: Number.isFinite(speedKmh) ? Math.max(0, speedKmh) : 0,
+            speed_kmh: confirmedMotion && Number.isFinite(speedKmh) ? Math.max(0, speedKmh) : 0,
             accuracy: Number.isFinite(accuracy) ? accuracy : null,
             heading: Number.isFinite(heading) && heading >= 0 ? heading : null,
+            confirmed_motion: confirmedMotion,
         };
     }
 
@@ -66,7 +68,14 @@
         const segmentId = Number(evaluation?.segment?.id);
         const runtime = window.rsrsHomeRuntime || {};
 
-        if (!config || !ruleId || !segmentId || state.autoReportInFlight || state.reportedRuleIds.has(ruleId)) {
+        if (
+            !config ||
+            !ruleId ||
+            !segmentId ||
+            !sample.confirmed_motion ||
+            state.autoReportInFlight ||
+            state.reportedRuleIds.has(ruleId)
+        ) {
             return;
         }
 
@@ -187,7 +196,7 @@
         submitAutoReport(evaluation, sample);
     }
 
-    function evaluateAutoReporting(position, speedKmh, now) {
+    function evaluateAutoReporting(position, speedKmh, now, context = {}) {
         const config = getAutoReportingConfig();
 
         if (
@@ -198,7 +207,7 @@
             return;
         }
 
-        const sample = buildAutoReportSample(position, speedKmh);
+        const sample = buildAutoReportSample(position, speedKmh, context);
 
         if (!Number.isFinite(sample.latitude) || !Number.isFinite(sample.longitude)) {
             return;

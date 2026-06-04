@@ -4,45 +4,117 @@
     const state = app.state;
     const constants = app.constants;
 
-    function resolveSpeedKmh(position, now, currentPoint) {
+    function resolveMotion(position, now, currentPoint) {
         const directSpeed = Number(position.coords.speed);
+        const hasPreviousPoint = Boolean(state.lastTrackedPoint && state.lastTrackTimestamp);
+        const movedMeters = hasPreviousPoint ? distanceInMeters(state.lastTrackedPoint, currentPoint) : 0;
+        const elapsedSeconds = hasPreviousPoint ? (now - state.lastTrackTimestamp) / 1000 : 0;
+        const computedSpeedKmh = elapsedSeconds > 0 ? (movedMeters / elapsedSeconds) * 3.6 : 0;
 
         if (Number.isFinite(directSpeed) && directSpeed >= 0) {
-            return directSpeed * 3.6;
+            return {
+                speedKmh: directSpeed * 3.6,
+                source: 'gps',
+                computedSpeedKmh,
+                elapsedSeconds,
+            };
         }
 
-        if (!state.lastTrackedPoint || !state.lastTrackTimestamp) {
-            return 0;
-        }
-
-        const movedMeters = distanceInMeters(state.lastTrackedPoint, currentPoint);
-        const elapsedSeconds = (now - state.lastTrackTimestamp) / 1000;
-
-        if (elapsedSeconds <= 0) {
-            return 0;
-        }
-
-        return (movedMeters / elapsedSeconds) * 3.6;
+        return {
+            speedKmh: computedSpeedKmh,
+            source: hasPreviousPoint ? 'computed' : 'none',
+            computedSpeedKmh,
+            elapsedSeconds,
+        };
     }
 
-    function normalizeSpeedKmh(rawSpeedKmh, movedMeters, accuracyMeters) {
+    function resolveSpeedKmh(position, now, currentPoint) {
+        return resolveMotion(position, now, currentPoint).speedKmh;
+    }
+
+    function movementThresholdMeters(accuracyMeters) {
+        const accuracy = Number.isFinite(accuracyMeters) ? Math.max(0, accuracyMeters) : Infinity;
+
+        if (!Number.isFinite(accuracy)) {
+            return constants.STATIONARY_MAX_MOVEMENT_THRESHOLD_METERS;
+        }
+
+        return Math.min(
+            constants.STATIONARY_MAX_MOVEMENT_THRESHOLD_METERS,
+            Math.max(
+                constants.STATIONARY_MOVEMENT_THRESHOLD_METERS,
+                accuracy * constants.STATIONARY_ACCURACY_MOVEMENT_RATIO
+            )
+        );
+    }
+
+    function isReliableMovement(movedMeters, accuracyMeters) {
+        const movement = Number.isFinite(movedMeters) ? Math.max(0, movedMeters) : 0;
+
+        return movement >= movementThresholdMeters(accuracyMeters);
+    }
+
+    function normalizeSpeedKmh(rawSpeedKmh, movedMeters, accuracyMeters, source = 'computed', elapsedSeconds = 0) {
         const speed = Number.isFinite(rawSpeedKmh) ? Math.max(0, rawSpeedKmh) : 0;
         const movement = Number.isFinite(movedMeters) ? Math.max(0, movedMeters) : 0;
         const accuracy = Number.isFinite(accuracyMeters) ? Math.max(0, accuracyMeters) : Infinity;
+        const reliableMovement = isReliableMovement(movement, accuracy);
 
         if (speed < constants.STATIONARY_SPEED_THRESHOLD_KMH) {
             return 0;
         }
 
-        if (speed < 1.6 && movement < constants.STATIONARY_MOVEMENT_THRESHOLD_METERS) {
+        if (accuracy > constants.LOW_CONFIDENCE_ACCURACY_METERS) {
             return 0;
         }
 
-        if (accuracy > constants.LOW_CONFIDENCE_ACCURACY_METERS && speed < 2.5) {
+        if (source === 'computed' && elapsedSeconds < constants.MIN_COMPUTED_SPEED_SAMPLE_SECONDS) {
+            return 0;
+        }
+
+        if (source === 'computed' && !reliableMovement) {
+            return 0;
+        }
+
+        if (!reliableMovement && speed < constants.AUTO_REPORT_MIN_CONFIRMED_SPEED_KMH) {
             return 0;
         }
 
         return speed;
+    }
+
+    function updateMotionConfidence(speedKmh, movedMeters, accuracyMeters, now, source = 'computed') {
+        const speed = Number.isFinite(speedKmh) ? Math.max(0, speedKmh) : 0;
+        const accuracy = Number.isFinite(accuracyMeters) ? Math.max(0, accuracyMeters) : Infinity;
+        const reliableMovement = isReliableMovement(movedMeters, accuracyMeters);
+        const reliableSpeed = speed >= constants.AUTO_REPORT_MIN_CONFIRMED_SPEED_KMH;
+        const reliableGpsSpeed =
+            source === 'gps' &&
+            reliableSpeed &&
+            accuracy <= constants.AUTO_ROTATE_MAX_ACCURACY_METERS;
+        const isMoving = (reliableMovement || reliableGpsSpeed) && reliableSpeed;
+
+        if (isMoving) {
+            if (!state.confirmedMovingSince) {
+                state.confirmedMovingSince = now;
+            }
+            state.lastReliableMotionAt = now;
+        } else if (!state.lastReliableMotionAt || now - state.lastReliableMotionAt > constants.MOTION_GRACE_MS) {
+            state.confirmedMovingSince = null;
+            state.lastReliableMotionAt = 0;
+        }
+
+        return {
+            reliableMovement,
+            reliableGpsSpeed,
+            reliableSpeed,
+            isMovingCandidate: isMoving,
+            confirmedMotion: Boolean(
+                state.confirmedMovingSince &&
+                now - state.confirmedMovingSince >= constants.MOTION_CONFIRMATION_MS
+            ),
+            movementThresholdMeters: movementThresholdMeters(accuracyMeters),
+        };
     }
 
     function publishLocationReady(position, speedKmh) {
@@ -91,11 +163,27 @@
         return (toDeg(Math.atan2(y, x)) + 360) % 360;
     }
 
+    function angleDeltaDegrees(from, to) {
+        return ((to - from + 540) % 360) - 180;
+    }
+
+    function smoothHeadingDegrees(previous, next, factor) {
+        const safeFactor = Math.max(0, Math.min(1, Number(factor) || 0));
+
+        return (previous + angleDeltaDegrees(previous, next) * safeFactor + 360) % 360;
+    }
+
     app.geo = {
+        resolveMotion,
         resolveSpeedKmh,
         normalizeSpeedKmh,
+        updateMotionConfidence,
+        movementThresholdMeters,
+        isReliableMovement,
         publishLocationReady,
         distanceInMeters,
         bearingDegrees,
+        angleDeltaDegrees,
+        smoothHeadingDegrees,
     };
 })(window);
