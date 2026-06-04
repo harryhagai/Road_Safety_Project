@@ -1,3 +1,10 @@
+.officer-hotspots-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+    gap: 1rem;
+    align-items: stretch;
+}
+
 .officer-hotspots-map-shell {
     height: calc(100vh - 220px);
     min-height: 560px;
@@ -40,6 +47,269 @@
 .officer-hotspots-stats__item strong {
     font-size: 0.84rem;
     color: #1f3247;
+}
+
+.officer-hotspots-sidebar {
+    height: calc(100vh - 220px);
+    min-height: 560px;
+    overflow: hidden;
+    border: 1px solid rgba(26, 35, 55, 0.12);
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 12px 28px rgba(22, 29, 44, 0.1);
+}
+
+.officer-hotspots-sidebar__empty {
+    height: 100%;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 0.7rem;
+    padding: 1.5rem;
+    text-align: center;
+    color: #5f7390;
+}
+
+.officer-hotspots-sidebar__empty i {
+    width: 46px;
+    height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: rgba(23, 78, 166, 0.08);
+    color: #174ea6;
+    font-size: 1.35rem;
+}
+
+.officer-hotspots-sidebar__empty h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: #1f3247;
+}
+
+.officer-hotspots-sidebar__content {
+    height: 100%;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.officer-hotspots-sidebar__header {
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid rgba(25, 40, 62, 0.1);
+}
+
+.officer-hotspots-sidebar__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    margin-bottom: 0.35rem;
+    padding: 0.26rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(23, 78, 166, 0.08);
+    color: #174ea6;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.officer-hotspots-sidebar__header h3 {
+    margin: 0;
+    color: #15345b;
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.officer-hotspots-sidebar__header p {
+    margin: 0.45rem 0 0;
+    color: #5f7390;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.officer-hotspots-sidebar__metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+    margin-top: 0.9rem;
+}
+
+.officer-hotspots-sidebar__metrics div {
+    min-width: 0;
+    padding: 0.7rem;
+    border: 1px solid rgba(25, 40, 62, 0.1);
+    border-radius: 10px;
+    background: #f8fbff;
+}
+
+.officer-hotspots-sidebar__metrics span,
+.officer-hotspots-detail-grid span {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: #6b7d94;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.officer-hotspots-sidebar__metrics strong,
+.officer-hotspots-detail-grid strong {
+    display: block;
+    color: #1f3247;
+    font-size: 0.9rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.officer-hotspots-sidebar__section {
+    margin-top: 1rem;
+}
+
+.officer-hotspots-sidebar__section h4 {
+    margin: 0 0 0.55rem;
+    color: #15345b;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.officer-hotspots-sidebar__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.officer-hotspots-sidebar__chip {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    padding: 0.32rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(23, 78, 166, 0.08);
+    color: #174ea6;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.officer-hotspots-report-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.officer-hotspots-report-card {
+    border: 1px solid rgba(25, 40, 62, 0.12);
+    border-radius: 12px;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.officer-hotspots-report-card__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.8rem;
+    background: #f8fbff;
+    border-bottom: 1px solid rgba(25, 40, 62, 0.08);
+}
+
+.officer-hotspots-report-card__head h5 {
+    margin: 0;
+    color: #15345b;
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.officer-hotspots-report-card__head span {
+    display: block;
+    margin-top: 0.2rem;
+    color: #5f7390;
+    font-size: 0.78rem;
+}
+
+.officer-hotspots-report-card__link {
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid rgba(23, 78, 166, 0.14);
+    color: #174ea6;
+    text-decoration: none;
+}
+
+.officer-hotspots-report-card__link:hover,
+.officer-hotspots-report-card__link:focus {
+    background: #174ea6;
+    color: #ffffff;
+}
+
+.officer-hotspots-report-card__body {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.8rem;
+}
+
+.officer-hotspots-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+}
+
+.officer-hotspots-report-card__description,
+.officer-hotspots-report-card__notes {
+    margin: 0;
+    color: #324761;
+    font-size: 0.84rem;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+.officer-hotspots-report-card__notes {
+    color: #5f7390;
+}
+
+.officer-hotspots-rule-list {
+    border-top: 1px solid rgba(25, 40, 62, 0.08);
+    padding-top: 0.75rem;
+}
+
+.officer-hotspots-rule-list h6 {
+    margin: 0 0 0.5rem;
+    color: #15345b;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.officer-hotspots-rule-list ul {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.officer-hotspots-rule-list li {
+    display: grid;
+    gap: 0.16rem;
+    padding: 0.6rem;
+    border-radius: 10px;
+    background: #f8fbff;
+    color: #324761;
+    font-size: 0.78rem;
+}
+
+.officer-hotspots-rule-list strong,
+.officer-hotspots-rule-list span {
+    overflow-wrap: anywhere;
+}
+
+.officer-hotspots-rule-list p {
+    margin: 0.25rem 0 0;
+    color: #5f7390;
+    line-height: 1.45;
 }
 
 .officer-hotspots-rotate-control {
@@ -105,13 +375,33 @@
 }
 
 @media (max-width: 768px) {
+    .officer-hotspots-workspace {
+        grid-template-columns: 1fr;
+    }
+
     .officer-hotspots-map-shell {
         height: calc(100vh - 190px);
         min-height: 460px;
     }
 
+    .officer-hotspots-sidebar {
+        height: auto;
+        min-height: 320px;
+    }
+
+    .officer-hotspots-sidebar__content {
+        max-height: 70vh;
+    }
+
     .officer-hotspots-stats {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 480px) {
+    .officer-hotspots-detail-grid,
+    .officer-hotspots-sidebar__metrics {
+        grid-template-columns: 1fr;
     }
 }

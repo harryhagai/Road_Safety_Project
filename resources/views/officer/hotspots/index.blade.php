@@ -24,8 +24,46 @@
 
 @section('content')
     <div class="container-fluid px-3 px-lg-4 pb-4">
-        <div class="officer-hotspots-map-shell">
-            <div id="officerHotspotsFullMap" class="officer-hotspots-map"></div>
+        <div class="officer-hotspots-workspace">
+            <div class="officer-hotspots-map-shell">
+                <div id="officerHotspotsFullMap" class="officer-hotspots-map"></div>
+            </div>
+
+            <aside class="officer-hotspots-sidebar" data-hotspot-sidebar>
+                <div class="officer-hotspots-sidebar__empty" data-hotspot-empty>
+                    <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                    <h3>No hotspot selected</h3>
+                </div>
+
+                <div class="officer-hotspots-sidebar__content d-none" data-hotspot-content>
+                    <div class="officer-hotspots-sidebar__header">
+                        <span class="officer-hotspots-sidebar__eyebrow" data-hotspot-category>Report point</span>
+                        <h3 data-hotspot-title>Violation report</h3>
+                        <p data-hotspot-location>Unknown location</p>
+                    </div>
+
+                    <div class="officer-hotspots-sidebar__metrics">
+                        <div>
+                            <span>Reports</span>
+                            <strong data-hotspot-report-count>0</strong>
+                        </div>
+                        <div>
+                            <span>Last Reported</span>
+                            <strong data-hotspot-last-reported>N/A</strong>
+                        </div>
+                    </div>
+
+                    <div class="officer-hotspots-sidebar__section">
+                        <h4>Violation Types</h4>
+                        <div class="officer-hotspots-sidebar__chips" data-hotspot-types></div>
+                    </div>
+
+                    <div class="officer-hotspots-sidebar__section">
+                        <h4>Reports</h4>
+                        <div class="officer-hotspots-report-list" data-hotspot-reports></div>
+                    </div>
+                </div>
+            </aside>
         </div>
     </div>
 @endsection

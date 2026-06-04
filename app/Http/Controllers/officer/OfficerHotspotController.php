@@ -12,7 +12,11 @@ class OfficerHotspotController extends Controller
     public function index(MapConfigService $mapConfigService): View
     {
         $reports = Report::query()
-            ->with('violationType:id,name')
+            ->with([
+                'officer:id,full_name',
+                'ruleViolations.segment:id,segment_name',
+                'violationType:id,name',
+            ])
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->latest('reported_at')
@@ -45,12 +49,36 @@ class OfficerHotspotController extends Controller
                     ->values();
                 $reportSummary = $items
                     ->sortByDesc(fn (Report $report) => $report->reported_at ?? $report->created_at)
-                    ->take(5)
                     ->map(fn (Report $report): array => [
+                        'id' => $report->id,
                         'reference' => $report->reference_no ?: 'Report #'.$report->id,
                         'type' => $report->violationType?->name ?: 'Unassigned',
                         'status' => str($report->status ?: 'unknown')->replace('_', ' ')->title()->value(),
+                        'priority' => str($report->priority ?: 'normal')->replace('_', ' ')->title()->value(),
+                        'description' => $report->description ?: 'No description provided.',
+                        'location' => $report->location_name ?: 'Unknown location',
+                        'lat' => (float) $report->latitude,
+                        'lng' => (float) $report->longitude,
                         'reportedAt' => optional($report->reported_at ?? $report->created_at)->format('d M Y, H:i') ?: 'N/A',
+                        'createdAt' => optional($report->created_at)->format('d M Y, H:i') ?: 'N/A',
+                        'reviewedAt' => optional($report->reviewed_at)->format('d M Y, H:i') ?: 'Not reviewed',
+                        'officer' => $report->officer?->full_name ?: 'Unassigned',
+                        'officerNotes' => $report->officer_notes ?: 'No officer notes yet.',
+                        'rules' => $report->ruleViolations
+                            ->map(fn ($ruleViolation): array => [
+                                'name' => $ruleViolation->rule_name_snapshot ?: 'Unlinked rule',
+                                'type' => str($ruleViolation->rule_type_snapshot ?: 'unknown')->replace('_', ' ')->title()->value(),
+                                'value' => $ruleViolation->rule_value_snapshot ?: 'N/A',
+                                'description' => $ruleViolation->rule_description_snapshot ?: 'No rule description.',
+                                'segment' => $ruleViolation->segment?->segment_name ?: 'No segment linked',
+                                'source' => $ruleViolation->matched_automatically ? 'Automatic' : 'Manual',
+                                'confidence' => $ruleViolation->confidence_score !== null
+                                    ? number_format((float) $ruleViolation->confidence_score, 2)
+                                    : 'N/A',
+                                'verifiedAt' => optional($ruleViolation->verified_at)->format('d M Y, H:i') ?: 'Not verified',
+                            ])
+                            ->values(),
+                        'url' => route('officer.reports.show', $report),
                     ])
                     ->values();
 
