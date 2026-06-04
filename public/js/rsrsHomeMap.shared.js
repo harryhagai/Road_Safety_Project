@@ -11,6 +11,11 @@
             easeLinearity: 0.25,
         },
         AUTO_EVALUATION_INTERVAL_MS: 3000,
+        DISPLAY_SPEED_THRESHOLD_KMH: 1.2,
+        DISPLAY_MOVEMENT_THRESHOLD_METERS: 3,
+        DISPLAY_ACCURACY_MOVEMENT_RATIO: 0.18,
+        DISPLAY_MAX_MOVEMENT_THRESHOLD_METERS: 12,
+        DISPLAY_MIN_COMPUTED_SPEED_SAMPLE_SECONDS: 1,
         STATIONARY_SPEED_THRESHOLD_KMH: 4,
         STATIONARY_MOVEMENT_THRESHOLD_METERS: 12,
         STATIONARY_ACCURACY_MOVEMENT_RATIO: 0.45,
@@ -25,6 +30,9 @@
         AUTO_ROTATE_MAX_ACCURACY_METERS: 80,
         AUTO_ROTATE_HEADING_DEADZONE_DEGREES: 12,
         AUTO_ROTATE_SMOOTHING: 0.18,
+        DEVICE_COMPASS_HEADING_DEADZONE_DEGREES: 5,
+        DEVICE_COMPASS_SMOOTHING: 0.22,
+        DEVICE_COMPASS_MIN_UPDATE_MS: 140,
     };
 
     app.state = app.state || {
@@ -36,6 +44,11 @@
         rotateControlEl: null,
         rotateToggleEl: null,
         lastAutoRotateHeading: null,
+        deviceCompassHandler: null,
+        deviceCompassActive: false,
+        deviceCompassPermissionRequested: false,
+        lastDeviceCompassHeading: null,
+        lastDeviceCompassUpdateAt: 0,
         lastTrackedPoint: null,
         lastTrackTimestamp: 0,
         confirmedMovingSince: null,

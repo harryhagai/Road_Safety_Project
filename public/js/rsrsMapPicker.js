@@ -70,7 +70,7 @@
     function bindMap(root) {
         const config = JSON.parse(root.dataset.mapConfig || '{}');
         const mode = root.dataset.mapMode || 'picker';
-        const canRotate = mode === 'segment-builder' || mode === 'segment-manager';
+        const canRotate = mode === 'viewer' || mode === 'segment-builder' || mode === 'segment-manager';
         const showRotationControl = mode === 'segment-builder' || mode === 'segment-manager';
         const shell = root.closest('[data-map-shell]');
         const coordinatesLabel = shell?.querySelector('[data-map-coordinates]');

@@ -39,19 +39,14 @@
                 <section class="geo-card geo-card--fill geo-card--map home-geo-card">
                     <div class="home-map-stage">
                         <div class="home-speed-alert home-speed-alert--idle" data-home-speed-alert aria-live="polite">
-                            <div class="home-speed-alert__icon" data-home-speed-alert-icon>
-                                <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
-                            </div>
                             <div class="home-speed-alert__body">
-                                <div class="home-speed-alert__label" data-home-speed-alert-label>Speed info</div>
-                                <div class="home-speed-alert__message" data-home-speed-alert-message>
-                                    We are checking your location and the nearest speed rule.
-                                </div>
-                                <div class="home-speed-alert__meta">
-                                    <span data-home-speed-alert-location>Segment: waiting...</span>
-                                    <span data-home-speed-alert-limit>Speed limit: unknown</span>
-                                </div>
+                                <div class="home-speed-alert__label" data-home-speed-alert-location>SEGMENT: waiting...</div>
+                                <div class="home-speed-alert__message" data-home-speed-alert-limit>SPEED RULE: unknown</div>
                             </div>
+                            <span class="home-speed-alert__status" aria-hidden="true">
+                                <span class="home-speed-alert__symbol" data-home-speed-alert-symbol>-</span>
+                                <span class="home-speed-alert__count" data-home-speed-alert-count></span>
+                            </span>
                         </div>
                         <div class="home-speed-widget" data-home-speed-widget aria-live="polite">
                             <span class="home-speed-widget__label">Speed</span>
@@ -103,7 +98,7 @@
     <script>
         window.rsrsHomeRuntime = {
             reloadAfterAutoReportSubmission: true,
-            reloadDelayMs: 1400,
+            reloadDelayMs: 2400,
         };
     </script>
     <script>
@@ -116,6 +111,7 @@
     <script src="{{ asset('js/rsrsHomeLoader.js') }}"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('js/rsrsMapPicker.js') }}"></script>
     <script src="{{ asset('js/rsrsHomeMap.shared.js') }}"></script>
     <script src="{{ asset('js/rsrsHomeMap.ui.js') }}"></script>

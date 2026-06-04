@@ -40,23 +40,26 @@
     }
 
     function setAutoRotateEnabled(enabled) {
-        state.autoRotateEnabled = false;
+        state.autoRotateEnabled = Boolean(enabled);
 
         if (state.rotateControlEl) {
-            state.rotateControlEl.classList.add('is-auto-rotate-paused');
+            state.rotateControlEl.classList.toggle('is-auto-rotate-paused', !state.autoRotateEnabled);
+            state.rotateControlEl.classList.toggle('is-auto-rotate-active', state.autoRotateEnabled);
         }
 
         if (state.rotateToggleEl) {
-            const title = 'Reset map north';
+            const title = state.autoRotateEnabled
+                ? 'Course-up GPS rotation active. Click to reset map north.'
+                : 'Enable course-up GPS rotation';
             state.rotateToggleEl.title = title;
             state.rotateToggleEl.setAttribute('aria-label', title);
-            state.rotateToggleEl.setAttribute('aria-pressed', 'false');
+            state.rotateToggleEl.setAttribute('aria-pressed', state.autoRotateEnabled ? 'true' : 'false');
         }
 
         const map = state.mapInterface?.map;
         if (!map) return;
 
-        if (map.compassBearing && typeof map.compassBearing.disable === 'function') {
+        if (!state.autoRotateEnabled && map.compassBearing && typeof map.compassBearing.disable === 'function') {
             map.compassBearing.disable();
         }
     }
@@ -64,6 +67,7 @@
     function resetMapNorth() {
         const map = state.mapInterface?.map;
 
+        stopDeviceCompassTracking();
         state.autoRotateEnabled = false;
         state.lastAutoRotateHeading = null;
 
@@ -73,6 +77,149 @@
 
         state.mapInterface?.setBearing?.(0);
         setAutoRotateEnabled(false);
+        syncCompassNeedle(0);
+    }
+
+    function syncCompassNeedle(value = null) {
+        const compassNeedle = state.rotateToggleEl?.querySelector('.home-compass-icon__needle');
+        if (!compassNeedle) return;
+
+        const fallbackBearing = Number(state.mapInterface?.map?.getBearing?.() || 0);
+        const bearing = Number.isFinite(Number(value)) ? Number(value) : fallbackBearing;
+        const safeBearing = Number.isFinite(bearing) ? ((bearing % 360) + 360) % 360 : 0;
+
+        compassNeedle.style.transform = `translate(-50%, -50%) rotate(${safeBearing}deg)`;
+        state.rotateToggleEl.title = state.autoRotateEnabled
+            ? `Course-up GPS rotation active: ${Math.round(safeBearing)} degrees. Click to reset map north.`
+            : `Compass: ${Math.round(safeBearing)} degrees. Click to enable course-up rotation.`;
+        state.rotateToggleEl.setAttribute('aria-label', state.rotateToggleEl.title);
+    }
+
+    function normalizeBearing(value) {
+        const bearing = Number(value);
+
+        return Number.isFinite(bearing) ? ((bearing % 360) + 360) % 360 : null;
+    }
+
+    function deviceHeadingFromEvent(event) {
+        const iosHeading = Number(event.webkitCompassHeading);
+        if (Number.isFinite(iosHeading)) {
+            return normalizeBearing(iosHeading);
+        }
+
+        const alpha = Number(event.alpha);
+        if (!Number.isFinite(alpha)) {
+            return null;
+        }
+
+        const screenAngle = Number(window.screen?.orientation?.angle || window.orientation || 0);
+
+        return normalizeBearing(360 - alpha + screenAngle);
+    }
+
+    function applyDeviceHeading(rawHeading) {
+        const heading = normalizeBearing(rawHeading);
+        if (heading === null) return;
+
+        const now = Date.now();
+        if (now - state.lastDeviceCompassUpdateAt < constants.DEVICE_COMPASS_MIN_UPDATE_MS) {
+            return;
+        }
+
+        const previous = Number.isFinite(state.lastDeviceCompassHeading)
+            ? state.lastDeviceCompassHeading
+            : null;
+
+        if (previous !== null) {
+            const delta = Math.abs(app.geo.angleDeltaDegrees(previous, heading));
+
+            if (delta < constants.DEVICE_COMPASS_HEADING_DEADZONE_DEGREES) {
+                return;
+            }
+        }
+
+        const nextHeading = previous === null
+            ? heading
+            : app.geo.smoothHeadingDegrees(previous, heading, constants.DEVICE_COMPASS_SMOOTHING);
+
+        state.lastDeviceCompassHeading = nextHeading;
+        state.lastDeviceCompassUpdateAt = now;
+        state.mapInterface?.setBearing?.(nextHeading);
+        syncCompassNeedle(nextHeading);
+    }
+
+    function bindDeviceCompassEvents() {
+        if (state.deviceCompassHandler) return;
+
+        state.deviceCompassHandler = (event) => {
+            const heading = deviceHeadingFromEvent(event);
+
+            if (heading === null) return;
+
+            state.deviceCompassActive = true;
+            setAutoRotateEnabled(true);
+            applyDeviceHeading(heading);
+        };
+
+        window.addEventListener('deviceorientationabsolute', state.deviceCompassHandler, true);
+        window.addEventListener('deviceorientation', state.deviceCompassHandler, true);
+    }
+
+    function stopDeviceCompassTracking() {
+        if (state.deviceCompassHandler) {
+            window.removeEventListener('deviceorientationabsolute', state.deviceCompassHandler, true);
+            window.removeEventListener('deviceorientation', state.deviceCompassHandler, true);
+        }
+
+        state.deviceCompassHandler = null;
+        state.deviceCompassActive = false;
+        state.lastDeviceCompassHeading = null;
+        state.lastDeviceCompassUpdateAt = 0;
+    }
+
+    async function startDeviceCompassTracking(requestPermission = false) {
+        if (!state.mapInterface?.map) return;
+
+        if (typeof DeviceOrientationEvent === 'undefined') {
+            setAutoRotateEnabled(false);
+            return;
+        }
+
+        if (
+            !requestPermission &&
+            typeof DeviceOrientationEvent.requestPermission === 'function' &&
+            !state.deviceCompassPermissionRequested
+        ) {
+            setAutoRotateEnabled(false);
+            return;
+        }
+
+        if (
+            requestPermission &&
+            typeof DeviceOrientationEvent.requestPermission === 'function' &&
+            !state.deviceCompassPermissionRequested
+        ) {
+            try {
+                const permission = await DeviceOrientationEvent.requestPermission();
+
+                if (permission !== 'granted') {
+                    state.deviceCompassPermissionRequested = false;
+                    setAutoRotateEnabled(false);
+                    return;
+                }
+
+                state.deviceCompassPermissionRequested = true;
+            } catch (error) {
+                state.deviceCompassPermissionRequested = false;
+                setAutoRotateEnabled(false);
+                return;
+            }
+        }
+
+        state.lastDeviceCompassHeading = null;
+        state.lastDeviceCompassUpdateAt = 0;
+        setAutoRotateEnabled(true);
+        bindDeviceCompassEvents();
     }
 
     function rotateMapToHeading(heading, speedKmh, movedMeters, accuracyMeters, motionState) {
@@ -86,10 +233,9 @@
 
         const accuracy = Number.isFinite(accuracyMeters) ? Math.max(0, accuracyMeters) : Infinity;
         const isMovingEnough =
-            motionState?.confirmedMotion &&
-            speedKmh >= constants.AUTO_ROTATE_MIN_SPEED_KMH &&
-            movedMeters >= constants.AUTO_ROTATE_MIN_MOVEMENT_METERS &&
-            accuracy <= constants.AUTO_ROTATE_MAX_ACCURACY_METERS;
+            speedKmh >= constants.DISPLAY_SPEED_THRESHOLD_KMH &&
+            movedMeters >= app.geo.displayMovementThresholdMeters(accuracyMeters) &&
+            accuracy <= constants.LOW_CONFIDENCE_ACCURACY_METERS;
 
         if (!isMovingEnough) {
             return;
@@ -174,8 +320,31 @@
 
     function customizeRotateControl() {
         const mapRoot = state.mapInterface?.map?.getContainer?.();
-        const rotateControl = mapRoot?.querySelector('.leaflet-control-rotate');
-        const rotateToggle = rotateControl?.querySelector('.leaflet-control-rotate-toggle');
+        let rotateControl = mapRoot?.querySelector('.leaflet-control-rotate');
+        let rotateToggle = rotateControl?.querySelector('.leaflet-control-rotate-toggle');
+
+        if ((!rotateControl || !rotateToggle) && state.mapInterface?.map && typeof L !== 'undefined') {
+            const CompassControl = L.Control.extend({
+                options: { position: 'bottomright' },
+                onAdd() {
+                    const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control-rotate home-compass-control');
+                    const button = L.DomUtil.create('button', 'leaflet-control-rotate-toggle', container);
+
+                    button.type = 'button';
+                    button.title = 'Compass: 0 degrees. Click to reset map north.';
+                    button.setAttribute('aria-label', button.title);
+
+                    L.DomEvent.disableClickPropagation(container);
+                    L.DomEvent.disableScrollPropagation(container);
+
+                    return container;
+                },
+            });
+
+            state.mapInterface.map.addControl(new CompassControl());
+            rotateControl = mapRoot?.querySelector('.home-compass-control');
+            rotateToggle = rotateControl?.querySelector('.leaflet-control-rotate-toggle');
+        }
 
         if (!rotateControl || !rotateToggle || rotateControl.dataset.homeRotateReady === 'true') {
             return;
@@ -206,20 +375,24 @@
         rotateToggle.addEventListener('dblclick', stopDefaultRotateControl, true);
         rotateToggle.addEventListener('click', (event) => {
             stopDefaultRotateControl(event);
-            resetMapNorth();
+
+            if (state.autoRotateEnabled) {
+                resetMapNorth();
+                return;
+            }
+
+            stopDeviceCompassTracking();
+            state.lastAutoRotateHeading = null;
+            setAutoRotateEnabled(true);
         }, true);
 
-        const compassNeedle = rotateToggle.querySelector('.home-compass-icon__needle');
         const syncCompassBearing = () => {
-            if (!compassNeedle) return;
-
-            const bearing = Number(state.mapInterface?.map?.getBearing?.() || 0);
-            compassNeedle.style.transform = `translate(-50%, -50%) rotate(${Number.isFinite(bearing) ? bearing : 0}deg)`;
+            syncCompassNeedle();
         };
 
         state.mapInterface.map.on('rotate', syncCompassBearing);
         syncCompassBearing();
-        resetMapNorth();
+        setAutoRotateEnabled(true);
     }
 
     function applyPosition(position) {
@@ -234,24 +407,34 @@
         const speedKmh = motion.speedKmh;
         const movedMeters = state.lastTrackedPoint ? app.geo.distanceInMeters(state.lastTrackedPoint, currentPoint) : 0;
         const gpsHeading = Number(position.coords.heading);
-        const normalizedSpeedKmh = app.geo.normalizeSpeedKmh(
+        const reportSpeedKmh = app.geo.normalizeSpeedKmh(
             speedKmh,
             movedMeters,
             accuracy,
             motion.source,
             motion.elapsedSeconds
         );
-        const motionState = app.geo.updateMotionConfidence(normalizedSpeedKmh, movedMeters, accuracy, now, motion.source);
-        const heading = motionState.confirmedMotion && Number.isFinite(gpsHeading) && gpsHeading >= 0
+        const displaySpeedKmh = app.geo.normalizeDisplaySpeedKmh(
+            speedKmh,
+            movedMeters,
+            accuracy,
+            motion.source,
+            motion.elapsedSeconds
+        );
+        const displayMoving = displaySpeedKmh >= constants.DISPLAY_SPEED_THRESHOLD_KMH;
+        const motionState = app.geo.updateMotionConfidence(reportSpeedKmh, movedMeters, accuracy, now, motion.source);
+        const heading = displayMoving && Number.isFinite(gpsHeading) && gpsHeading >= 0
             ? gpsHeading
-            : state.lastTrackedPoint && motionState.confirmedMotion && app.geo.isReliableMovement(movedMeters, accuracy)
+            : state.lastTrackedPoint && displayMoving && app.geo.isDisplayMovement(movedMeters, accuracy)
                 ? app.geo.bearingDegrees(state.lastTrackedPoint, currentPoint)
                 : null;
 
         if (state.lastTrackedPoint && movedMeters < 1.2 && now - state.lastTrackTimestamp < 900) {
-            const transientMoving = motionState.isMovingCandidate && normalizedSpeedKmh >= constants.AUTO_REPORT_MIN_CONFIRMED_SPEED_KMH;
+            if (Number.isFinite(heading)) {
+                syncCompassNeedle(heading);
+            }
 
-            app.ui.updateSpeedDisplay(transientMoving ? normalizedSpeedKmh : 0, transientMoving ? 'Confirming movement...' : 'Waiting for movement...', transientMoving);
+            app.ui.updateSpeedDisplay(displayMoving ? displaySpeedKmh : 0, displayMoving ? 'Movement detected' : 'Waiting for movement...', displayMoving);
             return;
         }
 
@@ -259,24 +442,29 @@
         state.lastTrackTimestamp = now;
 
         state.mapInterface.selectPoint(latitude, longitude, { resolveLocation: false });
-        rotateMapToHeading(heading, normalizedSpeedKmh, movedMeters, accuracy, motionState);
+        rotateMapToHeading(heading, displaySpeedKmh, movedMeters, accuracy, motionState);
         state.mapInterface.setUserLocation?.(latitude, longitude, { accuracy, heading });
+        if (Number.isFinite(heading)) {
+            syncCompassNeedle(heading);
+        }
         setLocatingState(false);
 
-        const isMoving = motionState.confirmedMotion && normalizedSpeedKmh >= constants.AUTO_REPORT_MIN_CONFIRMED_SPEED_KMH;
-        const isMovingCandidate = motionState.isMovingCandidate && normalizedSpeedKmh >= constants.AUTO_REPORT_MIN_CONFIRMED_SPEED_KMH;
-        const displaySpeedKmh = isMoving || isMovingCandidate ? normalizedSpeedKmh : 0;
+        const isMoving = motionState.confirmedMotion && reportSpeedKmh >= constants.AUTO_REPORT_MIN_CONFIRMED_SPEED_KMH;
+        const isMovingCandidate = motionState.isMovingCandidate && reportSpeedKmh >= constants.AUTO_REPORT_MIN_CONFIRMED_SPEED_KMH;
         const movementStatus = isMoving
             ? 'Live movement detected'
             : isMovingCandidate
                 ? 'Confirming movement...'
-                : 'You look stationary';
+                : displayMoving
+                    ? 'Movement detected'
+                    : 'You look stationary';
 
-        app.ui.updateSpeedDisplay(displaySpeedKmh, movementStatus, isMoving);
+        app.ui.updateSpeedDisplay(displayMoving ? displaySpeedKmh : 0, movementStatus, displayMoving);
 
         app.geo.publishLocationReady(position, displaySpeedKmh);
         app.reporting.evaluateAutoReporting(position, displaySpeedKmh, now, {
             confirmedMotion: motionState.confirmedMotion,
+            observedMovement: displayMoving,
             movedMeters,
             accuracy,
             movementThresholdMeters: motionState.movementThresholdMeters,

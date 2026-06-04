@@ -24,6 +24,7 @@ class AutoSpeedReportController extends Controller
     private const ACTIVE_RULES_CACHE_SECONDS = 20;
     private const REQUIRED_EXCEEDED_SECONDS = 30;
     private const DUPLICATE_WINDOW_SECONDS = 600;
+    private const NO_PARKING_STATIONARY_SPEED_KMH = 1.0;
     private const BASE_SEGMENT_TOLERANCE_METERS = 15;
     private const ACCURACY_MARGIN_METERS = 0.5;
     private const MAX_SEGMENT_TOLERANCE_METERS = 50;
@@ -49,6 +50,21 @@ class AutoSpeedReportController extends Controller
             ]);
         }
 
+        $speedKmh = (float) $validated['speed_kmh'];
+        $noParkingMatch = $this->matchNoParkingRule(
+            (float) $validated['latitude'],
+            (float) $validated['longitude'],
+            (float) $accuracy
+        );
+
+        if ($noParkingMatch && $speedKmh <= self::NO_PARKING_STATIONARY_SPEED_KMH) {
+            return response()->json($this->noParkingEvaluationPayload($noParkingMatch, $speedKmh));
+        }
+
+        if ($noParkingMatch) {
+            session()->forget($this->noParkingSessionKey($noParkingMatch['segment']->id, $noParkingMatch['rule']->id));
+        }
+
         $match = $this->matchSpeedRule(
             (float) $validated['latitude'],
             (float) $validated['longitude'],
@@ -56,7 +72,37 @@ class AutoSpeedReportController extends Controller
         );
 
         if (! $match) {
+            $segmentMatch = $this->matchRoadSegmentGeometry(
+                (float) $validated['latitude'],
+                (float) $validated['longitude'],
+                (float) $accuracy
+            );
+
             $this->clearExceededSession();
+
+            if ($segmentMatch) {
+                $displayRule = $this->displayRuleForSegment($segmentMatch['segment']);
+
+                return response()->json([
+                    'matched' => true,
+                    'has_speed_rule' => false,
+                    'exceeded' => false,
+                    'can_submit' => false,
+                    'exceeded_seconds' => 0,
+                    'required_seconds' => self::REQUIRED_EXCEEDED_SECONDS,
+                    'distance_meters' => round($segmentMatch['distance_meters'], 1),
+                    'matching_buffer_meters' => round($segmentMatch['matching_buffer_meters'], 1),
+                    'speed_kmh' => round((float) $validated['speed_kmh'], 1),
+                    'speed_limit_kmh' => null,
+                    'segment' => [
+                        'id' => $segmentMatch['segment']->id,
+                        'name' => $segmentMatch['segment']->segment_name,
+                        'db_name' => $segmentMatch['segment']->segment_name,
+                    ],
+                    'rule' => $displayRule,
+                    'message' => 'Segment detected, but no active speed rule is configured.',
+                ]);
+            }
 
             return response()->json([
                 'matched' => false,
@@ -64,7 +110,6 @@ class AutoSpeedReportController extends Controller
             ]);
         }
 
-        $speedKmh = (float) $validated['speed_kmh'];
         $exceeded = $speedKmh > $match['speed_limit_kmh'];
         $sessionKey = $this->exceededSessionKey($match['segment']->id, $match['rule']->id);
 
@@ -135,10 +180,24 @@ class AutoSpeedReportController extends Controller
         );
 
         if (! $match || (int) $validated['rule_id'] !== (int) $match['rule']->id || (int) $validated['segment_id'] !== (int) $match['segment']->id) {
+            $noParkingMatch = $this->matchNoParkingRule(
+                (float) $validated['latitude'],
+                (float) $validated['longitude'],
+                (float) $accuracy
+            );
+
+            if (
+                $noParkingMatch &&
+                (int) $validated['rule_id'] === (int) $noParkingMatch['rule']->id &&
+                (int) $validated['segment_id'] === (int) $noParkingMatch['segment']->id
+            ) {
+                return $this->storeNoParkingReport($validated, $noParkingMatch);
+            }
+
             return response()->json([
                 'reported' => false,
                 'reason' => 'rule_mismatch',
-                'message' => 'The current location no longer matches that speed rule.',
+                'message' => 'The current location no longer matches that rule.',
             ], 409);
         }
 
@@ -222,6 +281,81 @@ class AutoSpeedReportController extends Controller
             'reported_at' => now()->timestamp,
         ]);
         session()->forget($this->exceededSessionKey($match['segment']->id, $match['rule']->id));
+
+        return response()->json([
+            'reported' => true,
+            'duplicate' => false,
+            'reference_no' => $report->reference_no,
+        ], 201);
+    }
+
+    private function storeNoParkingReport(array $validated, array $match): JsonResponse
+    {
+        $speedKmh = (float) $validated['speed_kmh'];
+
+        if ($speedKmh > self::NO_PARKING_STATIONARY_SPEED_KMH) {
+            session()->forget($this->noParkingSessionKey($match['segment']->id, $match['rule']->id));
+
+            return response()->json([
+                'reported' => false,
+                'reason' => 'vehicle_moving',
+                'message' => 'The vehicle is moving inside the no parking area.',
+            ], 409);
+        }
+
+        $startedAt = session($this->noParkingSessionKey($match['segment']->id, $match['rule']->id));
+        $stationarySeconds = is_numeric($startedAt) ? max(0, now()->timestamp - (int) $startedAt) : 0;
+
+        if ($stationarySeconds < self::REQUIRED_EXCEEDED_SECONDS) {
+            return response()->json([
+                'reported' => false,
+                'reason' => 'duration_pending',
+                'exceeded_seconds' => $stationarySeconds,
+                'required_seconds' => self::REQUIRED_EXCEEDED_SECONDS,
+            ], 409);
+        }
+
+        $report = DB::transaction(function () use ($validated, $match, $stationarySeconds) {
+            $violationType = ViolationType::firstOrCreate(
+                ['name' => 'No Parking'],
+                [
+                    'description' => 'Vehicle parked or remained stationary in a no parking area.',
+                    'is_active' => true,
+                ]
+            );
+
+            $report = Report::create([
+                'reference_no' => $this->makeReferenceNumber(),
+                'violation_type_id' => $violationType->id,
+                'description' => sprintf(
+                    'Automatic no parking report: device remained stationary for %d seconds on %s.',
+                    $stationarySeconds,
+                    $match['segment']->segment_name
+                ),
+                'latitude' => $validated['latitude'],
+                'longitude' => $validated['longitude'],
+                'location_name' => $match['segment']->segment_name,
+                'status' => 'submitted',
+                'priority' => 'medium',
+                'reported_at' => now(),
+            ]);
+
+            RuleViolation::create([
+                'report_id' => $report->id,
+                'segment_id' => $match['segment']->id,
+                'segment_type_rule_id' => $match['rule']->id,
+                'rule_name_snapshot' => $match['rule']->rule_name,
+                'rule_type_snapshot' => $match['rule']->rule_type,
+                'rule_value_snapshot' => $match['rule']->rule_value,
+                'rule_description_snapshot' => $match['rule']->description,
+                'matched_automatically' => true,
+                'confidence_score' => $this->confidenceForDistance($match['distance_meters']),
+            ]);
+
+            return $report;
+        });
+
+        session()->forget($this->noParkingSessionKey($match['segment']->id, $match['rule']->id));
 
         return response()->json([
             'reported' => true,
@@ -332,6 +466,194 @@ class AutoSpeedReportController extends Controller
                 ? $nearestMatch
                 : null
         );
+    }
+
+    private function matchNoParkingRule(float $latitude, float $longitude, float $accuracy): ?array
+    {
+        $cacheKey = 'auto_speed.no_parking_rules.snapshot';
+        $segments = Cache::remember($cacheKey, now()->addSeconds(self::ACTIVE_RULES_CACHE_SECONDS), function () {
+            return RoadSegment::query()
+                ->whereNotNull('boundary_coordinates')
+                ->with([
+                    'segmentType:id,name',
+                    'segmentType.defaultRules' => function ($query) {
+                        $query->select('id', 'segment_type_id', 'rule_name', 'rule_type', 'rule_value', 'description', 'is_active', 'sort_order')
+                            ->orderBy('sort_order');
+                    },
+                ])
+                ->get(['id', 'segment_name', 'segment_type_id', 'boundary_coordinates']);
+        });
+
+        $bestMatch = null;
+        $tolerance = min(
+            self::MAX_SEGMENT_TOLERANCE_METERS,
+            max(self::BASE_SEGMENT_TOLERANCE_METERS, $accuracy + self::ACCURACY_MARGIN_METERS)
+        );
+
+        foreach ($segments as $segment) {
+            $resolvedRule = $this->segmentRuleResolver->resolveNoParkingRuleForSegment($segment);
+            if (! $resolvedRule) {
+                continue;
+            }
+
+            $distance = $this->distanceToSegmentGeometryMeters(
+                $latitude,
+                $longitude,
+                $segment->boundary_coordinates ?? []
+            );
+
+            if (! is_finite($distance)) {
+                continue;
+            }
+
+            $matchingBuffer = max($tolerance, $this->segmentBufferMeters($segment));
+
+            if ($distance > $matchingBuffer) {
+                continue;
+            }
+
+            if (! $bestMatch || $distance < $bestMatch['distance_meters']) {
+                $bestMatch = [
+                    'rule' => $this->ruleDataObject($resolvedRule),
+                    'segment' => $segment,
+                    'distance_meters' => $distance,
+                    'matching_buffer_meters' => $matchingBuffer,
+                ];
+            }
+        }
+
+        return $bestMatch;
+    }
+
+    private function ruleDataObject(array $resolvedRule): object
+    {
+        return (object) [
+            'id' => (int) $resolvedRule['segment_type_rule_id'],
+            'rule_name' => $resolvedRule['rule_name'],
+            'rule_type' => $resolvedRule['rule_type'],
+            'rule_value' => $resolvedRule['rule_value'],
+            'description' => $resolvedRule['description'],
+        ];
+    }
+
+    private function noParkingEvaluationPayload(array $match, float $speedKmh): array
+    {
+        $sessionKey = $this->noParkingSessionKey($match['segment']->id, $match['rule']->id);
+        $startedAt = session($sessionKey);
+
+        if (! is_numeric($startedAt)) {
+            $startedAt = now()->timestamp;
+            session()->put($sessionKey, $startedAt);
+        }
+
+        $stationarySeconds = max(0, now()->timestamp - (int) $startedAt);
+
+        return [
+            'matched' => true,
+            'has_speed_rule' => false,
+            'is_no_parking_rule' => true,
+            'requires_stationary' => true,
+            'exceeded' => true,
+            'can_submit' => $stationarySeconds >= self::REQUIRED_EXCEEDED_SECONDS,
+            'exceeded_seconds' => $stationarySeconds,
+            'required_seconds' => self::REQUIRED_EXCEEDED_SECONDS,
+            'distance_meters' => round($match['distance_meters'], 1),
+            'matching_buffer_meters' => round($match['matching_buffer_meters'], 1),
+            'speed_kmh' => round($speedKmh, 1),
+            'speed_limit_kmh' => null,
+            'segment' => [
+                'id' => $match['segment']->id,
+                'name' => $match['segment']->segment_name,
+                'db_name' => $match['segment']->segment_name,
+            ],
+            'rule' => [
+                'id' => $match['rule']->id,
+                'name' => $match['rule']->rule_name,
+                'type' => $match['rule']->rule_type,
+                'value' => $match['rule']->rule_value,
+                'display' => $this->formatRuleDisplay([
+                    'rule_name' => $match['rule']->rule_name,
+                    'rule_value' => $match['rule']->rule_value,
+                ]),
+            ],
+            'reporting' => $this->reportingSnapshot((int) $match['segment']->id, (int) $match['rule']->id),
+        ];
+    }
+
+    private function matchRoadSegmentGeometry(float $latitude, float $longitude, float $accuracy): ?array
+    {
+        $cacheKey = 'auto_speed.road_segments.geometry.snapshot';
+        $segments = Cache::remember($cacheKey, now()->addSeconds(self::ACTIVE_RULES_CACHE_SECONDS), function () {
+            return RoadSegment::query()
+                ->whereNotNull('boundary_coordinates')
+                ->with('segmentType:id,name')
+                ->get(['id', 'segment_name', 'segment_type_id', 'boundary_coordinates']);
+        });
+
+        $bestMatch = null;
+        $tolerance = min(
+            self::MAX_SEGMENT_TOLERANCE_METERS,
+            max(self::BASE_SEGMENT_TOLERANCE_METERS, $accuracy + self::ACCURACY_MARGIN_METERS)
+        );
+
+        foreach ($segments as $segment) {
+            $distance = $this->distanceToSegmentGeometryMeters(
+                $latitude,
+                $longitude,
+                $segment->boundary_coordinates ?? []
+            );
+
+            if (! is_finite($distance)) {
+                continue;
+            }
+
+            $matchingBuffer = max($tolerance, $this->segmentBufferMeters($segment));
+
+            if ($distance > $matchingBuffer) {
+                continue;
+            }
+
+            if (! $bestMatch || $distance < $bestMatch['distance_meters']) {
+                $bestMatch = [
+                    'segment' => $segment,
+                    'distance_meters' => $distance,
+                    'matching_buffer_meters' => $matchingBuffer,
+                ];
+            }
+        }
+
+        return $bestMatch;
+    }
+
+    private function displayRuleForSegment(RoadSegment $segment): ?array
+    {
+        $rule = $this->segmentRuleResolver->resolveNoParkingRuleForSegment($segment)
+            ?? $this->segmentRuleResolver->resolveEffectiveRulesForSegment($segment)->first();
+
+        if (! $rule) {
+            return null;
+        }
+
+        return [
+            'id' => (int) $rule['segment_type_rule_id'],
+            'name' => $rule['rule_name'],
+            'type' => $rule['rule_type'],
+            'value' => $rule['rule_value'],
+            'description' => $rule['description'],
+            'display' => $this->formatRuleDisplay($rule),
+        ];
+    }
+
+    private function formatRuleDisplay(array $rule): string
+    {
+        $name = trim((string) ($rule['rule_name'] ?? ''));
+        $value = trim((string) ($rule['rule_value'] ?? ''));
+
+        if ($name !== '' && $value !== '' && strtolower($name) !== strtolower($value)) {
+            return sprintf('%s - %s', strtoupper($name), strtoupper($value));
+        }
+
+        return strtoupper($name !== '' ? $name : ($value !== '' ? $value : 'CONFIGURED'));
     }
 
     /**
@@ -704,6 +1026,11 @@ class AutoSpeedReportController extends Controller
         return "auto_speed.exceeded.{$segmentId}.{$ruleId}";
     }
 
+    private function noParkingSessionKey(int $segmentId, int $ruleId): string
+    {
+        return "auto_no_parking.stationary.{$segmentId}.{$ruleId}";
+    }
+
     /**
      * Handle the reportedSessionKey workflow for this class.
      */
@@ -720,7 +1047,7 @@ class AutoSpeedReportController extends Controller
     private function clearExceededSession(): void
     {
         foreach (array_keys(session()->all()) as $key) {
-            if (str_starts_with($key, 'auto_speed.exceeded.')) {
+            if (str_starts_with($key, 'auto_speed.exceeded.') || str_starts_with($key, 'auto_no_parking.stationary.')) {
                 session()->forget($key);
             }
         }

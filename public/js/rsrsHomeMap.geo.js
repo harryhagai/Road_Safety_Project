@@ -48,10 +48,51 @@
         );
     }
 
+    function displayMovementThresholdMeters(accuracyMeters) {
+        const accuracy = Number.isFinite(accuracyMeters) ? Math.max(0, accuracyMeters) : Infinity;
+
+        if (!Number.isFinite(accuracy)) {
+            return constants.DISPLAY_MAX_MOVEMENT_THRESHOLD_METERS;
+        }
+
+        return Math.min(
+            constants.DISPLAY_MAX_MOVEMENT_THRESHOLD_METERS,
+            Math.max(
+                constants.DISPLAY_MOVEMENT_THRESHOLD_METERS,
+                accuracy * constants.DISPLAY_ACCURACY_MOVEMENT_RATIO
+            )
+        );
+    }
+
+    function isDisplayMovement(movedMeters, accuracyMeters) {
+        const movement = Number.isFinite(movedMeters) ? Math.max(0, movedMeters) : 0;
+
+        return movement >= displayMovementThresholdMeters(accuracyMeters);
+    }
+
     function isReliableMovement(movedMeters, accuracyMeters) {
         const movement = Number.isFinite(movedMeters) ? Math.max(0, movedMeters) : 0;
 
         return movement >= movementThresholdMeters(accuracyMeters);
+    }
+
+    function normalizeDisplaySpeedKmh(rawSpeedKmh, movedMeters, accuracyMeters, source = 'computed', elapsedSeconds = 0) {
+        const speed = Number.isFinite(rawSpeedKmh) ? Math.max(0, rawSpeedKmh) : 0;
+        const accuracy = Number.isFinite(accuracyMeters) ? Math.max(0, accuracyMeters) : Infinity;
+
+        if (speed < constants.DISPLAY_SPEED_THRESHOLD_KMH || accuracy > constants.LOW_CONFIDENCE_ACCURACY_METERS) {
+            return 0;
+        }
+
+        if (source === 'gps') {
+            return speed;
+        }
+
+        if (elapsedSeconds < constants.DISPLAY_MIN_COMPUTED_SPEED_SAMPLE_SECONDS) {
+            return 0;
+        }
+
+        return isDisplayMovement(movedMeters, accuracyMeters) ? speed : 0;
     }
 
     function normalizeSpeedKmh(rawSpeedKmh, movedMeters, accuracyMeters, source = 'computed', elapsedSeconds = 0) {
@@ -176,8 +217,11 @@
     app.geo = {
         resolveMotion,
         resolveSpeedKmh,
+        normalizeDisplaySpeedKmh,
         normalizeSpeedKmh,
         updateMotionConfidence,
+        displayMovementThresholdMeters,
+        isDisplayMovement,
         movementThresholdMeters,
         isReliableMovement,
         publishLocationReady,

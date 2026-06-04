@@ -45,11 +45,12 @@
         const accuracy = Number(position.coords.accuracy);
         const heading = Number(position.coords.heading);
         const confirmedMotion = context.confirmedMotion === true;
+        const observedMovement = context.observedMovement === true;
 
         return {
             latitude,
             longitude,
-            speed_kmh: confirmedMotion && Number.isFinite(speedKmh) ? Math.max(0, speedKmh) : 0,
+            speed_kmh: (confirmedMotion || observedMovement) && Number.isFinite(speedKmh) ? Math.max(0, speedKmh) : 0,
             accuracy: Number.isFinite(accuracy) ? accuracy : null,
             heading: Number.isFinite(heading) && heading >= 0 ? heading : null,
             confirmed_motion: confirmedMotion,
@@ -62,6 +63,25 @@
         state.reportedRuleIds.delete(Number(evaluation.rule.id));
     }
 
+    function ruleDisplayForEvaluation(evaluation) {
+        const limit = Number(evaluation?.speed_limit_kmh);
+
+        return evaluation?.rule?.display ||
+            evaluation?.rule?.name ||
+            (Number.isFinite(limit) ? `${Math.round(limit)} km/h` : 'this rule');
+    }
+
+    function alertOptionsForEvaluation(evaluation) {
+        const ruleDisplay = ruleDisplayForEvaluation(evaluation);
+
+        return {
+            location: evaluation?.segment?.db_name || evaluation?.segment?.name || 'matched road segment',
+            ruleLabel: evaluation?.is_no_parking_rule ? 'RULE' : 'SPEED RULE',
+            limit: ruleDisplay,
+            ruleName: ruleDisplay,
+        };
+    }
+
     async function submitAutoReport(evaluation, sample) {
         const config = getAutoReportingConfig();
         const ruleId = Number(evaluation?.rule?.id);
@@ -72,7 +92,7 @@
             !config ||
             !ruleId ||
             !segmentId ||
-            !sample.confirmed_motion ||
+            (!sample.confirmed_motion && evaluation?.requires_stationary !== true) ||
             state.autoReportInFlight ||
             state.reportedRuleIds.has(ruleId)
         ) {
@@ -89,33 +109,37 @@
             }, config.csrfToken);
 
             state.reportedRuleIds.add(ruleId);
-            const reference = result.reference_no ? `: ${result.reference_no}` : '';
+            const reference = result.reference_no || '';
+            const referenceStatus = reference ? `: ${reference}` : '';
+            const popupOptions = alertOptionsForEvaluation(evaluation);
 
             app.ui.updateSpeedDisplay(
                 sample.speed_kmh,
-                result.duplicate ? 'Automatic report already submitted' : `Automatic report submitted${reference}`,
+                result.duplicate ? 'Automatic report already submitted' : `Automatic report submitted${referenceStatus}`,
                 true
             );
             app.ui.updateSpeedAlert({
                 state: 'danger',
-                label: result.duplicate ? 'Report already submitted' : 'Speed violation reported',
-                message: result.duplicate
-                    ? 'Your speed is still above the limit, and a report for this area is already in the system.'
-                    : `An automatic report was submitted because the speed did not go down within 30 seconds${reference}.`,
-                location: evaluation?.segment?.name || 'matched road segment',
-                limit: `${Math.round(Number(evaluation.speed_limit_kmh))} km/h`,
+                ...popupOptions,
+                keepPopup: true,
+            });
+            app.ui.showReportSubmittedPopup({
+                ...popupOptions,
+                title: result.duplicate ? 'Violation already reported' : 'Violation reported',
+                reference,
+                duplicate: result.duplicate,
             });
 
-            if (!result.duplicate && runtime.reloadAfterAutoReportSubmission && !state.reloadScheduled) {
+            if (runtime.reloadAfterAutoReportSubmission && !state.reloadScheduled) {
                 state.reloadScheduled = true;
-                const delayMs = Math.max(300, Number(runtime.reloadDelayMs) || 1400);
+                const delayMs = Math.max(1800, Number(runtime.reloadDelayMs) || 2400);
                 setTimeout(() => window.location.reload(), delayMs);
             }
         } catch (error) {
             const response = error.response || {};
 
             if (response.reason === 'duration_pending' && Number.isFinite(Number(response.exceeded_seconds))) {
-                app.ui.updateSpeedDisplay(sample.speed_kmh, `Speed limit exceeded for ${Math.round(Number(response.exceeded_seconds))}s`, true);
+                app.ui.updateSpeedDisplay(sample.speed_kmh, `Rule pending for ${Math.round(Number(response.exceeded_seconds))}s`, true);
             } else if (response.reason === 'speed_within_limit') {
                 app.ui.updateSpeedDisplay(sample.speed_kmh, 'Speed is back within the saved limit', sample.speed_kmh >= 1);
             } else if (error.status !== 422) {
@@ -143,12 +167,8 @@
 
             app.ui.updateSpeedAlert({
                 state: 'idle',
-                label: lowAccuracy ? 'Low GPS accuracy' : 'No nearby speed rule',
-                message: lowAccuracy
-                    ? lowAccuracyMessage
-                    : (evaluation?.message || 'Your location did not match any road segment with a speed limit in the database.'),
-                location: 'not matched',
-                limit: 'unknown',
+                location: lowAccuracy ? 'Low GPS accuracy' : 'NO SEGMENT DETECTED',
+                limit: lowAccuracy ? lowAccuracyMessage : 'unknown',
             });
             return;
         }
@@ -157,12 +177,72 @@
         const limitText = Number.isFinite(limit) ? `${Math.round(limit)} km/h` : 'saved limit';
         const segmentName = evaluation.segment?.db_name || evaluation.segment?.name || 'matched road segment';
 
+        if (evaluation.is_no_parking_rule) {
+            const displayRule = evaluation.rule?.display || evaluation.rule?.name || 'NO PARKING';
+            const parkedSeconds = Math.max(0, Number(evaluation.exceeded_seconds) || 0);
+            const requiredSeconds = Math.max(30, Number(evaluation.required_seconds) || 30);
+            const remainingSeconds = Math.max(0, requiredSeconds - parkedSeconds);
+
+            if (!evaluation.exceeded) {
+                app.ui.updateSpeedDisplay(sample.speed_kmh, 'No parking rule active', sample.speed_kmh >= 1);
+                app.ui.updateSpeedAlert({
+                    state: 'info',
+                    location: segmentName,
+                    ruleLabel: 'RULE',
+                    limit: displayRule,
+                });
+                return;
+            }
+
+            if (remainingSeconds > 0) {
+                app.ui.updateSpeedDisplay(sample.speed_kmh, `No parking stationary for ${Math.round(parkedSeconds)}s`, false);
+                app.ui.updateSpeedAlert({
+                    state: 'warning',
+                    location: segmentName,
+                    ruleLabel: 'RULE',
+                    limit: displayRule,
+                    countdownSeconds: remainingSeconds,
+                    popupTitle: 'No parking warning',
+                });
+                return;
+            }
+
+            app.ui.updateSpeedDisplay(sample.speed_kmh, 'Submitting automatic no parking report...', false);
+            app.ui.updateSpeedAlert({
+                state: 'danger',
+                location: segmentName,
+                ruleLabel: 'RULE',
+                limit: displayRule,
+                keepPopup: true,
+            });
+            app.ui.showReportSubmittingPopup({
+                location: segmentName,
+                ruleLabel: 'RULE',
+                limit: displayRule,
+                ruleName: displayRule,
+                title: 'Submitting no parking report',
+            });
+            submitAutoReport(evaluation, sample);
+            return;
+        }
+
+        if (evaluation.has_speed_rule === false) {
+            const displayRule = evaluation.rule?.display || evaluation.rule?.name || 'NOT CONFIGURED';
+
+            app.ui.updateSpeedDisplay(sample.speed_kmh, 'Segment detected without speed rule', sample.speed_kmh >= 1);
+            app.ui.updateSpeedAlert({
+                state: 'idle',
+                location: segmentName,
+                ruleLabel: evaluation.rule ? 'RULE' : 'SPEED RULE',
+                limit: displayRule,
+            });
+            return;
+        }
+
         if (!evaluation.exceeded) {
             app.ui.updateSpeedDisplay(sample.speed_kmh, `Speed limit ${limitText} active`, sample.speed_kmh >= 1);
             app.ui.updateSpeedAlert({
                 state: 'info',
-                label: 'Speed is within limit',
-                message: `Your speed is within the rule for this area. Please stay below ${limitText}.`,
                 location: segmentName,
                 limit: limitText,
             });
@@ -177,10 +257,10 @@
             app.ui.updateSpeedDisplay(sample.speed_kmh, `Limit ${limitText} exceeded for ${Math.round(exceededSeconds)}s`, true);
             app.ui.updateSpeedAlert({
                 state: 'warning',
-                label: 'Warning: speed limit exceeded',
-                message: `Reduce speed to ${limitText}. Auto report will be submitted in ${remainingSeconds}s if speed stays above limit.`,
                 location: segmentName,
                 limit: limitText,
+                countdownSeconds: remainingSeconds,
+                popupTitle: 'Speed warning',
             });
             return;
         }
@@ -188,10 +268,16 @@
         app.ui.updateSpeedDisplay(sample.speed_kmh, 'Submitting automatic speed report...', true);
         app.ui.updateSpeedAlert({
             state: 'danger',
-            label: 'Danger: auto report starting',
-            message: `Your speed stayed above ${limitText} for 30 seconds. The system is submitting a speed violation report.`,
             location: segmentName,
             limit: limitText,
+            keepPopup: true,
+        });
+        app.ui.showReportSubmittingPopup({
+            location: segmentName,
+            ruleLabel: 'SPEED RULE',
+            limit: ruleDisplayForEvaluation(evaluation),
+            ruleName: ruleDisplayForEvaluation(evaluation),
+            title: 'Submitting speed report',
         });
         submitAutoReport(evaluation, sample);
     }

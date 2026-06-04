@@ -197,11 +197,11 @@ main.flex-grow-1 {
     right: 0.55rem;
     z-index: 460;
     display: grid;
-    grid-template-columns: 38px minmax(0, 1fr);
-    gap: 0.72rem;
-    align-items: start;
+    grid-template-columns: minmax(0, 1fr) 48px;
+    align-items: center;
+    column-gap: 0.72rem;
     width: auto;
-    padding: 0.72rem 0.82rem;
+    padding: 0.72rem 0.72rem 0.72rem 0.92rem;
     border: 1px solid rgba(35, 44, 58, 0.1);
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.91);
@@ -210,20 +210,54 @@ main.flex-grow-1 {
     pointer-events: none;
 }
 
-.home-speed-alert__icon {
-    width: 38px;
-    height: 38px;
-    display: grid;
+.home-speed-alert__status {
+    position: relative;
+    display: inline-grid;
     place-items: center;
-    border-radius: 12px;
-    background: rgba(35, 44, 58, 0.07);
-    color: #232c3a;
-    font-size: 1.06rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    justify-self: end;
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow:
+        inset 0 0 0 1px rgba(35, 44, 58, 0.12),
+        0 6px 14px rgba(27, 35, 48, 0.06);
+}
+
+.home-speed-alert__symbol {
+    grid-area: 1 / 1;
+    color: #6a778b;
+    font-size: 0.84rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.home-speed-alert__count {
+    grid-area: 1 / 1;
+    align-self: end;
+    min-height: 0;
+    color: #6a778b;
+    font-size: 0.54rem;
+    font-weight: 900;
+    line-height: 1;
+    transform: translateY(-0.34rem);
+}
+
+.home-speed-alert:not(.is-counting) .home-speed-alert__count {
+    display: none;
+}
+
+.home-speed-alert.is-counting .home-speed-alert__symbol {
+    transform: translateY(-0.24rem);
+}
+
+.home-speed-alert.is-counting .home-speed-alert__status {
+    animation: homeSpeedStatusBeat 1s ease-in-out infinite;
 }
 
 .home-speed-alert__body {
     display: grid;
-    gap: 0.24rem;
+    gap: 0.32rem;
     min-width: 0;
 }
 
@@ -237,36 +271,8 @@ main.flex-grow-1 {
 .home-speed-alert__message {
     color: #4f5d72;
     font-size: 0.76rem;
+    font-weight: 800;
     line-height: 1.35;
-}
-
-.home-speed-alert__meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.32rem;
-    margin-top: 0.08rem;
-}
-
-.home-speed-alert__meta span {
-    min-width: 0;
-    padding: 0.2rem 0.42rem;
-    border-radius: 999px;
-    background: rgba(35, 44, 58, 0.06);
-    color: #5c697d;
-    font-size: 0.64rem;
-    font-weight: 700;
-    line-height: 1.15;
-    overflow-wrap: anywhere;
-}
-
-.home-speed-alert--info .home-speed-alert__icon {
-    background: rgba(47, 128, 237, 0.12);
-    color: #1d5fbf;
-}
-
-.home-speed-alert--success .home-speed-alert__icon {
-    background: rgba(33, 150, 83, 0.13);
-    color: #137a42;
 }
 
 .home-speed-alert--warning {
@@ -274,9 +280,28 @@ main.flex-grow-1 {
     background: rgba(255, 250, 236, 0.93);
 }
 
-.home-speed-alert--warning .home-speed-alert__icon {
-    background: rgba(243, 183, 74, 0.2);
-    color: #9b650c;
+.home-speed-alert--info .home-speed-alert__status {
+    background: rgba(43, 111, 201, 0.08);
+    box-shadow:
+        inset 0 0 0 1px rgba(43, 111, 201, 0.18),
+        0 6px 14px rgba(43, 111, 201, 0.08);
+}
+
+.home-speed-alert--info .home-speed-alert__symbol,
+.home-speed-alert--info .home-speed-alert__count {
+    color: #2b6fc9;
+}
+
+.home-speed-alert--warning .home-speed-alert__status {
+    background: rgba(202, 128, 18, 0.09);
+    box-shadow:
+        inset 0 0 0 1px rgba(202, 128, 18, 0.2),
+        0 6px 14px rgba(202, 128, 18, 0.08);
+}
+
+.home-speed-alert--warning .home-speed-alert__symbol,
+.home-speed-alert--warning .home-speed-alert__count {
+    color: #ca8012;
 }
 
 .home-speed-alert--danger {
@@ -284,13 +309,114 @@ main.flex-grow-1 {
     background: rgba(255, 244, 244, 0.94);
 }
 
-.home-speed-alert--danger .home-speed-alert__icon {
-    background: rgba(201, 54, 54, 0.13);
-    color: #b42323;
-}
-
 .home-speed-alert--danger .home-speed-alert__label {
     color: #8f1d1d;
+}
+
+.home-speed-alert--danger .home-speed-alert__status {
+    background: rgba(201, 54, 54, 0.09);
+    box-shadow:
+        inset 0 0 0 1px rgba(201, 54, 54, 0.2),
+        0 6px 14px rgba(201, 54, 54, 0.08);
+}
+
+.home-speed-alert--danger .home-speed-alert__symbol,
+.home-speed-alert--danger .home-speed-alert__count {
+    color: #c93636;
+}
+
+.home-speed-alert--success .home-speed-alert__status {
+    background: rgba(45, 146, 92, 0.09);
+    box-shadow:
+        inset 0 0 0 1px rgba(45, 146, 92, 0.2),
+        0 6px 14px rgba(45, 146, 92, 0.08);
+}
+
+.home-speed-alert--success .home-speed-alert__symbol,
+.home-speed-alert--success .home-speed-alert__count {
+    color: #2d925c;
+}
+
+.rsrs-home-swal {
+    width: min(92vw, 390px);
+    border-radius: 18px;
+    padding: 1.1rem 1rem 1.2rem;
+    border: 1px solid rgba(202, 128, 18, 0.18);
+    box-shadow: 0 28px 70px rgba(27, 35, 48, 0.22);
+}
+
+.rsrs-home-swal__title {
+    color: #232c3a;
+    font-size: 1rem;
+    font-weight: 900;
+    letter-spacing: 0;
+}
+
+.rsrs-home-swal__body {
+    margin-top: 0.35rem !important;
+}
+
+.home-countdown-alert {
+    display: grid;
+    justify-items: center;
+    gap: 0.75rem;
+}
+
+.home-countdown-alert__seconds {
+    display: grid;
+    place-items: center;
+    width: 86px;
+    height: 86px;
+    border-radius: 50%;
+    background: rgba(202, 128, 18, 0.1);
+    border: 1px solid rgba(202, 128, 18, 0.22);
+    color: #ca8012;
+    font-size: 2.1rem;
+    font-weight: 900;
+    line-height: 1;
+    animation: homeSpeedStatusBeat 1s ease-in-out infinite;
+}
+
+.home-countdown-alert__meta {
+    display: grid;
+    gap: 0.32rem;
+    width: 100%;
+    color: #4f5d72;
+    font-size: 0.76rem;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.home-countdown-alert__meta span {
+    display: block;
+    overflow-wrap: anywhere;
+}
+
+.home-report-alert {
+    display: grid;
+    gap: 0.72rem;
+    text-align: center;
+}
+
+.home-report-alert__message {
+    color: #232c3a;
+    font-size: 0.94rem;
+    font-weight: 900;
+    line-height: 1.35;
+}
+
+.home-report-alert__meta {
+    display: grid;
+    gap: 0.28rem;
+    color: #4f5d72;
+    font-size: 0.74rem;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.home-report-alert__meta span {
+    display: block;
+    overflow-wrap: anywhere;
 }
 
 .home-geo-card #mainPublicMap,
@@ -635,6 +761,17 @@ main.flex-grow-1 {
     opacity: 0.62;
 }
 
+.home-geo-card .leaflet-control-rotate.is-auto-rotate-active .leaflet-control-rotate-toggle {
+    background: #fff7e6 !important;
+    box-shadow:
+        0 18px 30px rgba(27, 35, 48, 0.16),
+        0 0 0 3px rgba(243, 183, 74, 0.18);
+}
+
+.home-geo-card .leaflet-control-rotate.is-auto-rotate-active .home-compass-icon {
+    opacity: 1;
+}
+
 .home-geo-card .leaflet-control-zoom.leaflet-bar {
     overflow: hidden;
     border: 1px solid rgba(35, 44, 58, 0.12);
@@ -704,6 +841,21 @@ main.flex-grow-1 {
     50% {
         opacity: 0.9;
         transform: scale(1.02);
+    }
+}
+
+@keyframes homeSpeedStatusBeat {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    42% {
+        transform: scale(1.08);
+    }
+
+    68% {
+        transform: scale(0.96);
     }
 }
 
@@ -852,17 +1004,24 @@ main.flex-grow-1 {
         left: 0.35rem;
         right: 0.35rem;
         width: auto;
-        grid-template-columns: 34px minmax(0, 1fr);
-        gap: 0.58rem;
-        padding: 0.62rem 0.64rem;
+        grid-template-columns: minmax(0, 1fr) 42px;
+        column-gap: 0.54rem;
+        padding: 0.62rem 0.54rem 0.62rem 0.64rem;
         border-radius: 14px;
     }
 
-    .home-speed-alert__icon {
-        width: 34px;
-        height: 34px;
-        border-radius: 11px;
-        font-size: 0.96rem;
+    .home-speed-alert__status {
+        width: 42px;
+        height: 42px;
+    }
+
+    .home-speed-alert__symbol {
+        font-size: 0.76rem;
+    }
+
+    .home-speed-alert__count {
+        min-height: 0.58rem;
+        font-size: 0.5rem;
     }
 
     .home-speed-alert__label {
@@ -871,15 +1030,6 @@ main.flex-grow-1 {
 
     .home-speed-alert__message {
         font-size: 0.7rem;
-    }
-
-    .home-speed-alert__meta {
-        gap: 0.24rem;
-    }
-
-    .home-speed-alert__meta span {
-        padding: 0.18rem 0.34rem;
-        font-size: 0.58rem;
     }
 
     .home-location-control__button {
