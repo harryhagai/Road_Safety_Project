@@ -437,7 +437,7 @@ Frontend flow:
 4. Browser GPS starts through `navigator.geolocation`.
 5. Current location marker and accuracy circle are displayed.
 6. Speed is calculated from browser GPS speed or distance/time between points.
-7. Every few seconds, telemetry is sent to `/auto-speed-reports/evaluate`.
+7. Every few seconds, a speed/location sample is sent to `/auto-speed-reports/evaluate`.
 8. If speed stays above the matched limit for 30 seconds, `/auto-speed-reports` is called.
 
 ## 10. Automatic Speed Reporting APIs
@@ -582,7 +582,7 @@ Possible conflict responses:
 
 Store logic:
 
-1. Validate telemetry plus `rule_id` and `segment_id`.
+1. Validate the speed/location sample plus `rule_id` and `segment_id`.
 2. Re-match current location to avoid stale frontend data.
 3. Confirm current speed is still above limit.
 4. Confirm exceeded duration is at least 30 seconds.

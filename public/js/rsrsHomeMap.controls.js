@@ -219,9 +219,7 @@
         if (state.lastTrackedPoint && movedMeters < 1.2 && now - state.lastTrackTimestamp < 900) {
             const transientMoving = normalizedSpeedKmh >= 1;
 
-            if (!app.isTelemetryAlertPinned()) {
-                app.ui.updateSpeedDisplay(normalizedSpeedKmh, transientMoving ? 'Live movement detected' : 'Waiting for movement...', transientMoving);
-            }
+            app.ui.updateSpeedDisplay(normalizedSpeedKmh, transientMoving ? 'Live movement detected' : 'Waiting for movement...', transientMoving);
             return;
         }
 
@@ -234,9 +232,7 @@
         setLocatingState(false);
 
         const isMoving = normalizedSpeedKmh >= 1;
-        if (!app.isTelemetryAlertPinned()) {
-            app.ui.updateSpeedDisplay(normalizedSpeedKmh, isMoving ? 'Live movement detected' : 'You look stationary', isMoving);
-        }
+        app.ui.updateSpeedDisplay(normalizedSpeedKmh, isMoving ? 'Live movement detected' : 'You look stationary', isMoving);
 
         app.geo.publishLocationReady(position, normalizedSpeedKmh);
         app.reporting.evaluateAutoReporting(position, normalizedSpeedKmh, now);

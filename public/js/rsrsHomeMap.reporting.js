@@ -1,4 +1,4 @@
-// Automatic speed reporting and telemetry feedback handling.
+// Automatic speed reporting for the RSRS home map.
 (function (window) {
     const app = window.RSRSHomeMap;
     const state = app.state;
@@ -39,7 +39,7 @@
         return data;
     }
 
-    function buildAutoTelemetry(position, speedKmh) {
+    function buildAutoReportSample(position, speedKmh) {
         const latitude = Number(position.coords.latitude);
         const longitude = Number(position.coords.longitude);
         const accuracy = Number(position.coords.accuracy);
@@ -60,7 +60,7 @@
         state.reportedRuleIds.delete(Number(evaluation.rule.id));
     }
 
-    async function submitAutoReport(evaluation, telemetry) {
+    async function submitAutoReport(evaluation, sample) {
         const config = getAutoReportingConfig();
         const ruleId = Number(evaluation?.rule?.id);
         const segmentId = Number(evaluation?.segment?.id);
@@ -74,7 +74,7 @@
 
         try {
             const result = await postAutoJson(config.storeUrl, {
-                ...telemetry,
+                ...sample,
                 rule_id: ruleId,
                 segment_id: segmentId,
             }, config.csrfToken);
@@ -83,7 +83,7 @@
             const reference = result.reference_no ? `: ${result.reference_no}` : '';
 
             app.ui.updateSpeedDisplay(
-                telemetry.speed_kmh,
+                sample.speed_kmh,
                 result.duplicate ? 'Automatic report already submitted' : `Automatic report submitted${reference}`,
                 true
             );
@@ -106,27 +106,23 @@
             const response = error.response || {};
 
             if (response.reason === 'duration_pending' && Number.isFinite(Number(response.exceeded_seconds))) {
-                app.ui.updateSpeedDisplay(telemetry.speed_kmh, `Speed limit exceeded for ${Math.round(Number(response.exceeded_seconds))}s`, true);
+                app.ui.updateSpeedDisplay(sample.speed_kmh, `Speed limit exceeded for ${Math.round(Number(response.exceeded_seconds))}s`, true);
             } else if (response.reason === 'speed_within_limit') {
-                app.ui.updateSpeedDisplay(telemetry.speed_kmh, 'Speed is back within the saved limit', telemetry.speed_kmh >= 1);
+                app.ui.updateSpeedDisplay(sample.speed_kmh, 'Speed is back within the saved limit', sample.speed_kmh >= 1);
             } else if (error.status !== 422) {
-                app.ui.updateSpeedDisplay(telemetry.speed_kmh, 'Automatic reporting unavailable right now', telemetry.speed_kmh >= 1);
+                app.ui.updateSpeedDisplay(sample.speed_kmh, 'Automatic reporting unavailable right now', sample.speed_kmh >= 1);
             }
         } finally {
             state.autoReportInFlight = false;
         }
     }
 
-    function handleAutoEvaluation(evaluation, telemetry) {
-        if (app.isTelemetryAlertPinned()) {
-            return;
-        }
-
+    function handleAutoEvaluation(evaluation, sample) {
         resetReportedRuleIfSafe(evaluation);
 
         if (!evaluation?.matched) {
-            if (telemetry.speed_kmh >= 1) {
-                app.ui.updateSpeedDisplay(telemetry.speed_kmh, 'No monitored speed rule nearby', true);
+            if (sample.speed_kmh >= 1) {
+                app.ui.updateSpeedDisplay(sample.speed_kmh, 'No monitored speed rule nearby', true);
             }
 
             const lowAccuracy = evaluation?.reason === 'low_accuracy';
@@ -153,7 +149,7 @@
         const segmentName = evaluation.segment?.db_name || evaluation.segment?.name || 'matched road segment';
 
         if (!evaluation.exceeded) {
-            app.ui.updateSpeedDisplay(telemetry.speed_kmh, `Speed limit ${limitText} active`, telemetry.speed_kmh >= 1);
+            app.ui.updateSpeedDisplay(sample.speed_kmh, `Speed limit ${limitText} active`, sample.speed_kmh >= 1);
             app.ui.updateSpeedAlert({
                 state: 'info',
                 label: 'Speed is within limit',
@@ -169,7 +165,7 @@
         const remainingSeconds = Math.max(0, requiredSeconds - exceededSeconds);
 
         if (remainingSeconds > 0) {
-            app.ui.updateSpeedDisplay(telemetry.speed_kmh, `Limit ${limitText} exceeded for ${Math.round(exceededSeconds)}s`, true);
+            app.ui.updateSpeedDisplay(sample.speed_kmh, `Limit ${limitText} exceeded for ${Math.round(exceededSeconds)}s`, true);
             app.ui.updateSpeedAlert({
                 state: 'warning',
                 label: 'Warning: speed limit exceeded',
@@ -180,7 +176,7 @@
             return;
         }
 
-        app.ui.updateSpeedDisplay(telemetry.speed_kmh, 'Submitting automatic speed report...', true);
+        app.ui.updateSpeedDisplay(sample.speed_kmh, 'Submitting automatic speed report...', true);
         app.ui.updateSpeedAlert({
             state: 'danger',
             label: 'Danger: auto report starting',
@@ -188,7 +184,7 @@
             location: segmentName,
             limit: limitText,
         });
-        submitAutoReport(evaluation, telemetry);
+        submitAutoReport(evaluation, sample);
     }
 
     function evaluateAutoReporting(position, speedKmh, now) {
@@ -196,27 +192,26 @@
 
         if (
             !config ||
-            app.isTelemetryAlertPinned() ||
             state.autoEvaluationInFlight ||
             now - state.lastAutoEvaluationAt < constants.AUTO_EVALUATION_INTERVAL_MS
         ) {
             return;
         }
 
-        const telemetry = buildAutoTelemetry(position, speedKmh);
+        const sample = buildAutoReportSample(position, speedKmh);
 
-        if (!Number.isFinite(telemetry.latitude) || !Number.isFinite(telemetry.longitude)) {
+        if (!Number.isFinite(sample.latitude) || !Number.isFinite(sample.longitude)) {
             return;
         }
 
-        state.lastAutoTelemetry = telemetry;
+        state.lastAutoReportSample = sample;
         state.lastAutoEvaluationAt = now;
         state.autoEvaluationInFlight = true;
 
-        postAutoJson(config.evaluateUrl, telemetry, config.csrfToken)
-            .then((evaluation) => handleAutoEvaluation(evaluation, state.lastAutoTelemetry || telemetry))
+        postAutoJson(config.evaluateUrl, sample, config.csrfToken)
+            .then((evaluation) => handleAutoEvaluation(evaluation, state.lastAutoReportSample || sample))
             .catch((error) => {
-                if (!app.isTelemetryAlertPinned() && error.status !== 422 && speedKmh >= 1) {
+                if (error.status !== 422 && speedKmh >= 1) {
                     app.ui.updateSpeedDisplay(speedKmh, 'Automatic reporting check failed', true);
                 }
             })
@@ -225,68 +220,7 @@
             });
     }
 
-    function handleVehicleTelemetryFeedback(event) {
-        const payload = event?.detail || {};
-        const speedKmh = Number(payload.current_speed ?? payload.speed_kmh ?? 0);
-        const segmentName = payload.segment || payload.segment_name || 'matched road segment';
-        const reference = payload.report_reference_no ? ` Reference: ${payload.report_reference_no}.` : '';
-
-        if (payload.rule_alert === 'no_parking_pending') {
-            const pending = payload.no_parking || {};
-            const elapsed = Math.max(0, Number(pending.elapsed_seconds) || 0);
-            const remaining = Math.max(0, Number(pending.remaining_seconds) || 0);
-
-            app.pinTelemetryAlert(12000);
-            app.ui.updateSpeedDisplay(Number.isFinite(speedKmh) ? speedKmh : 0, `No parking timer ${Math.round(elapsed)}s`, false);
-            app.ui.updateSpeedAlert({
-                state: 'warning',
-                label: 'No parking zone',
-                message: `Vehicle is stationary in a no-parking segment. Report will be submitted in ${Math.round(remaining)}s if it stays parked.`,
-                location: segmentName,
-                limit: 'No parking',
-            });
-            return;
-        }
-
-        if (payload.rule_alert === 'no_parking') {
-            const duplicateText = payload.report_duplicate ? 'No parking report already submitted' : 'No parking report submitted';
-
-            app.pinTelemetryAlert(35000);
-            app.ui.updateSpeedDisplay(Number.isFinite(speedKmh) ? speedKmh : 0, duplicateText, false);
-            app.ui.updateSpeedAlert({
-                state: 'danger',
-                label: payload.report_duplicate ? 'Report already submitted' : 'No parking detected',
-                message: payload.report_duplicate
-                    ? `A no-parking report for this segment is already in the system.${reference}`
-                    : `The vehicle stayed stationary inside a no-parking segment for 30 seconds.${reference}`,
-                location: segmentName,
-                limit: 'No parking',
-            });
-
-            const runtime = window.rsrsHomeRuntime || {};
-            if (payload.report_created && runtime.reloadAfterAutoReportSubmission && !state.reloadScheduled) {
-                state.reloadScheduled = true;
-                const delayMs = Math.max(300, Number(runtime.reloadDelayMs) || 1400);
-                setTimeout(() => window.location.reload(), delayMs);
-            }
-            return;
-        }
-
-        if (payload.rule_alert === 'speed_limit' && payload.report_reference_no) {
-            app.pinTelemetryAlert(10000);
-            app.ui.updateSpeedDisplay(Number.isFinite(speedKmh) ? speedKmh : 0, `Telemetry report submitted: ${payload.report_reference_no}`, true);
-            app.ui.updateSpeedAlert({
-                state: 'danger',
-                label: 'Speed violation reported',
-                message: `A telemetry report has been submitted for this segment. Reference: ${payload.report_reference_no}.`,
-                location: segmentName,
-                limit: payload.speed_limit ? `${Math.round(Number(payload.speed_limit))} km/h` : 'saved limit',
-            });
-        }
-    }
-
     app.reporting = {
         evaluateAutoReporting,
-        handleVehicleTelemetryFeedback,
     };
 })(window);

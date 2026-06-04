@@ -1,1 +1,0 @@
-{"version":2,"defects":[],"times":{"Tests\\Unit\\ExampleTest::test_that_true_is_true":0.006,"Tests\\Feature\\ExampleTest::test_the_application_returns_a_successful_response":0.068,"Tests\\Feature\\ExampleTest::test_login_page_is_available_to_guests":0.017,"Tests\\Feature\\ExampleTest::test_authenticated_user_is_redirected_from_login_to_officer_dashboard":0.01}}

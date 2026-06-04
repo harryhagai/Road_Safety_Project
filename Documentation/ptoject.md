@@ -131,7 +131,7 @@ LITERATURE REVIEW
 Introduction
 In this section, existing literature related to road safety reporting systems, geospatial mapping technologies, and secure web-based platforms will be discussed. This section will include the existing road safety reporting systems and their limitations, making the proposed idea of the Confidential Web Portal for Road Safety Reporting viable.
 Review of Existing Systems
-Kumar and Mishra (2022) proposed a mobile-based road incident reporting system with GPS technology. The proposed system enabled real-time accident reporting. The technologies used in the proposed system were Android Studio, Firebase, and Google Maps API. The proposed system enabled real-time accident reporting and GPS location tracking. However, the proposed system did not incorporate anonymity features, and the proposed system required registration, making it difficult for people to report incidents due to the risk of being identified.
+Kumar and Mishra (2022) proposed a mobile-based road incident reporting system with GPS technology. The proposed system enabled real-time accident reporting and GPS location tracking through mobile development tools, a cloud backend, and mapping services. However, the proposed system did not incorporate anonymity features, and the proposed system required registration, making it difficult for people to report incidents due to the risk of being identified.
 Eweoya et al. (2025) designed a secure web-based system that enabled real-time reporting. The system ensured data security and reporting using Laravel and Bootstrap technologies. The study showed how secure web technologies could aid reporting, though most studies required users to log in and did not integrate geospatial visualization tools to aid real-time data analysis.
 Another study by Diyaolu et al. (2024) presented a web-based system that enabled reporting, especially for public safety. The system improved data access for administrators, especially by automating manual reporting processes. The system was built using PHP, MySQL, and JavaScript programming languages. However, the study focused more on documenting incidents rather than preventive reporting, and users were required to register before reporting any violations.
 Goodchild (2018) used Geographic Information System (GIS) technology for the mapping and analysis of the location of road accidents. While the use of GIS was instrumental in identifying the location of accidents, the focus was on the analysis of the location after the accident occurred, as opposed to crowdsourced reporting.
@@ -188,7 +188,7 @@ V.	Development of reporting/notification tools to report status updates, identif
 VI.	Testing/evaluation of the project in a region of your choice in Tanzania.
 
 Exclusions:
-I.	Development of mobile application software using native Android or native iOS platforms, as this is a web-based application.
+I.	Development of separate native mobile application software, as this is a web-based application.
 II.	Integration with existing government infrastructure such as traffic lights, CCTV cameras, etc.
 III.	Tracking of emergency response vehicles.
 IV.	Payment/fine processing.

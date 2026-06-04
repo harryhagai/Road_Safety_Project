@@ -1,4 +1,4 @@
-{{-- Blade view for the RSRS privacy page used by the Android passenger app. --}}
+{{-- Blade view for the RSRS privacy page. --}}
 
 @extends('layouts.app')
 
@@ -65,30 +65,30 @@
             <article class="privacy-panel">
                 <h1>RSRS Privacy Notice</h1>
                 <p>
-                    RSRS uses road safety reports and trip telemetry to help officers identify unsafe driving patterns,
-                    risky locations, and urgent violations. Passenger tracking starts only after the passenger chooses
-                    to start a trip in the Android app.
+                    RSRS uses road safety reports to help officers identify unsafe driving patterns, risky locations,
+                    and urgent violations. Reports can be submitted manually, and overspeeding reports can be created
+                    automatically when the public map detects a matching speed rule violation.
                 </p>
 
-                <h2>Location Tracking</h2>
+                <h2>Location Use</h2>
                 <p>
-                    During an active Android trip, RSRS may collect GPS coordinates, speed, accuracy, battery level, and
-                    network status. Tracking stops when the passenger ends the trip or when the maximum trip duration is
-                    reached.
+                    The public map may use your browser location, current speed estimate, GPS accuracy, and heading to
+                    match your position against saved road segments. This location check is used for map display and
+                    automatic speed report evaluation.
                 </p>
 
-                <h2>Passenger Reports</h2>
+                <h2>Report Data</h2>
                 <p>
-                    Violation reports submitted during a trip are sent to the officer dashboard for review. Reports may
-                    include the selected violation type, description, time, and location.
+                    Reports sent to the officer dashboard may include the selected violation type, description, time,
+                    coordinates, resolved location name, evidence files when provided, and automatic rule-match details.
                 </p>
 
                 <h2>User Control</h2>
                 <ul>
-                    <li>Tracking is not started silently.</li>
-                    <li>A visible Android notification is shown while tracking is active.</li>
-                    <li>Passengers can stop tracking from the app at any time.</li>
-                    <li>Android location permissions can be changed from phone settings.</li>
+                    <li>Browser location access depends on your permission.</li>
+                    <li>You can deny or revoke location access from browser settings.</li>
+                    <li>Automatic reports are created only when the saved rule conditions are met.</li>
+                    <li>Manual reports remain available when location access is unavailable.</li>
                 </ul>
             </article>
         </div>

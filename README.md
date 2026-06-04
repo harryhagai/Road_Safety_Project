@@ -82,7 +82,7 @@ The project follows a three-tier architecture:
 
 ### Excluded
 
-- Native Android or iOS mobile app
+- Separate native mobile app
 - Payment or fine processing
 - Integration with social media platforms
 - Integration with traffic lights, CCTV, or emergency vehicle tracking

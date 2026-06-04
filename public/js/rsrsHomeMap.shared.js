@@ -36,19 +36,10 @@
         lastAutoEvaluationAt: 0,
         autoEvaluationInFlight: false,
         autoReportInFlight: false,
-        lastAutoTelemetry: null,
+        lastAutoReportSample: null,
         pendingInitialPosition: null,
         reloadScheduled: false,
-        telemetryAlertPinnedUntil: 0,
         reportedRuleIds: new Set(),
         ui: {},
-    };
-
-    app.isTelemetryAlertPinned = function () {
-        return Date.now() < app.state.telemetryAlertPinnedUntil;
-    };
-
-    app.pinTelemetryAlert = function (durationMs) {
-        app.state.telemetryAlertPinnedUntil = Date.now() + Math.max(0, Number(durationMs) || 0);
     };
 })(window);

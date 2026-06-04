@@ -35,7 +35,7 @@ class AutoSpeedReportController extends Controller
 
     public function evaluate(Request $request): JsonResponse
     {
-        $validated = $this->validateTelemetry($request);
+        $validated = $this->validateSpeedSample($request);
         $accuracy = isset($validated['accuracy']) ? (float) $validated['accuracy'] : null;
         if (! $this->isAccuracyReliable($accuracy)) {
             $this->clearExceededSession();
@@ -113,7 +113,7 @@ class AutoSpeedReportController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $validated = $this->validateTelemetry($request) + $request->validate([
+        $validated = $this->validateSpeedSample($request) + $request->validate([
             'rule_id' => ['required', 'integer', 'exists:segment_type_rules,id'],
             'segment_id' => ['required', 'integer', Rule::exists('road_segments', 'id')->whereNull('deleted_at')],
         ]);
@@ -231,10 +231,10 @@ class AutoSpeedReportController extends Controller
     }
 
     /**
-     * Handle the validateTelemetry workflow for this class.
+     * Validate the speed/location sample used by automatic reporting.
      */
 
-    private function validateTelemetry(Request $request): array
+    private function validateSpeedSample(Request $request): array
     {
         return $request->validate([
             'latitude' => ['required', 'numeric', 'between:-90,90'],

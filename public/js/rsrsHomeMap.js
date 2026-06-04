@@ -67,10 +67,4 @@
     } else {
         initWhenMapReady();
     }
-
-    document.addEventListener('rsrs:vehicle-telemetry', app.reporting.handleVehicleTelemetryFeedback);
-
-    if (window.rsrsLastVehicleTelemetry) {
-        app.reporting.handleVehicleTelemetryFeedback({ detail: window.rsrsLastVehicleTelemetry });
-    }
 })(window);
