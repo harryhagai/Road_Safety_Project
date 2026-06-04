@@ -1,0 +1,117 @@
+.officer-hotspots-map-shell {
+    height: calc(100vh - 220px);
+    min-height: 560px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(26, 35, 55, 0.12);
+    box-shadow: 0 12px 28px rgba(22, 29, 44, 0.14);
+    background: #e9eef5;
+}
+
+.officer-hotspots-map {
+    width: 100%;
+    height: 100%;
+}
+
+.officer-hotspots-stats {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    white-space: nowrap;
+}
+
+.officer-hotspots-stats__item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.1rem;
+    min-width: 110px;
+    padding: 0.45rem 0.6rem;
+    border-radius: 10px;
+    border: 1px solid rgba(25, 40, 62, 0.12);
+    background: #fff;
+    font-size: 0.8rem;
+    color: #324761;
+}
+
+.officer-hotspots-stats__item strong {
+    font-size: 0.84rem;
+    color: #1f3247;
+}
+
+.officer-hotspots-rotate-control {
+    display: flex;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.officer-hotspots-rotate-control__btn {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-right: 1px solid rgba(31, 49, 79, 0.14);
+    background: #ffffff;
+    color: #1f314f;
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.officer-hotspots-rotate-control__btn:last-child {
+    border-right: 0;
+}
+
+.officer-hotspots-rotate-control__btn:hover,
+.officer-hotspots-rotate-control__btn:focus {
+    background: #f3f6fb;
+    color: #0d6efd;
+}
+
+.officer-hotspots-rotate-control__btn--bearing {
+    min-width: 50px;
+    width: auto;
+    padding: 0 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.roadofficer-hotspot-popup h6 {
+    margin: 0 0 0.4rem;
+    color: #15345b;
+    font-weight: 600;
+}
+
+.roadofficer-hotspot-popup p {
+    margin: 0.2rem 0;
+    color: #5f7390;
+    font-size: 0.86rem;
+}
+
+.roadofficer-hotspot-popup ul {
+    margin: 0.35rem 0 0;
+    padding-left: 1rem;
+    color: #324761;
+    font-size: 0.82rem;
+}
+
+.roadofficer-hotspot-popup li + li {
+    margin-top: 0.15rem;
+}
+
+@media (max-width: 768px) {
+    .officer-hotspots-map-shell {
+        height: calc(100vh - 190px);
+        min-height: 460px;
+    }
+
+    .officer-hotspots-stats {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
