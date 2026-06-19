@@ -54,6 +54,7 @@
             accuracy: Number.isFinite(accuracy) ? accuracy : null,
             heading: Number.isFinite(heading) && heading >= 0 ? heading : null,
             confirmed_motion: confirmedMotion,
+            observed_movement: observedMovement,
         };
     }
 
@@ -92,7 +93,7 @@
             !config ||
             !ruleId ||
             !segmentId ||
-            (!sample.confirmed_motion && evaluation?.requires_stationary !== true) ||
+            (!sample.confirmed_motion && !sample.observed_movement && evaluation?.requires_stationary !== true) ||
             state.autoReportInFlight ||
             state.reportedRuleIds.has(ruleId)
         ) {
@@ -137,14 +138,22 @@
             }
         } catch (error) {
             const response = error.response || {};
+            const popupOptions = alertOptionsForEvaluation(evaluation);
+            let statusText = response.message || 'Automatic reporting unavailable right now';
 
             if (response.reason === 'duration_pending' && Number.isFinite(Number(response.exceeded_seconds))) {
-                app.ui.updateSpeedDisplay(sample.speed_kmh, `Rule pending for ${Math.round(Number(response.exceeded_seconds))}s`, true);
+                statusText = `Rule pending for ${Math.round(Number(response.exceeded_seconds))}s`;
             } else if (response.reason === 'speed_within_limit') {
-                app.ui.updateSpeedDisplay(sample.speed_kmh, 'Speed is back within the saved limit', sample.speed_kmh >= 1);
-            } else if (error.status !== 422) {
-                app.ui.updateSpeedDisplay(sample.speed_kmh, 'Automatic reporting unavailable right now', sample.speed_kmh >= 1);
+                statusText = 'Speed is back within the saved limit';
+            } else if (error.status === 422) {
+                statusText = 'Automatic report data could not be validated';
             }
+
+            app.ui.updateSpeedDisplay(sample.speed_kmh, statusText, sample.speed_kmh >= 1);
+            app.ui.updateSpeedAlert({
+                state: 'info',
+                ...popupOptions,
+            });
         } finally {
             state.autoReportInFlight = false;
         }
