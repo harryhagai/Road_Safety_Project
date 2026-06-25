@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\ContactMessage;
 use App\Models\EvidenceFile;
 use App\Models\Hotspot;
+use App\Models\MailSetting;
 use App\Models\Officer;
 use App\Models\Report;
 use App\Models\SegmentTypeRule;
@@ -14,6 +15,7 @@ use App\Models\User;
 use App\Models\ViolationType;
 use App\Observers\SensitiveActivityObserver;
 use App\Services\AuditTrailService;
+use App\Services\MailSettingService;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -50,8 +52,11 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
         Paginator::useBootstrapFive();
 
+        app(MailSettingService::class)->applyActiveSetting();
+
         User::observe(SensitiveActivityObserver::class);
         Officer::observe(SensitiveActivityObserver::class);
+        MailSetting::observe(SensitiveActivityObserver::class);
         ContactMessage::observe(SensitiveActivityObserver::class);
         Report::observe(SensitiveActivityObserver::class);
         SegmentTypeRule::observe(SensitiveActivityObserver::class);

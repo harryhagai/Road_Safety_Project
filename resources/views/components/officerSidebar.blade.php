@@ -12,8 +12,8 @@
         request()->is('road-officer/notifications*');
     $isAdministrationMenuOpen =
         request()->is('road-officer/officers*') ||
-        request()->is('road-officer/settings*') ||
-        request()->is('road-officer/profile*');
+        request()->is('road-officer/profile*') ||
+        request()->is('admin/mail-settings*');
 @endphp
 
 <aside id="sidebar">
@@ -150,12 +150,14 @@
                                 <i class="bi bi-person-vcard"></i> Officers
                             </a>
                         </li>
-                        <li class="nav-item mb-1">
-                            <a href="{{ url('/road-officer/settings') }}"
-                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/settings*') ? 'active is-current fw-bold shadow-sm' : '' }}">
-                                <i class="bi bi-gear"></i> Settings
-                            </a>
-                        </li>
+                        @if (in_array((string) (auth()->user()->role ?? ''), ['admin', 'hgadmin'], true))
+                            <li class="nav-item mb-1">
+                                <a href="{{ route('admin.mail_settings.content') }}"
+                                    class="nav-link officer-sidebar-sub-link {{ request()->is('admin/mail-settings*') ? 'active is-current fw-bold shadow-sm' : '' }}">
+                                    <i class="bi bi-envelope-fill"></i> Mail Settings
+                                </a>
+                            </li>
+                        @endif
                         <li class="nav-item mb-1">
                             <a href="{{ url('/road-officer/profile') }}"
                                 class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/profile*') ? 'active is-current fw-bold shadow-sm' : '' }}">

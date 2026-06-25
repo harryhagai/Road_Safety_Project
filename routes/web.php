@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\AutoSpeedReportController;
+use App\Http\Controllers\Admin\MailSettingController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\officer\ContactMessageController as OfficerContactMessageController;
 use App\Http\Controllers\officer\OfficerDashboardController;
@@ -79,4 +80,17 @@ Route::middleware('auth')->group(function () {
     Route::delete('/road-officer/violation-types/{violationType}', [ViolationTypeController::class, 'destroy'])->name('officer.violation-types.destroy');
     Route::get('/road-officer/profile', [OfficerProfileController::class, 'show'])->name('officer.profile.show');
     Route::put('/road-officer/profile', [OfficerProfileController::class, 'update'])->name('officer.profile.update');
+});
+
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+    Route::get('/mail-settings/content', [MailSettingController::class, 'content'])
+        ->name('admin.mail_settings.content');
+    Route::post('/mail-settings/store', [MailSettingController::class, 'store'])
+        ->name('admin.mail_settings.store');
+    Route::put('/mail-settings/{mailSetting}', [MailSettingController::class, 'update'])
+        ->name('admin.mail_settings.update');
+    Route::delete('/mail-settings/{mailSetting}', [MailSettingController::class, 'destroy'])
+        ->name('admin.mail_settings.destroy');
+    Route::patch('/mail-settings/{mailSetting}/activate', [MailSettingController::class, 'activate'])
+        ->name('admin.mail_settings.activate');
 });

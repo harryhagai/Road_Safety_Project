@@ -53,3 +53,7 @@
 - [ ] Add tests for geospatial workflows and validations
 - [ ] Add seed data for road segments, rules, and sample reports
 - [ ] Review performance for map queries and uploads
+
+
+
+copy logic kama ilivyo usiongeze wala kupunzuza kitu chukua logic ya forgot password and crud operation yake, kwa admin from "C:\Users\hngob\sss_sims"  to this rsrs project 
