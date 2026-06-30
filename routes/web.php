@@ -1,8 +1,9 @@
 <?php
 
-use App\Http\Controllers\ContactMessageController;
-use App\Http\Controllers\AutoSpeedReportController;
 use App\Http\Controllers\Admin\MailSettingController;
+use App\Http\Controllers\AutoSpeedReportController;
+use App\Http\Controllers\ContactMessageController;
+use App\Http\Controllers\DriverDashboardController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\officer\ContactMessageController as OfficerContactMessageController;
 use App\Http\Controllers\officer\OfficerDashboardController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\officer\OfficerReportController;
 use App\Http\Controllers\officer\RoadSegmentController;
 use App\Http\Controllers\officer\SegmentTypeController;
 use App\Http\Controllers\officer\ViolationTypeController;
+use App\Http\Controllers\PassengerReportController;
 use App\Http\Controllers\PublicHotspotController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,8 +34,8 @@ Route::view('/developer', 'developer')->name('developer');
 Route::get('/hotspots', [PublicHotspotController::class, 'index'])->name('hotspots.index');
 Route::redirect('/news-events', '/hotspots')->name('news-events');
 // Officer dashboard shortcuts and data endpoints.
-Route::get('/road-officer/dashboard', [OfficerDashboardController::class, 'index'])->middleware('auth')->name('officer.dashboard');
-Route::get('/roadofficer/dashboard', [OfficerDashboardController::class, 'index'])->middleware('auth')->name('roadofficer.dashboard');
+Route::get('/road-officer/dashboard', [OfficerDashboardController::class, 'index'])->middleware(['auth', 'role:road_officer,admin'])->name('officer.dashboard');
+Route::get('/roadofficer/dashboard', [OfficerDashboardController::class, 'index'])->middleware(['auth', 'role:road_officer,admin'])->name('roadofficer.dashboard');
 Route::get('/maps/reverse-geocode', [MapController::class, 'reverseGeocode'])
     ->middleware('throttle:30,1')
     ->name('maps.reverse-geocode');
@@ -44,11 +46,23 @@ Route::post('/auto-speed-reports/evaluate', [AutoSpeedReportController::class, '
     ->middleware('throttle:180,1')
     ->name('auto-speed-reports.evaluate');
 Route::post('/auto-speed-reports', [AutoSpeedReportController::class, 'store'])
-    ->middleware('throttle:12,1')
+    ->middleware(['auth', 'role:driver', 'throttle:12,1'])
     ->name('auto-speed-reports.store');
 
+Route::get('/driver/dashboard', [DriverDashboardController::class, 'index'])
+    ->middleware(['auth', 'role:driver'])
+    ->name('driver.dashboard');
+
+Route::get('/passenger/report', [PassengerReportController::class, 'create'])
+    ->name('passenger.reports.create');
+Route::post('/passenger/report', [PassengerReportController::class, 'store'])
+    ->middleware('throttle:8,1')
+    ->name('passenger.reports.store');
+Route::get('/passenger/report/success', [PassengerReportController::class, 'success'])
+    ->name('passenger.reports.success');
+
 // Protected officer tools that require authentication.
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'role:road_officer,admin'])->group(function () {
     Route::get('/road-officer/notifications', [OfficerNotificationController::class, 'index'])->name('officer.notifications.index');
     Route::get('/road-officer/hotspots', [OfficerHotspotController::class, 'index'])->name('officer.hotspots.index');
     Route::get('/road-officer/notifications/dropdown-data', [OfficerNotificationController::class, 'dropdownData'])->name('officer.notifications.dropdown-data');
@@ -60,6 +74,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/road-officer/contact-messages/{contactMessage}', [OfficerContactMessageController::class, 'destroy'])->name('officer.contact-messages.destroy');
     Route::get('/road-officer/reports', [OfficerReportController::class, 'index'])->name('officer.reports.index');
     Route::get('/road-officer/reports/{report}', [OfficerReportController::class, 'show'])->name('officer.reports.show');
+    Route::get('/road-officer/evidence/{evidenceFile}', [OfficerReportController::class, 'evidence'])->name('officer.reports.evidence');
     Route::put('/road-officer/reports/{report}', [OfficerReportController::class, 'update'])->name('officer.reports.update');
     Route::redirect('/road-officer/segment-rules', '/road-officer/segment-types')
         ->name('officer.segment-rules.index');

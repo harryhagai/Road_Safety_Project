@@ -66,13 +66,13 @@
                 <h1>RSRS Privacy Notice</h1>
                 <p>
                     RSRS uses road safety reports to help officers identify unsafe driving patterns, risky locations,
-                    and urgent violations. Reports can be submitted manually, and overspeeding reports can be created
-                    automatically when the public map detects a matching speed rule violation.
+                    and urgent violations. Automatic reports are submitted from authenticated driver accounts when
+                    the map detects a matching road rule violation.
                 </p>
 
                 <h2>Location Use</h2>
                 <p>
-                    The public map may use your browser location, current speed estimate, GPS accuracy, and heading to
+                    After driver login, the map may use your browser location, current speed estimate, GPS accuracy, and heading to
                     match your position against saved road segments. This location check is used for map display and
                     automatic speed report evaluation.
                 </p>
@@ -80,7 +80,9 @@
                 <h2>Report Data</h2>
                 <p>
                     Reports sent to the officer dashboard may include the selected violation type, description, time,
-                    coordinates, resolved location name, evidence files when provided, and automatic rule-match details.
+                    coordinates, resolved location name, automatic rule-match details, driver ID, driver name, email,
+                    vehicle name, plate number, and organization. Passenger reports may include bus operator, bus plate
+                    number, route, optional passenger contact details, and a camera image stored directly in the database.
                 </p>
 
                 <h2>User Control</h2>
@@ -88,7 +90,8 @@
                     <li>Browser location access depends on your permission.</li>
                     <li>You can deny or revoke location access from browser settings.</li>
                     <li>Automatic reports are created only when the saved rule conditions are met.</li>
-                    <li>Manual reports remain available when location access is unavailable.</li>
+                    <li>Automatic driver submission requires driver login; passenger submission requires bus identification and captured evidence.</li>
+                    <li>Passengers do not need an account and may omit their name and phone number.</li>
                 </ul>
             </article>
         </div>

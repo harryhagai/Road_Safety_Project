@@ -15,7 +15,7 @@
 
         $studentFocus = [
             'Designing and developing the RSRS web portal',
-            'Building anonymous road safety reporting workflows',
+            'Building identified driver road safety reporting workflows',
             'Integrating geospatial mapping and dashboard features',
         ];
 
@@ -332,7 +332,7 @@
                     Development of Confidential Web Portal for Road Safety Reporting with Geospatial Mapping
                 </h2>
                 <p>
-                    RSRS is a software project for anonymous road safety reporting, map-based location capture, and
+                    RSRS is a software project for identified driver road safety reporting, map-based location capture, and
                     secure officer review tools for transport authorities and road officers.
                 </p>
             </div>
@@ -418,8 +418,8 @@
                             <span>Project Aim</span>
                         </h3>
                         <p>
-                            To design a secure, confidential web portal that helps citizens report traffic violations in
-                            real time without account registration.
+                            To design a secure web portal that helps registered drivers report traffic violations in
+                            real time with driver and vehicle identification.
                         </p>
                     </div>
                 </div>

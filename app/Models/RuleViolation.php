@@ -49,7 +49,6 @@ class RuleViolation extends Model
     /**
      * Handle the report workflow for this class.
      */
-
     public function report(): BelongsTo
     {
         return $this->belongsTo(Report::class);
@@ -58,7 +57,6 @@ class RuleViolation extends Model
     /**
      * Handle the rule workflow for this class.
      */
-
     public function rule(): BelongsTo
     {
         return $this->belongsTo(SegmentTypeRule::class, 'segment_type_rule_id');
@@ -72,9 +70,8 @@ class RuleViolation extends Model
     /**
      * Handle the verifier workflow for this class.
      */
-
     public function verifier(): BelongsTo
     {
-        return $this->belongsTo(Officer::class, 'verified_by');
+        return $this->belongsTo(User::class, 'verified_by');
     }
 }

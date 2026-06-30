@@ -6,13 +6,13 @@
 @section('title', 'RSRS - Road Safety Reporting System')
 
 @push('critical-head')
-    <link rel="stylesheet" href="{{ asset('css/rsrsHomeLoader.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/rsrsHomeLoader.css') }}?v={{ filemtime(public_path('css/rsrsHomeLoader.css')) }}">
 @endpush
 
 @push('page_loader')
     <div class="home-page-loader" id="homePageLoader" data-home-map-loader role="status" aria-live="polite">
         <div class="home-page-loader__panel">
-            <div class="home-page-loader__brand">rsrs</div>
+            <div class="home-page-loader__brand">RSRS</div>
             <div class="home-page-loader__visual" aria-hidden="true">
                 <span class="home-page-loader__ring home-page-loader__ring--outer"></span>
                 <span class="home-page-loader__ring home-page-loader__ring--middle"></span>
@@ -20,9 +20,9 @@
                 <span class="home-page-loader__core"></span>
             </div>
             <div class="home-page-loader__content">
-                <span class="home-page-loader__eyebrow">road safety reporting system</span>
-                <span class="home-page-loader__message">loading the live map...</span>
-                <span>preparing location, layers, and your first view.</span>
+                <span class="home-page-loader__eyebrow">Road Safety Reporting System</span>
+                <span class="home-page-loader__message">Loading the live map</span>
+                <span>Preparing your location, map layers, and first view.</span>
             </div>
         </div>
     </div>
@@ -31,6 +31,7 @@
 @section('content')
     @php
         $mapConfig = $mapConfigService->forFrontend();
+        $currentDriver = auth()->user()?->isDriver() ? auth()->user() : null;
     @endphp
 
     <div class="container-fluid container-xl geo-workspace px-2 px-md-3 py-2 py-md-3 home-geo-workspace">
@@ -103,8 +104,11 @@
     </script>
     <script>
         window.rsrsAutoSpeedReporting = {
+            authenticated: @json((bool) $currentDriver),
+            driverId: @json($currentDriver?->id),
+            loginUrl: @json(route('driver.login')),
             evaluateUrl: @json(route('auto-speed-reports.evaluate')),
-            storeUrl: @json(route('auto-speed-reports.store')),
+            storeUrl: @json($currentDriver ? route('auto-speed-reports.store') : null),
             csrfToken: @json(csrf_token()),
         };
     </script>

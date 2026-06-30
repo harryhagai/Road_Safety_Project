@@ -1,0 +1,319 @@
+.passenger-report-page,
+.passenger-success {
+    color: #232c3a;
+    font-family: "Open Sans", "Segoe UI", sans-serif;
+}
+
+.passenger-report-shell {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.78fr) minmax(0, 1.22fr);
+    overflow: hidden;
+    border: 1px solid rgba(35, 44, 58, 0.1);
+    border-radius: 26px;
+    background: #ffffff;
+    box-shadow: 0 22px 50px rgba(35, 44, 58, 0.1);
+}
+
+.passenger-report-summary,
+.passenger-report-form-panel {
+    padding: clamp(1.4rem, 3vw, 2.4rem);
+}
+
+.passenger-report-summary {
+    background: linear-gradient(160deg, #f2faff 0%, #ffffff 100%);
+    border-right: 1px solid rgba(35, 44, 58, 0.08);
+}
+
+.passenger-report-eyebrow,
+.passenger-report-heading > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: #0d6f9b;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.passenger-report-summary h1,
+.passenger-report-heading h2,
+.passenger-success h1 {
+    font-family: "Roboto", "Segoe UI", sans-serif;
+    color: #232c3a;
+}
+
+.passenger-report-summary h1 {
+    margin: 0.7rem 0 0.6rem;
+    font-size: clamp(1.7rem, 3vw, 2.25rem);
+    font-weight: 700;
+}
+
+.passenger-report-summary > p,
+.passenger-report-heading p {
+    color: #667389;
+    line-height: 1.65;
+}
+
+.passenger-report-detected {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.passenger-report-detected div {
+    padding: 0.9rem 1rem;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(35, 44, 58, 0.08);
+}
+
+.passenger-report-detected span,
+.passenger-report-detected strong {
+    display: block;
+}
+
+.passenger-report-detected span {
+    color: #7a879a;
+    font-size: 0.76rem;
+    font-weight: 600;
+}
+
+.passenger-report-detected strong {
+    margin-top: 0.25rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.passenger-report-heading h2 {
+    margin: 0.45rem 0 0.35rem;
+    font-size: 1.65rem;
+    font-weight: 700;
+}
+
+.passenger-report-heading p {
+    margin-bottom: 1.25rem;
+    font-size: 0.9rem;
+}
+
+.passenger-report-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.passenger-report-form {
+    display: grid;
+    gap: 1.15rem;
+}
+
+.passenger-field {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.passenger-field label {
+    color: #344054;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.passenger-field label span {
+    color: #b42318;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+
+.passenger-field label small {
+    color: #7a879a;
+    font-size: 0.72rem;
+    font-weight: 500;
+}
+
+.passenger-field input,
+.passenger-field textarea {
+    width: 100%;
+    border: 1.5px solid #aeb9c8;
+    border-radius: 13px;
+    background: #ffffff;
+    color: #232c3a;
+    padding: 0.8rem 0.9rem;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.passenger-field input:focus,
+.passenger-field textarea:focus {
+    border-color: #0d6f9b;
+    box-shadow: 0 0 0 3px rgba(13, 111, 155, 0.1);
+}
+
+.passenger-camera {
+    display: grid;
+    gap: 0.85rem;
+    padding: 1rem;
+    border-radius: 18px;
+    border: 1px solid rgba(35, 44, 58, 0.12);
+    background: #f8fbfd;
+}
+
+.passenger-camera__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.passenger-camera__heading span {
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.passenger-camera__heading span strong {
+    color: #b42318;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+
+.passenger-camera__heading p {
+    margin: 0.2rem 0 0;
+    color: #6f7c90;
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.passenger-camera__stage {
+    min-height: 280px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border-radius: 15px;
+    background: #1e293b;
+}
+
+.passenger-camera__stage video,
+.passenger-camera__stage img {
+    width: 100%;
+    max-height: 420px;
+    object-fit: contain;
+}
+
+.passenger-camera__empty {
+    display: grid;
+    place-items: center;
+    gap: 0.5rem;
+    color: #d6deea;
+}
+
+.passenger-camera__empty i {
+    font-size: 2rem;
+}
+
+.passenger-camera__actions,
+.passenger-report-submit {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.passenger-camera__message {
+    min-height: 1.3rem;
+    color: #667389;
+    font-size: 0.8rem;
+}
+
+.passenger-camera__message.is-error {
+    color: #b42318;
+}
+
+.passenger-report-submit {
+    justify-content: flex-end;
+}
+
+.passenger-report-submit .btn,
+.passenger-camera .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    font-size: 0.86rem;
+    font-weight: 600;
+}
+
+.passenger-success {
+    min-height: calc(100vh - 180px);
+    display: grid;
+    place-items: center;
+}
+
+.passenger-success section {
+    width: min(620px, 100%);
+    padding: 2.5rem;
+    border-radius: 24px;
+    background: #ffffff;
+    text-align: center;
+    border: 1px solid rgba(35, 44, 58, 0.1);
+    box-shadow: 0 22px 50px rgba(35, 44, 58, 0.1);
+}
+
+.passenger-success section > i {
+    color: #198754;
+    font-size: 3rem;
+}
+
+.passenger-success section > span {
+    display: block;
+    margin-top: 0.8rem;
+    color: #0d6f9b;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.passenger-success h1 {
+    margin: 0.5rem 0 1rem;
+    font-size: 1.8rem;
+}
+
+.passenger-success strong {
+    display: block;
+    margin: 0.5rem 0 1.4rem;
+    font-size: 1.4rem;
+    letter-spacing: 0.04em;
+}
+
+@media (max-width: 991.98px) {
+    .passenger-report-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .passenger-report-summary {
+        border-right: 0;
+        border-bottom: 1px solid rgba(35, 44, 58, 0.08);
+    }
+}
+
+@media (max-width: 575.98px) {
+    .passenger-report-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .passenger-camera__heading,
+    .passenger-report-submit {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .passenger-camera__heading .btn,
+    .passenger-report-submit .btn {
+        width: 100%;
+    }
+
+    .passenger-camera__stage {
+        min-height: 220px;
+    }
+}

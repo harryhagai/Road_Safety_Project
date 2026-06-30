@@ -110,7 +110,7 @@
                     </div>
                     <div>
                         <span>Officer</span>
-                        <strong>{{ $contactMessage->officer?->full_name ?? 'Unassigned' }}</strong>
+                        <strong>{{ $contactMessage->officer?->name ?? 'Unassigned' }}</strong>
                     </div>
                 </div>
 

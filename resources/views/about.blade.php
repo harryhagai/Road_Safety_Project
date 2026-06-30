@@ -7,20 +7,22 @@
 @section('content')
     @php
         $objectives = [
-            ['icon' => 'bi-phone', 'title' => 'Mobile-first reporting', 'text' => 'A Bootstrap web interface that lets citizens submit road safety reports from phones or desktop devices without creating an account.'],
+            ['icon' => 'bi-phone', 'title' => 'Mobile-first reporting', 'text' => 'A Bootstrap web interface that supports registered driver tracking and evidence-backed passenger reports from phones or desktop devices.'],
             ['icon' => 'bi-geo-alt', 'title' => 'Geospatial accuracy', 'text' => 'Map-based location capture helps reports include coordinates, nearby places, and safer context for response teams.'],
             ['icon' => 'bi-shield-lock', 'title' => 'Secure officer portal', 'text' => 'Authorized road officers can log in, review reports, manage rules, and make decisions from a protected dashboard.'],
             ['icon' => 'bi-graph-up-arrow', 'title' => 'Preventive analysis', 'text' => 'Reported patterns can reveal risky roads, recurring violations, and hotspot areas before more serious crashes happen.'],
         ];
 
         $stakeholders = [
-            ['icon' => 'bi-incognito', 'title' => 'Citizens and commuters', 'text' => 'Report unsafe driving, risky locations, and traffic violations confidentially, with no public identity attached.'],
+            ['icon' => 'bi-car-front', 'title' => 'Registered drivers', 'text' => 'Track movement and submit reports linked to a driver, vehicle, plate number, and organization.'],
+            ['icon' => 'bi-person-walking', 'title' => 'Passengers', 'text' => 'Submit bus details and capture direct camera evidence without creating an account.'],
             ['icon' => 'bi-person-badge', 'title' => 'Road officers', 'text' => 'Receive structured reports, review evidence, update status, and coordinate enforcement actions.'],
             ['icon' => 'bi-building-check', 'title' => 'Transport authorities', 'text' => 'Use location data, analytics, and summaries to support planning and road safety decisions.'],
         ];
 
         $features = [
-            'Anonymous traffic violation reporting',
+            'Identified driver traffic violation reporting',
+            'Passenger bus reporting with direct camera evidence',
             'Map location selection and GPS coordinates',
             'Evidence upload support for photos or videos',
             'Reference number tracking for submitted reports',
@@ -31,7 +33,7 @@
         $architecture = [
             ['label' => 'Presentation Tier', 'text' => 'Public reporting pages, map views, tracking tools, and officer dashboard screens.'],
             ['label' => 'Application Tier', 'text' => 'Laravel handles validation, authentication, report processing, notifications, and system rules.'],
-            ['label' => 'Data Tier', 'text' => 'MySQL stores reports, officers, evidence files, violation types, road rules, segments, and hotspot records.'],
+            ['label' => 'Data Tier', 'text' => 'MySQL stores user accounts, roles, reports, evidence files, violation types, road rules, segments, and hotspot records.'],
         ];
 
         $technologies = ['HTML5', 'CSS3', 'Bootstrap 5', 'Bootstrap Icons', 'JavaScript', 'Laravel', 'PHP', 'MySQL', 'Google Maps API'];
@@ -425,11 +427,11 @@
                             <i class="bi bi-cone-striped" aria-hidden="true"></i>
                             Confidential Road Safety Reporting
                         </span>
-                        <h1 class="about-hero-title">A web portal for safer roads through anonymous reporting.</h1>
+                        <h1 class="about-hero-title">A web portal for safer roads through identified and evidence-backed reporting.</h1>
                         <p class="about-hero-lead">
-                            RSRS is designed to help citizens and commuters report traffic violations, unsafe driving,
-                            and risky road conditions in real time without account registration. The system combines
-                            confidential reporting, map-based location capture, and officer decision tools for better
+                            RSRS is designed to help registered drivers and passengers report traffic violations, unsafe driving,
+                            and risky road conditions in real time. The system combines identified driver reporting, passenger evidence,
+                            map-based location capture, and officer decision tools for better
                             road safety management in Tanzania.
                         </p>
                         <div class="about-actions">
@@ -454,7 +456,7 @@
                                 with structured evidence, coordinates, status tracking, and hotspot analytics.
                             </p>
                             <div class="about-pill-row">
-                                <span class="about-pill"><i class="bi bi-incognito" aria-hidden="true"></i> Anonymous</span>
+                                <span class="about-pill"><i class="bi bi-person-check" aria-hidden="true"></i> Identified</span>
                                 <span class="about-pill"><i class="bi bi-crosshair" aria-hidden="true"></i> Geospatial</span>
                                 <span class="about-pill"><i class="bi bi-lock" aria-hidden="true"></i> Secure</span>
                             </div>
@@ -489,11 +491,11 @@
                                 </h2>
                                 <p class="about-section-copy">
                                     The main objective is to design a secure, confidential, web-based portal that allows
-                                    citizens and commuters to report traffic violations in real time using geospatial
+                                    registered drivers to report traffic violations in real time using geospatial
                                     technology, while giving authorized officers the tools to review and act on reports.
                                 </p>
                                 <ul class="about-list">
-                                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> No public reporter account is required.</li>
+                                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Every driver report includes the registered driver ID.</li>
                                     <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Location details are captured with map support.</li>
                                     <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Officers can verify, resolve, reject, and analyze reports.</li>
                                 </ul>

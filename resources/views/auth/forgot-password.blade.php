@@ -71,7 +71,7 @@
                             <div class="auth-login-back-wrap">
                                 <a href="{{ route('login') }}" class="auth-login-back-link">
                                     <i class="bi bi-arrow-left"></i>
-                                    <span>Back to Officer Login</span>
+                                    <span>Back to Login</span>
                                 </a>
                             </div>
                         </form>

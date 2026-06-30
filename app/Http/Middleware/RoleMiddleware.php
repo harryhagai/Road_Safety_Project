@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -21,7 +22,7 @@ class RoleMiddleware
             return redirect()->route('login');
         }
 
-        if (in_array((string) ($user->role ?? ''), ['admin', 'hgadmin'], true)) {
+        if ($user->role === User::ROLE_ADMIN) {
             return $next($request);
         }
 

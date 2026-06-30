@@ -13,7 +13,8 @@ class OfficerHotspotController extends Controller
     {
         $reports = Report::query()
             ->with([
-                'officer:id,full_name',
+                'officer:id,name',
+                'driver:id,name,vehicle_name,plate_number,organization',
                 'ruleViolations.segment:id,segment_name',
                 'violationType:id,name',
             ])
@@ -62,7 +63,20 @@ class OfficerHotspotController extends Controller
                         'reportedAt' => optional($report->reported_at ?? $report->created_at)->format('d M Y, H:i') ?: 'N/A',
                         'createdAt' => optional($report->created_at)->format('d M Y, H:i') ?: 'N/A',
                         'reviewedAt' => optional($report->reviewed_at)->format('d M Y, H:i') ?: 'Not reviewed',
-                        'officer' => $report->officer?->full_name ?: 'Unassigned',
+                        'officer' => $report->officer?->name ?: 'Unassigned',
+                        'driver' => $report->reporter_type === 'passenger'
+                            ? ($report->passenger_name ?: 'Anonymous passenger')
+                            : ($report->driver?->name ?: 'Legacy / unidentified'),
+                        'driverId' => $report->driver_id,
+                        'vehicle' => $report->reporter_type === 'passenger'
+                            ? ($report->bus_operator ?: 'Bus')
+                            : ($report->driver?->vehicle_name ?: 'N/A'),
+                        'plateNumber' => $report->reporter_type === 'passenger'
+                            ? ($report->bus_plate_number ?: 'N/A')
+                            : ($report->driver?->plate_number ?: 'N/A'),
+                        'organization' => $report->reporter_type === 'passenger'
+                            ? ($report->bus_operator ?: 'N/A')
+                            : ($report->driver?->organization ?: 'N/A'),
                         'officerNotes' => $report->officer_notes ?: 'No officer notes yet.',
                         'rules' => $report->ruleViolations
                             ->map(fn ($ruleViolation): array => [

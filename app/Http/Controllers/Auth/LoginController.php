@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -17,8 +19,12 @@ class LoginController extends Controller
     /**
      * Handle the showLoginForm workflow for this class.
      */
-    public function showLoginForm(): View
+    public function showLoginForm(): View|RedirectResponse
     {
+        if (Auth::check()) {
+            return redirect()->route(Auth::user()->dashboardRouteName());
+        }
+
         return view('auth.login');
     }
 
@@ -27,13 +33,16 @@ class LoginController extends Controller
      */
     public function login(Request $request): RedirectResponse
     {
+        $request->merge([
+            'email' => Str::lower(trim((string) $request->input('email'))),
+        ]);
+
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
         ]);
 
         $remember = $request->boolean('remember');
-
         if (! Auth::attempt($credentials, $remember)) {
             throw ValidationException::withMessages([
                 'email' => 'These credentials do not match our records.',
@@ -42,19 +51,21 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        $officer = $request->user();
-        $officer?->forceFill([
+        /** @var User $account */
+        $account = Auth::user();
+        $account->forceFill([
             'last_login_at' => now(),
         ])->save();
 
-        return redirect()->intended(route('officer.dashboard'))
-            ->with('success', 'Welcome back, '.$request->user()->full_name.'.');
+        return redirect()->intended(route($account->dashboardRouteName()))
+            ->with('success', $account->isDriver()
+                ? 'Welcome back, '.$account->name.'. Tracking and reporting are ready.'
+                : 'Welcome back, '.$account->name.'.');
     }
 
     /**
      * Handle the logout workflow for this class.
      */
-
     public function logout(Request $request): RedirectResponse
     {
         Auth::logout();

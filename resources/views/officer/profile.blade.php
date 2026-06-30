@@ -19,7 +19,7 @@
                         </div>
                     </div>
                     <div>
-                        <h2 class="profile-name">{{ $officer->full_name }}</h2>
+                        <h2 class="profile-name">{{ $officer->name }}</h2>
                         <p class="profile-email">{{ $officer->email }}</p>
                     </div>
                 </div>
@@ -43,7 +43,7 @@
                     <div class="col-md-6">
                         <article class="profile-info-card">
                             <span class="profile-info-label">Full Name</span>
-                            <span class="profile-info-value">{{ $officer->full_name }}</span>
+                            <span class="profile-info-value">{{ $officer->name }}</span>
                         </article>
                     </div>
                     <div class="col-md-6">
@@ -89,16 +89,16 @@
                     <div class="modal-body pt-3">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="full_name" class="form-label">Full Name</label>
+                                <label for="name" class="form-label">Full Name</label>
                                 <input
                                     type="text"
-                                    id="full_name"
-                                    name="full_name"
-                                    class="form-control @error('full_name') is-invalid @enderror"
-                                    value="{{ old('full_name', $officer->full_name) }}"
+                                    id="name"
+                                    name="name"
+                                    class="form-control @error('name') is-invalid @enderror"
+                                    value="{{ old('name', $officer->name) }}"
                                     required
                                 >
-                                @error('full_name')
+                                @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>

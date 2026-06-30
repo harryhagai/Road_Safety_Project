@@ -7,7 +7,7 @@
         : null;
     $headerNotifications = $notificationSource ? $notificationSource->latest()->limit(6)->get() : collect();
     $headerUnreadCount = $notificationSource ? $notificationSource->unread()->count() : 0;
-    $officerDisplayName = $currentOfficer->full_name ?? $currentOfficer->name ?? 'Road Officer';
+    $officerDisplayName = $currentOfficer->name ?? 'Road Officer';
 @endphp
 
 <header id="main-header" class="d-flex align-items-center justify-content-between bg-white border-bottom shadow-sm px-3">

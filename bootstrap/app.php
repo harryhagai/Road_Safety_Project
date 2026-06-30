@@ -1,8 +1,12 @@
 <?php
 
+use App\Http\Middleware\AuditTrailMiddleware;
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,14 +16,19 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
-        $middleware->redirectUsersTo(fn () => route('officer.dashboard'));
+        $middleware->redirectGuestsTo(fn (Request $request) => route('login'));
+        $middleware->redirectUsersTo(
+            fn () => Auth::user()
+                ? route(Auth::user()->dashboardRouteName())
+                : route('login')
+        );
 
         $middleware->alias([
-            'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'role' => RoleMiddleware::class,
         ]);
 
         $middleware->web(append: [
-            \App\Http\Middleware\AuditTrailMiddleware::class,
+            AuditTrailMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

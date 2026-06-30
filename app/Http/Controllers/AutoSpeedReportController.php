@@ -9,6 +9,7 @@ use App\Models\ViolationType;
 use App\Services\SegmentRuleResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -22,18 +23,24 @@ class AutoSpeedReportController extends Controller
     public function __construct(private readonly SegmentRuleResolver $segmentRuleResolver) {}
 
     private const ACTIVE_RULES_CACHE_SECONDS = 20;
+
     private const REQUIRED_EXCEEDED_SECONDS = 30;
+
     private const DUPLICATE_WINDOW_SECONDS = 600;
+
     private const NO_PARKING_STATIONARY_SPEED_KMH = 1.0;
+
     private const BASE_SEGMENT_TOLERANCE_METERS = 15;
+
     private const ACCURACY_MARGIN_METERS = 0.5;
+
     private const MAX_SEGMENT_TOLERANCE_METERS = 50;
+
     private const MAX_ACCEPTABLE_GPS_ACCURACY_METERS = 80;
 
     /**
      * Handle the evaluate workflow for this class.
      */
-
     public function evaluate(Request $request): JsonResponse
     {
         $validated = $this->validateSpeedSample($request);
@@ -58,7 +65,7 @@ class AutoSpeedReportController extends Controller
         );
 
         if ($noParkingMatch && $speedKmh <= self::NO_PARKING_STATIONARY_SPEED_KMH) {
-            return response()->json($this->noParkingEvaluationPayload($noParkingMatch, $speedKmh));
+            return response()->json($this->noParkingEvaluationPayload($noParkingMatch, $speedKmh, $validated));
         }
 
         if ($noParkingMatch) {
@@ -128,7 +135,7 @@ class AutoSpeedReportController extends Controller
         $exceededSeconds = $startedAt ? max(0, now()->timestamp - (int) $startedAt) : 0;
         $reporting = $this->reportingSnapshot((int) $match['segment']->id, (int) $match['rule']->id);
 
-        return response()->json([
+        $payload = [
             'matched' => true,
             'exceeded' => $exceeded,
             'can_submit' => $exceeded && $exceededSeconds >= self::REQUIRED_EXCEEDED_SECONDS,
@@ -149,15 +156,44 @@ class AutoSpeedReportController extends Controller
                 'value' => $match['rule']->rule_value,
             ],
             'reporting' => $reporting,
-        ]);
+        ];
+
+        if ($payload['can_submit']) {
+            $payload = $this->withPassengerContinuation(
+                $payload,
+                $validated,
+                $match,
+                'Overspeeding',
+                'Vehicle operating beyond the allowed speed limit.',
+                sprintf(
+                    'Passenger-observed overspeeding: %.1f km/h recorded against a %.0f km/h speed limit for %d seconds on %s.',
+                    $speedKmh,
+                    $match['speed_limit_kmh'],
+                    $exceededSeconds,
+                    $match['segment']->segment_name
+                ),
+                $this->priorityForSpeed($speedKmh, $match['speed_limit_kmh'])
+            );
+        }
+
+        return response()->json($payload);
     }
 
     /**
      * Validate the request and persist a new record.
      */
-
     public function store(Request $request): JsonResponse
     {
+        $driverId = Auth::user()?->isDriver() ? Auth::id() : null;
+
+        if (! $driverId) {
+            return response()->json([
+                'reported' => false,
+                'reason' => 'driver_authentication_required',
+                'message' => 'Driver login is required before a report can be submitted.',
+            ], 401);
+        }
+
         $validated = $this->validateSpeedSample($request) + $request->validate([
             'rule_id' => ['required', 'integer', 'exists:segment_type_rules,id'],
             'segment_id' => ['required', 'integer', Rule::exists('road_segments', 'id')->whereNull('deleted_at')],
@@ -191,7 +227,7 @@ class AutoSpeedReportController extends Controller
                 (int) $validated['rule_id'] === (int) $noParkingMatch['rule']->id &&
                 (int) $validated['segment_id'] === (int) $noParkingMatch['segment']->id
             ) {
-                return $this->storeNoParkingReport($validated, $noParkingMatch);
+                return $this->storeNoParkingReport($validated, $noParkingMatch, $driverId);
             }
 
             return response()->json([
@@ -231,10 +267,12 @@ class AutoSpeedReportController extends Controller
                 'reported' => true,
                 'duplicate' => true,
                 'reference_no' => $duplicate['reference_no'] ?? null,
+                'driver_id' => $driverId,
+                'submitted_by_user_id' => $driverId,
             ]);
         }
 
-        $report = DB::transaction(function () use ($validated, $match, $speedKmh, $exceededSeconds) {
+        $report = DB::transaction(function () use ($validated, $match, $speedKmh, $exceededSeconds, $driverId) {
             $violationType = ViolationType::firstOrCreate(
                 ['name' => 'Overspeeding'],
                 [
@@ -259,6 +297,9 @@ class AutoSpeedReportController extends Controller
                 'status' => 'submitted',
                 'priority' => $this->priorityForSpeed($speedKmh, $match['speed_limit_kmh']),
                 'reported_at' => now(),
+                'driver_id' => $driverId,
+                'submitted_by_user_id' => $driverId,
+                'reporter_type' => 'driver',
             ]);
 
             RuleViolation::create([
@@ -286,10 +327,11 @@ class AutoSpeedReportController extends Controller
             'reported' => true,
             'duplicate' => false,
             'reference_no' => $report->reference_no,
+            'driver_id' => $report->driver_id,
         ], 201);
     }
 
-    private function storeNoParkingReport(array $validated, array $match): JsonResponse
+    private function storeNoParkingReport(array $validated, array $match, int $driverId): JsonResponse
     {
         $speedKmh = (float) $validated['speed_kmh'];
 
@@ -315,7 +357,7 @@ class AutoSpeedReportController extends Controller
             ], 409);
         }
 
-        $report = DB::transaction(function () use ($validated, $match, $stationarySeconds) {
+        $report = DB::transaction(function () use ($validated, $match, $stationarySeconds, $driverId) {
             $violationType = ViolationType::firstOrCreate(
                 ['name' => 'No Parking'],
                 [
@@ -338,6 +380,9 @@ class AutoSpeedReportController extends Controller
                 'status' => 'submitted',
                 'priority' => 'medium',
                 'reported_at' => now(),
+                'driver_id' => $driverId,
+                'submitted_by_user_id' => $driverId,
+                'reporter_type' => 'driver',
             ]);
 
             RuleViolation::create([
@@ -361,13 +406,13 @@ class AutoSpeedReportController extends Controller
             'reported' => true,
             'duplicate' => false,
             'reference_no' => $report->reference_no,
+            'driver_id' => $report->driver_id,
         ], 201);
     }
 
     /**
      * Validate the speed/location sample used by automatic reporting.
      */
-
     private function validateSpeedSample(Request $request): array
     {
         return $request->validate([
@@ -382,7 +427,6 @@ class AutoSpeedReportController extends Controller
     /**
      * Handle the matchSpeedRule workflow for this class.
      */
-
     private function matchSpeedRule(float $latitude, float $longitude, float $accuracy): ?array
     {
         $cacheKey = 'auto_speed.active_rules.snapshot';
@@ -536,7 +580,7 @@ class AutoSpeedReportController extends Controller
         ];
     }
 
-    private function noParkingEvaluationPayload(array $match, float $speedKmh): array
+    private function noParkingEvaluationPayload(array $match, float $speedKmh, array $validated): array
     {
         $sessionKey = $this->noParkingSessionKey($match['segment']->id, $match['rule']->id);
         $startedAt = session($sessionKey);
@@ -548,7 +592,7 @@ class AutoSpeedReportController extends Controller
 
         $stationarySeconds = max(0, now()->timestamp - (int) $startedAt);
 
-        return [
+        $payload = [
             'matched' => true,
             'has_speed_rule' => false,
             'is_no_parking_rule' => true,
@@ -578,6 +622,64 @@ class AutoSpeedReportController extends Controller
             ],
             'reporting' => $this->reportingSnapshot((int) $match['segment']->id, (int) $match['rule']->id),
         ];
+
+        if ($payload['can_submit']) {
+            $payload = $this->withPassengerContinuation(
+                $payload,
+                $validated,
+                $match,
+                'No Parking',
+                'Vehicle parked or remained stationary in a no parking area.',
+                sprintf(
+                    'Passenger-observed no parking violation: vehicle remained stationary for %d seconds on %s.',
+                    $stationarySeconds,
+                    $match['segment']->segment_name
+                ),
+                'medium'
+            );
+        }
+
+        return $payload;
+    }
+
+    private function withPassengerContinuation(
+        array $payload,
+        array $validated,
+        array $match,
+        string $violationType,
+        string $violationDescription,
+        string $description,
+        string $priority
+    ): array {
+        if (Auth::user()?->isDriver()) {
+            return $payload;
+        }
+
+        $token = Str::random(40);
+
+        session()->put('passenger.pending_violation', [
+            'token' => $token,
+            'expires_at' => now()->addMinutes(10)->timestamp,
+            'violation_type' => $violationType,
+            'violation_description' => $violationDescription,
+            'description' => $description,
+            'latitude' => (float) $validated['latitude'],
+            'longitude' => (float) $validated['longitude'],
+            'location_name' => $match['segment']->segment_name,
+            'priority' => $priority,
+            'segment_id' => (int) $match['segment']->id,
+            'rule_id' => (int) $match['rule']->id,
+            'rule_name' => $match['rule']->rule_name,
+            'rule_type' => $match['rule']->rule_type,
+            'rule_value' => $match['rule']->rule_value,
+            'rule_description' => $match['rule']->description,
+            'confidence_score' => $this->confidenceForDistance($match['distance_meters']),
+        ]);
+
+        $payload['passenger_report_url'] = route('passenger.reports.create');
+        $payload['report_mode'] = 'passenger_details_required';
+
+        return $payload;
     }
 
     private function matchRoadSegmentGeometry(float $latitude, float $longitude, float $accuracy): ?array
@@ -689,7 +791,6 @@ class AutoSpeedReportController extends Controller
     /**
      * Handle the parseSpeedLimit workflow for this class.
      */
-
     private function parseSpeedLimit(?string $value): ?float
     {
         if (! $value || ! preg_match('/\d+(?:\.\d+)?/', $value, $matches)) {
@@ -830,7 +931,6 @@ class AutoSpeedReportController extends Controller
     /**
      * Handle the segmentPoints workflow for this class.
      */
-
     private function segmentPoints(?array $geometry): array
     {
         $coordinates = $this->extractCoordinates($geometry);
@@ -851,7 +951,6 @@ class AutoSpeedReportController extends Controller
     /**
      * Handle the extractCoordinates workflow for this class.
      */
-
     private function extractCoordinates(?array $geometry): array
     {
         if (! is_array($geometry)) {
@@ -882,7 +981,6 @@ class AutoSpeedReportController extends Controller
     /**
      * Handle the normalizeCoordinate workflow for this class.
      */
-
     private function normalizeCoordinate(mixed $coordinate): ?array
     {
         if (! is_array($coordinate)) {
@@ -915,7 +1013,6 @@ class AutoSpeedReportController extends Controller
     /**
      * Handle the validPoint workflow for this class.
      */
-
     private function validPoint(float $latitude, float $longitude): ?array
     {
         if ($latitude < -90 || $latitude > 90 || $longitude < -180 || $longitude > 180) {
@@ -931,7 +1028,6 @@ class AutoSpeedReportController extends Controller
     /**
      * Handle the distanceToPolylineMeters workflow for this class.
      */
-
     private function distanceToPolylineMeters(array $point, array $linePoints): float
     {
         $minimum = INF;
@@ -949,7 +1045,6 @@ class AutoSpeedReportController extends Controller
     /**
      * Handle the distanceToSegmentMeters workflow for this class.
      */
-
     private function distanceToSegmentMeters(array $point, array $start, array $end): float
     {
         $metersPerDegreeLat = 111_320;
@@ -979,7 +1074,6 @@ class AutoSpeedReportController extends Controller
     /**
      * Handle the confidenceForDistance workflow for this class.
      */
-
     private function confidenceForDistance(float $distanceMeters): float
     {
         return round(max(55, min(99, 100 - $distanceMeters)), 2);
@@ -988,7 +1082,6 @@ class AutoSpeedReportController extends Controller
     /**
      * Handle the priorityForSpeed workflow for this class.
      */
-
     private function priorityForSpeed(float $speedKmh, float $limitKmh): string
     {
         $overBy = $speedKmh - $limitKmh;
@@ -1007,7 +1100,6 @@ class AutoSpeedReportController extends Controller
     /**
      * Handle the makeReferenceNumber workflow for this class.
      */
-
     private function makeReferenceNumber(): string
     {
         do {
@@ -1020,30 +1112,32 @@ class AutoSpeedReportController extends Controller
     /**
      * Handle the exceededSessionKey workflow for this class.
      */
-
     private function exceededSessionKey(int $segmentId, int $ruleId): string
     {
-        return "auto_speed.exceeded.{$segmentId}.{$ruleId}";
+        return sprintf('auto_speed.exceeded.%d.%d.%d', $this->authenticatedDriverId(), $segmentId, $ruleId);
     }
 
     private function noParkingSessionKey(int $segmentId, int $ruleId): string
     {
-        return "auto_no_parking.stationary.{$segmentId}.{$ruleId}";
+        return sprintf('auto_no_parking.stationary.%d.%d.%d', $this->authenticatedDriverId(), $segmentId, $ruleId);
     }
 
     /**
      * Handle the reportedSessionKey workflow for this class.
      */
-
     private function reportedSessionKey(int $segmentId, int $ruleId): string
     {
-        return "auto_speed.reported.{$segmentId}.{$ruleId}";
+        return sprintf('auto_speed.reported.%d.%d.%d', $this->authenticatedDriverId(), $segmentId, $ruleId);
+    }
+
+    private function authenticatedDriverId(): int
+    {
+        return Auth::user()?->isDriver() ? (int) Auth::id() : 0;
     }
 
     /**
      * Handle the clearExceededSession workflow for this class.
      */
-
     private function clearExceededSession(): void
     {
         foreach (array_keys(session()->all()) as $key) {

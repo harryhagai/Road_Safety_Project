@@ -30,6 +30,15 @@ class Report extends Model
         'status',
         'priority',
         'reported_at',
+        'driver_id',
+        'submitted_by_user_id',
+        'reporter_type',
+        'bus_operator',
+        'bus_plate_number',
+        'bus_route',
+        'passenger_name',
+        'passenger_phone',
+        'passenger_notes',
         'officer_id',
         'reviewed_at',
         'officer_notes',
@@ -53,7 +62,6 @@ class Report extends Model
     /**
      * Handle the violationType workflow for this class.
      */
-
     public function violationType(): BelongsTo
     {
         return $this->belongsTo(ViolationType::class);
@@ -62,16 +70,24 @@ class Report extends Model
     /**
      * Handle the officer workflow for this class.
      */
-
     public function officer(): BelongsTo
     {
-        return $this->belongsTo(Officer::class);
+        return $this->belongsTo(User::class);
+    }
+
+    public function driver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'driver_id');
+    }
+
+    public function submitter(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'submitted_by_user_id');
     }
 
     /**
      * Handle the evidenceFiles workflow for this class.
      */
-
     public function evidenceFiles(): HasMany
     {
         return $this->hasMany(EvidenceFile::class);
@@ -80,7 +96,6 @@ class Report extends Model
     /**
      * Handle the ruleViolations workflow for this class.
      */
-
     public function ruleViolations(): HasMany
     {
         return $this->hasMany(RuleViolation::class);
@@ -89,7 +104,6 @@ class Report extends Model
     /**
      * Handle the violatedRules workflow for this class.
      */
-
     public function violatedRules(): BelongsToMany
     {
         return $this->belongsToMany(SegmentTypeRule::class, 'rule_violations', 'report_id', 'segment_type_rule_id')

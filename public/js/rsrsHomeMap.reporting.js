@@ -7,7 +7,7 @@
     function getAutoReportingConfig() {
         const config = window.rsrsAutoSpeedReporting || {};
 
-        if (!config.evaluateUrl || !config.storeUrl || !config.csrfToken) {
+        if (!config.evaluateUrl || !config.csrfToken) {
             return null;
         }
 
@@ -91,6 +91,8 @@
 
         if (
             !config ||
+            !config.authenticated ||
+            !config.storeUrl ||
             !ruleId ||
             !segmentId ||
             (!sample.confirmed_motion && !sample.observed_movement && evaluation?.requires_stationary !== true) ||
@@ -145,6 +147,8 @@
                 statusText = `Rule pending for ${Math.round(Number(response.exceeded_seconds))}s`;
             } else if (response.reason === 'speed_within_limit') {
                 statusText = 'Speed is back within the saved limit';
+            } else if (error.status === 401 || response.reason === 'driver_authentication_required') {
+                statusText = 'Driver login is required before reporting';
             } else if (error.status === 422) {
                 statusText = 'Automatic report data could not be validated';
             }
@@ -157,6 +161,29 @@
         } finally {
             state.autoReportInFlight = false;
         }
+    }
+
+    function continuePassengerReport(evaluation, sample, popupOptions) {
+        const config = getAutoReportingConfig();
+        const passengerUrl = evaluation?.passenger_report_url;
+
+        if (config?.authenticated || !passengerUrl || state.autoReportInFlight) {
+            return false;
+        }
+
+        state.autoReportInFlight = true;
+        app.ui.updateSpeedDisplay(sample.speed_kmh, 'Opening passenger bus details form...', sample.speed_kmh >= 1);
+        app.ui.updateSpeedAlert({
+            state: 'danger',
+            ...popupOptions,
+            keepPopup: true,
+        });
+
+        window.setTimeout(() => {
+            window.location.assign(passengerUrl);
+        }, 500);
+
+        return true;
     }
 
     function handleAutoEvaluation(evaluation, sample) {
@@ -216,6 +243,14 @@
                 return;
             }
 
+            if (continuePassengerReport(evaluation, sample, {
+                location: segmentName,
+                ruleLabel: 'RULE',
+                limit: displayRule,
+            })) {
+                return;
+            }
+
             app.ui.updateSpeedDisplay(sample.speed_kmh, 'Submitting automatic no parking report...', false);
             app.ui.updateSpeedAlert({
                 state: 'danger',
@@ -271,6 +306,14 @@
                 countdownSeconds: remainingSeconds,
                 popupTitle: 'Speed warning',
             });
+            return;
+        }
+
+        if (continuePassengerReport(evaluation, sample, {
+            location: segmentName,
+            ruleLabel: 'SPEED RULE',
+            limit: ruleDisplayForEvaluation(evaluation),
+        })) {
             return;
         }
 

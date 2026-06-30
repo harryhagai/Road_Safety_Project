@@ -45,16 +45,14 @@ class RoadSegment extends Model
     /**
      * Handle the creator workflow for this class.
      */
-
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(Officer::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**
      * Handle the segmentType workflow for this class.
      */
-
     public function segmentType(): BelongsTo
     {
         return $this->belongsTo(SegmentType::class, 'segment_type_id');
@@ -63,7 +61,6 @@ class RoadSegment extends Model
     /**
      * Handle the getSegmentTypeNameAttribute workflow for this class.
      */
-
     public function getSegmentTypeNameAttribute(): ?string
     {
         return $this->segmentType?->name;

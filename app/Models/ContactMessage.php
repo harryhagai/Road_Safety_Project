@@ -14,9 +14,13 @@ class ContactMessage extends Model
     use HasFactory;
 
     public const STATUS_NEW = 'new';
+
     public const STATUS_IN_REVIEW = 'in_review';
+
     public const STATUS_RESPONDED = 'responded';
+
     public const STATUS_RESOLVED = 'resolved';
+
     public const STATUS_ARCHIVED = 'archived';
 
     /**
@@ -68,9 +72,8 @@ class ContactMessage extends Model
     /**
      * Handle the officer workflow for this class.
      */
-
     public function officer(): BelongsTo
     {
-        return $this->belongsTo(Officer::class);
+        return $this->belongsTo(User::class);
     }
 }

@@ -1,6 +1,6 @@
 # Confidential Web Portal for Road Safety Reporting with Geospatial Mapping
 
-This project is a secure web-based portal designed to help citizens and commuters report road safety incidents and traffic violations anonymously. It also gives road officers and transport authorities a protected dashboard for managing reports, reviewing evidence, and analyzing road safety hotspots using location data.
+This project is a secure web-based portal designed to help registered drivers report road safety incidents and traffic violations under an identified driver account. It also gives road officers and transport authorities a protected dashboard for managing reports, reviewing evidence, and analyzing road safety hotspots using location data.
 
 ## Project Details
 
@@ -19,7 +19,7 @@ This project is a secure web-based portal designed to help citizens and commuter
 
 The system is intended to solve common road safety reporting challenges in Tanzania by:
 
-- allowing anonymous reporting without account registration
+- linking every driver report to a registered driver, vehicle, plate number, and organization
 - capturing accurate incident locations through geospatial mapping
 - supporting photo and video evidence submission
 - helping officers review, verify, and manage reports efficiently
@@ -27,7 +27,7 @@ The system is intended to solve common road safety reporting challenges in Tanza
 
 ## Main Objectives
 
-- Build a secure and confidential web portal for anonymous road safety reporting
+- Build a secure web portal for identified driver road safety reporting
 - Provide a mobile-friendly reporting interface for citizens and commuters
 - Integrate geospatial tools for location capture, visualization, and analysis
 - Support transport authorities and road officers with an administrative dashboard
@@ -35,8 +35,10 @@ The system is intended to solve common road safety reporting challenges in Tanza
 
 ## Core Users
 
-- Anonymous Reporters: citizens and commuters who submit road safety incidents
+- Registered Drivers: identified drivers who submit road safety incidents
+- Passengers: guests or registered passengers who submit bus-related evidence
 - Road Officers: authorized personnel who log in to manage and analyze reports
+- Administrators: privileged users who manage protected system settings
 
 ## Technologies Used
 
@@ -56,12 +58,12 @@ This project is mainly built with the following technologies:
 The project follows a three-tier architecture:
 
 - Presentation Tier: reporter interface, map interaction, officer dashboard, forms, and status pages
-- Application Tier: Laravel business logic, authentication, validation, notifications, and report processing
-- Data Tier: MySQL database for reports, coordinates, files, officer accounts, logs, and analytics
+- Application Tier: Laravel business logic, single-guard authentication, role authorization, validation, notifications, and report processing
+- Data Tier: MySQL database with one `users` table for passenger, driver, road officer, and admin accounts, plus reports, coordinates, evidence, logs, and analytics
 
 ## Expected Features
 
-- Anonymous incident reporting
+- Identified driver incident reporting
 - Location selection on map
 - Evidence upload support
 - Reference number generation for report tracking
@@ -75,7 +77,7 @@ The project follows a three-tier architecture:
 ### Included
 
 - Web-based reporting platform for desktop and mobile devices
-- Anonymous reporting workflow
+- Driver registration, authentication, and identified reporting workflow
 - Google Maps integration for incident location capture
 - Secure dashboard for road officers
 - Reporting and analytics support

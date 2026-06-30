@@ -9,8 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Throwable;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 /**
  * Service class that centralizes AuditTrailService business logic.
@@ -28,6 +28,8 @@ class AuditTrailService
         'current_password',
         'token',
         '_token',
+        'evidence_image',
+        'file_data',
     ];
 
     /**
@@ -47,7 +49,6 @@ class AuditTrailService
     /**
      * Handle the logRequest workflow for this class.
      */
-
     public function logRequest(Request $request, Response $response): void
     {
         if ($this->shouldSkip($request)) {
@@ -70,7 +71,6 @@ class AuditTrailService
     /**
      * Handle the logAuthEvent workflow for this class.
      */
-
     public function logAuthEvent(
         string $action,
         Model|Authenticatable|null $subject = null,
@@ -93,7 +93,6 @@ class AuditTrailService
     /**
      * Handle the logModelEvent workflow for this class.
      */
-
     public function logModelEvent(
         string $event,
         Model $model,
@@ -120,7 +119,6 @@ class AuditTrailService
     /**
      * Handle the log workflow for this class.
      */
-
     public function log(
         string $action,
         ?Model $subject = null,
@@ -170,7 +168,6 @@ class AuditTrailService
     /**
      * Handle the shouldSkip workflow for this class.
      */
-
     protected function shouldSkip(Request $request): bool
     {
         $routeName = (string) $request->route()?->getName();
@@ -195,7 +192,6 @@ class AuditTrailService
     /**
      * Handle the auditTrailTableExists workflow for this class.
      */
-
     protected function auditTrailTableExists(): bool
     {
         static $exists;
@@ -214,7 +210,6 @@ class AuditTrailService
     /**
      * Handle the resolveRequest workflow for this class.
      */
-
     protected function resolveRequest(): ?Request
     {
         if (! app()->bound('request')) {
@@ -227,7 +222,6 @@ class AuditTrailService
     /**
      * Handle the resolveActor workflow for this class.
      */
-
     protected function resolveActor(?Request $request = null, ?Model $fallback = null): ?Model
     {
         $requestUser = $request?->user();
@@ -248,7 +242,6 @@ class AuditTrailService
     /**
      * Handle the resolveDisplayName workflow for this class.
      */
-
     protected function resolveDisplayName(?Model $model): ?string
     {
         if (! $model) {
@@ -277,16 +270,19 @@ class AuditTrailService
         foreach ($input as $key => $value) {
             if (in_array((string) $key, $this->sensitiveFields, true)) {
                 $input[$key] = '[REDACTED]';
+
                 continue;
             }
 
             if (is_array($value)) {
                 $input[$key] = $this->sanitizeInput($value);
+
                 continue;
             }
 
             if (is_string($value) && mb_strlen($value) > 500) {
                 $input[$key] = mb_substr($value, 0, 500).'...';
+
                 continue;
             }
         }

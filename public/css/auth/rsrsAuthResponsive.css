@@ -197,6 +197,10 @@
         padding: 0.8rem 0 1.2rem;
     }
 
+    .driver-register-page {
+        align-items: flex-start;
+    }
+
     .auth-shell {
         width: calc(100% - 12px);
         border-radius: 22px;
@@ -205,6 +209,10 @@
     .auth-brand-panel,
     .auth-form-panel {
         padding: 1.15rem;
+    }
+
+    .driver-register-left-fields {
+        margin-top: 0;
     }
 
     .auth-role-row {

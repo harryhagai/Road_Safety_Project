@@ -6,11 +6,10 @@ use App\Models\ContactMessage;
 use App\Models\EvidenceFile;
 use App\Models\Hotspot;
 use App\Models\MailSetting;
-use App\Models\Officer;
 use App\Models\Report;
-use App\Models\SegmentTypeRule;
 use App\Models\RoadSegment;
 use App\Models\RuleViolation;
+use App\Models\SegmentTypeRule;
 use App\Models\User;
 use App\Models\ViolationType;
 use App\Observers\SensitiveActivityObserver;
@@ -55,7 +54,6 @@ class AppServiceProvider extends ServiceProvider
         app(MailSettingService::class)->applyActiveSetting();
 
         User::observe(SensitiveActivityObserver::class);
-        Officer::observe(SensitiveActivityObserver::class);
         MailSetting::observe(SensitiveActivityObserver::class);
         ContactMessage::observe(SensitiveActivityObserver::class);
         Report::observe(SensitiveActivityObserver::class);

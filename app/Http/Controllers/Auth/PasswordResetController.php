@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Officer;
+use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,14 +29,13 @@ class PasswordResetController extends Controller
     /**
      * Handle the sendResetLink workflow for this class.
      */
-
     public function sendResetLink(Request $request): RedirectResponse
     {
         $request->validate([
-            'email' => ['required', 'email', 'exists:officers,email'],
+            'email' => ['required', 'email', 'exists:users,email'],
         ]);
 
-        $status = Password::broker('officers')->sendResetLink(
+        $status = Password::broker('users')->sendResetLink(
             $request->only('email')
         );
 
@@ -52,7 +51,6 @@ class PasswordResetController extends Controller
     /**
      * Handle the showResetForm workflow for this class.
      */
-
     public function showResetForm(Request $request, string $token): View
     {
         return view('auth.reset-password', [
@@ -64,24 +62,23 @@ class PasswordResetController extends Controller
     /**
      * Handle the resetPassword workflow for this class.
      */
-
     public function resetPassword(Request $request): RedirectResponse
     {
         $request->validate([
             'token' => ['required'],
-            'email' => ['required', 'email', 'exists:officers,email'],
+            'email' => ['required', 'email', 'exists:users,email'],
             'password' => ['required', 'confirmed', PasswordRule::min(8)->letters()->numbers()],
         ]);
 
-        $status = Password::broker('officers')->reset(
+        $status = Password::broker('users')->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (Officer $officer, string $password): void {
-                $officer->forceFill([
+            function (User $user, string $password): void {
+                $user->forceFill([
                     'password' => Hash::make($password),
                     'remember_token' => Str::random(60),
                 ])->save();
 
-                event(new PasswordReset($officer));
+                event(new PasswordReset($user));
             }
         );
 

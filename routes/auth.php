@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\DriverAuthController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -17,10 +18,26 @@ Route::post('/register', [RegisterController::class, 'register'])->name('registe
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
+    Route::post('/login', [LoginController::class, 'login'])
+        ->middleware('throttle:6,1')
+        ->name('login.submit');
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
+
+Route::prefix('driver')->name('driver.')->group(function () {
+    Route::get('/login', [DriverAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [DriverAuthController::class, 'login'])
+        ->middleware(['guest', 'throttle:6,1'])
+        ->name('login.submit');
+    Route::get('/register', [DriverAuthController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [DriverAuthController::class, 'register'])
+        ->middleware(['guest', 'throttle:6,1'])
+        ->name('register.submit');
+    Route::post('/logout', [DriverAuthController::class, 'logout'])
+        ->middleware('auth')
+        ->name('logout');
+});
 
 /*
 |--------------------------------------------------------------------------

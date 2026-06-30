@@ -81,7 +81,7 @@
                                         <span>{{ $statuses[$message->status] ?? ucfirst($message->status) }}</span>
                                     </span>
                                 </td>
-                                <td>{{ $message->officer?->full_name ?? 'Unassigned' }}</td>
+                                <td>{{ $message->officer?->name ?? 'Unassigned' }}</td>
                                 <td>{{ optional($message->created_at)->format('d M Y, H:i') }}</td>
                                 <td class="text-end">
                                     <a href="{{ route('officer.contact-messages.show', $message) }}" class="btn contact-message-action-btn">

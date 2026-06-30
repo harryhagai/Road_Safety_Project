@@ -52,7 +52,7 @@
                 <label class="form-label" for="search">Search</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
-                    <input type="search" class="form-control" id="search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Reference, segment, location">
+                    <input type="search" class="form-control" id="search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Reference, driver, plate, location">
                 </div>
             </div>
             <div class="col-12 col-md-4 col-lg-2">
@@ -79,6 +79,8 @@
                     <option value="">All sources</option>
                     <option value="automatic" @selected(($filters['source'] ?? '') === 'automatic')>Automatic</option>
                     <option value="manual" @selected(($filters['source'] ?? '') === 'manual')>Manual</option>
+                    <option value="driver" @selected(($filters['source'] ?? '') === 'driver')>Registered driver</option>
+                    <option value="passenger" @selected(($filters['source'] ?? '') === 'passenger')>Passenger</option>
                 </select>
             </div>
             <div class="col-12 col-lg-2 d-flex gap-2">
@@ -108,6 +110,7 @@
                     <tr>
                         <th>Reference</th>
                         <th>Violation</th>
+                        <th>Reporter / Vehicle</th>
                         <th>Segment / Location</th>
                         <th>Source</th>
                         <th>Status</th>

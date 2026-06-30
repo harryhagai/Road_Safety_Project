@@ -41,7 +41,7 @@
                         <div class="auth-login-title-row">
                             <h2 class="auth-login-title">
                                 <i class="bi bi-shield-lock"></i>
-                                <span>Reset Officer Password</span>
+                                <span>Reset Account Password</span>
                             </h2>
                         </div>
 
@@ -104,7 +104,7 @@
                             <div class="auth-login-back-wrap">
                                 <a href="{{ route('login') }}" class="auth-login-back-link">
                                     <i class="bi bi-arrow-left"></i>
-                                    <span>Return to Officer Login</span>
+                                    <span>Return to Login</span>
                                 </a>
                             </div>
                         </form>

@@ -255,6 +255,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         detailRow('Reported', report?.reportedAt) +
                         detailRow('Created', report?.createdAt) +
                         detailRow('Reviewed', report?.reviewedAt) +
+                        detailRow('Driver', report?.driver) +
+                        detailRow('Driver ID', report?.driverId) +
+                        detailRow('Vehicle', report?.vehicle) +
+                        detailRow('Plate Number', report?.plateNumber) +
+                        detailRow('Organization', report?.organization) +
                         detailRow('Officer', report?.officer) +
                         detailRow('Location', report?.location) +
                         detailRow('Coordinates', formatCoordinates(report)) +

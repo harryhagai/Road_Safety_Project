@@ -199,8 +199,8 @@
                     </div>
                     <div class="d-flex flex-wrap gap-2">
                         <span class="report-badge report-badge--{{ $automaticMatch ? 'info' : 'muted' }}">
-                            <i class="bi {{ $automaticMatch ? 'bi-cpu' : 'bi-person-lines-fill' }}" aria-hidden="true"></i>
-                            {{ $automaticMatch ? 'Automatic' : 'Manual' }}
+                            <i class="bi {{ $report->reporter_type === 'passenger' ? 'bi-person-walking' : ($automaticMatch ? 'bi-cpu' : 'bi-person-lines-fill') }}" aria-hidden="true"></i>
+                            {{ $report->reporter_type === 'passenger' ? 'Passenger' : ($automaticMatch ? 'Automatic' : 'Manual') }}
                         </span>
                         <span class="report-badge report-badge--{{ $statusTone($report->status) }}">{{ $statusLabel($report->status) }}</span>
                     </div>
@@ -229,6 +229,84 @@
                     <h4>Description</h4>
                     <p>{{ $displayDescription }}</p>
                 </div>
+
+                <div class="report-detail-block mb-4">
+                    <h4>{{ $report->reporter_type === 'passenger' ? 'Passenger and Bus Information' : 'Driver Identity' }}</h4>
+                    @if ($report->reporter_type === 'passenger')
+                        <div class="report-location-grid">
+                            <div>
+                                <span class="report-detail-label">Bus operator</span>
+                                <div class="fw-semibold">{{ $report->bus_operator }}</div>
+                            </div>
+                            <div>
+                                <span class="report-detail-label">Bus plate number</span>
+                                <div class="fw-semibold">{{ $report->bus_plate_number }}</div>
+                            </div>
+                            <div>
+                                <span class="report-detail-label">Route</span>
+                                <div class="fw-semibold">{{ $report->bus_route ?: 'Not provided' }}</div>
+                            </div>
+                            <div>
+                                <span class="report-detail-label">Passenger name</span>
+                                <div class="fw-semibold">{{ $report->passenger_name ?: 'Anonymous' }}</div>
+                            </div>
+                            <div>
+                                <span class="report-detail-label">Passenger phone</span>
+                                <div class="fw-semibold">{{ $report->passenger_phone ?: 'Not provided' }}</div>
+                            </div>
+                        </div>
+                        @if ($report->passenger_notes)
+                            <p class="mt-3 mb-0">{{ $report->passenger_notes }}</p>
+                        @endif
+                    @elseif ($report->driver)
+                        <div class="report-location-grid">
+                            <div>
+                                <span class="report-detail-label">Driver</span>
+                                <div class="fw-semibold">{{ $report->driver->name }}</div>
+                                <div class="small text-muted">Driver ID #{{ $report->driver->id }}</div>
+                            </div>
+                            <div>
+                                <span class="report-detail-label">Email</span>
+                                <div class="fw-semibold">{{ $report->driver->email }}</div>
+                            </div>
+                            <div>
+                                <span class="report-detail-label">Vehicle</span>
+                                <div class="fw-semibold">{{ $report->driver->vehicle_name }}</div>
+                            </div>
+                            <div>
+                                <span class="report-detail-label">Plate number</span>
+                                <div class="fw-semibold">{{ $report->driver->plate_number }}</div>
+                            </div>
+                            <div>
+                                <span class="report-detail-label">Organization</span>
+                                <div class="fw-semibold">{{ $report->driver->organization }}</div>
+                            </div>
+                        </div>
+                    @else
+                        <p class="text-muted mb-0">This is a legacy report created before identified driver reporting was enabled.</p>
+                    @endif
+                </div>
+
+                @if ($report->evidenceFiles->isNotEmpty())
+                    <div class="report-detail-block mb-4">
+                        <h4>Captured Evidence</h4>
+                        <div class="row g-3">
+                            @foreach ($report->evidenceFiles as $evidence)
+                                <div class="col-12 col-md-6">
+                                    <a href="{{ route('officer.reports.evidence', $evidence) }}" target="_blank" rel="noopener" class="d-block text-decoration-none">
+                                        <img
+                                            src="{{ route('officer.reports.evidence', $evidence) }}"
+                                            alt="Evidence for report {{ $report->reference_no }}"
+                                            class="img-fluid rounded border"
+                                            loading="lazy"
+                                        >
+                                        <small class="d-block mt-2 text-muted">{{ $evidence->file_name }}</small>
+                                    </a>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
 
                 <div class="report-detail-block">
                     <h4>Location Summary</h4>

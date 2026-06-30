@@ -150,7 +150,7 @@
                                 <i class="bi bi-person-vcard"></i> Officers
                             </a>
                         </li>
-                        @if (in_array((string) (auth()->user()->role ?? ''), ['admin', 'hgadmin'], true))
+                        @if (auth()->user()?->isAdmin())
                             <li class="nav-item mb-1">
                                 <a href="{{ route('admin.mail_settings.content') }}"
                                     class="nav-link officer-sidebar-sub-link {{ request()->is('admin/mail-settings*') ? 'active is-current fw-bold shadow-sm' : '' }}">

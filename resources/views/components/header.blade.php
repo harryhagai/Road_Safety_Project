@@ -24,14 +24,33 @@
         <nav class="header-nav" id="mainNav">
             @php
                 $currentPath = trim(request()->path(), '/');
+                $currentUser = auth()->user();
             @endphp
             <ul>
                 <li><a href="/" class="{{ $currentPath === '' ? 'active' : '' }}"><i class="bi bi-house-door"></i> Home</a></li>
                 <li><a href="/about" class="{{ $currentPath === 'about' ? 'active' : '' }}"><i class="bi bi-info-circle"></i> About us</a></li>
                 <li><a href="{{ route('contact') }}" class="{{ $currentPath === 'contact' ? 'active' : '' }}"><i class="bi bi-envelope-paper"></i> Contact</a></li>
-                <li><a href="{{ route('hotspots.index') }}" class="{{ $currentPath === 'hotspots' ? 'active' : '' }}"><i class="bi bi-geo-alt"></i> Hotspots</a></li>
-                <li><a href="{{ route('developer') }}" class="{{ $currentPath === 'developers' ? 'active' : '' }}"><i class="bi bi-code-slash"></i> Developers</a></li>
-                <li><a href="/login" class="{{ $currentPath === 'login' ? 'active' : '' }}"><i class="bi bi-person-circle"></i> Login</a></li>
+                @if ($currentUser?->isDriver())
+                    <li>
+                        <a href="{{ route('driver.dashboard') }}" class="{{ str_starts_with($currentPath, 'driver/dashboard') ? 'active' : '' }}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                @elseif ($currentUser?->canAccessOfficerWorkspace())
+                    <li>
+                        <a href="{{ route('officer.dashboard') }}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                @elseif ($currentUser)
+                    <li>
+                        <a href="{{ route('home') }}">
+                            <i class="bi bi-person-check"></i> {{ str($currentUser->role)->replace('_', ' ')->title() }}
+                        </a>
+                    </li>
+                @else
+                    <li><a href="{{ route('login') }}" class="{{ $currentPath === 'login' ? 'active' : '' }}"><i class="bi bi-person-circle"></i> Login</a></li>
+                @endif
             </ul>
         </nav>
     </div>

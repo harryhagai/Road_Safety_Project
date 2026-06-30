@@ -21,13 +21,24 @@
         </td>
         <td>{{ $report->violationType?->name ?? 'Unassigned' }}</td>
         <td>
+            @if ($report->reporter_type === 'passenger')
+                <div class="fw-semibold">{{ $report->bus_operator ?: 'Passenger report' }}</div>
+                <small class="text-muted">{{ $report->bus_plate_number ?: 'Plate not provided' }}</small>
+            @elseif ($report->driver)
+                <div class="fw-semibold">{{ $report->driver->name }}</div>
+                <small class="text-muted">ID #{{ $report->driver->id }} · {{ $report->driver->plate_number }}</small>
+            @else
+                <span class="text-muted">Legacy / unidentified</span>
+            @endif
+        </td>
+        <td>
             <div>{{ $segmentName ?: ($report->location_name ?: 'Unknown location') }}</div>
             <small class="text-muted">{{ number_format((float) $report->latitude, 5) }}, {{ number_format((float) $report->longitude, 5) }}</small>
         </td>
         <td>
             <span class="report-badge report-badge--{{ $automaticMatch ? 'info' : 'muted' }}">
-                <i class="bi {{ $automaticMatch ? 'bi-cpu' : 'bi-person-lines-fill' }}" aria-hidden="true"></i>
-                {{ $automaticMatch ? 'Automatic' : 'Manual' }}
+                <i class="bi {{ $report->reporter_type === 'passenger' ? 'bi-person-walking' : ($automaticMatch ? 'bi-cpu' : 'bi-person-lines-fill') }}" aria-hidden="true"></i>
+                {{ $report->reporter_type === 'passenger' ? 'Passenger' : ($automaticMatch ? 'Automatic' : 'Manual') }}
             </span>
         </td>
         <td>
@@ -45,7 +56,7 @@
 @empty
     @if ($showEmptyState ?? false)
         <tr data-empty-row="true">
-            <td colspan="8" class="text-center text-muted py-5">No reports match the current filters.</td>
+            <td colspan="9" class="text-center text-muted py-5">No reports match the current filters.</td>
         </tr>
     @endif
 @endforelse

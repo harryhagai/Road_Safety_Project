@@ -13,19 +13,19 @@
                         <i class="bi bi-cone-striped auth-login-brand-icon" aria-hidden="true"></i>
                         <span>
                             <strong>Road Safety Reporting System</strong>
-                            <small>Authorized officer portal</small>
+                            <small>Driver and officer access</small>
                         </span>
                     </a>
 
                     <div class="auth-login-copy">
-                        <h1>Secure officer access for road safety operations</h1>
+                        <h1>One secure login for drivers and road officers</h1>
                     </div>
 
                     <div class="auth-login-guide">
                         <ul>
+                            <li>Drivers access tracking and identified reporting</li>
                             <li>Protected dashboard access for authorized officers</li>
                             <li>Incident review, verification, and status management</li>
-                            <li>Support for safer roads through secure reporting workflows</li>
                         </ul>
                     </div>
 
@@ -43,7 +43,7 @@
                             </h2>
                         </div>
 
-                        <p class="auth-login-subtitle">Use your authorized officer account to access dashboard tools and incident management.</p>
+                        <p class="auth-login-subtitle">Enter your registered email and password. RSRS will identify your account automatically.</p>
 
                         @include('auth.partials.feedback')
 
@@ -53,7 +53,7 @@
                             <div class="auth-input-group">
                                 <label for="email">Email address</label>
                                 <div class="auth-input-wrap auth-login-input @error('email') is-invalid @enderror">
-                                    <input id="email" type="email" name="email" value="{{ old('email') }}" placeholder="officer@roadsafety.test" required autocomplete="email">
+                                    <input id="email" type="email" name="email" value="{{ old('email') }}" placeholder="your@email.com" required autocomplete="email">
                                 </div>
                                 @error('email')
                                     <div class="auth-field-error">{{ $message }}</div>
@@ -78,12 +78,19 @@
                                     <input id="remember" type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
                                     <span>Remember me</span>
                                 </label>
-                                <a href="{{ route('password.request') }}" class="auth-link" data-inline-spinner-link data-loading-text="Opening...">Forgot Password?</a>
+                                <a href="{{ route('password.request') }}" class="auth-link" data-inline-spinner-link data-loading-text="Opening...">Forgot officer password?</a>
                             </div>
 
                             <button type="submit" class="btn-brand auth-login-button auth-forgot-button" data-auth-submit data-loading-text="Logging in...">
                                 <span data-auth-submit-label>Login</span>
                             </button>
+
+                            <div class="auth-form-links">
+                                <p>
+                                    New driver?
+                                    <a href="{{ route('driver.register') }}" class="auth-text-link">Register</a>
+                                </p>
+                            </div>
 
                             <div class="auth-login-back-wrap">
                                 <a href="{{ route('home') }}" class="auth-login-back-link">

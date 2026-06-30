@@ -27,26 +27,25 @@ class OfficerProfileController extends Controller
     /**
      * Apply validated changes to the selected record.
      */
-
     public function update(Request $request): RedirectResponse
     {
         $officer = $request->user();
 
         $validated = $request->validate([
-            'full_name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
                 'email',
                 'max:255',
-                Rule::unique('officers', 'email')->ignore($officer->id),
+                Rule::unique('users', 'email')->ignore($officer->id),
             ],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
-        $officer->full_name = $validated['full_name'];
+        $officer->name = $validated['name'];
         $officer->email = $validated['email'];
 
-        if (!empty($validated['password'])) {
+        if (! empty($validated['password'])) {
             $officer->password = Hash::make($validated['password']);
         }
 
