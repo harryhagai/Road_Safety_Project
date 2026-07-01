@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Report Submitted - RSRS')
+@section('title', 'Driver Report Submitted - RSRS')
 
 @section('content')
-    <div class="passenger-success container-xl px-3 py-5">
+    <div class="passenger-success driver-success container-xl px-3 py-5">
         <section>
             <i class="bi bi-check-circle-fill"></i>
-            <span>Passenger report submitted</span>
-            <h1>Thank you for helping improve road safety.</h1>
+            <span>{{ $duplicate ? 'Driver report already submitted' : 'Driver report submitted' }}</span>
+            <h1>{{ $duplicate ? 'This violation was already sent to road officers.' : 'The violation has been sent to road officers.' }}</h1>
             <p>Your reference number is:</p>
             <strong>{{ $reference }}</strong>
             <a href="{{ route('home') }}" class="btn btn-dark success-home-link" data-success-home-link>
@@ -21,6 +21,7 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/rsrsPassengerReport.css') }}?v={{ filemtime(public_path('css/rsrsPassengerReport.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/rsrsDriverReport.css') }}?v={{ filemtime(public_path('css/rsrsDriverReport.css')) }}">
 @endpush
 
 @push('scripts')

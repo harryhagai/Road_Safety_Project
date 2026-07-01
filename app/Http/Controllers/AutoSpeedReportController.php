@@ -8,12 +8,14 @@ use App\Models\RuleViolation;
 use App\Models\ViolationType;
 use App\Services\SegmentRuleResolver;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 /**
  * Web controller that coordinates the AutoSpeedReportController request lifecycle.
@@ -21,6 +23,12 @@ use Illuminate\Validation\Rule;
 class AutoSpeedReportController extends Controller
 {
     public function __construct(private readonly SegmentRuleResolver $segmentRuleResolver) {}
+
+    private const DRIVER_PENDING_SESSION_KEY = 'driver.pending_violation';
+
+    private const DRIVER_REPORT_REFERENCE_SESSION_KEY = 'driver.report_reference';
+
+    private const DRIVER_REPORT_DUPLICATE_SESSION_KEY = 'driver.report_duplicate';
 
     private const ACTIVE_RULES_CACHE_SECONDS = 20;
 
@@ -159,7 +167,7 @@ class AutoSpeedReportController extends Controller
         ];
 
         if ($payload['can_submit']) {
-            $payload = $this->withPassengerContinuation(
+            $payload = $this->withViolationContinuation(
                 $payload,
                 $validated,
                 $match,
@@ -172,7 +180,12 @@ class AutoSpeedReportController extends Controller
                     $exceededSeconds,
                     $match['segment']->segment_name
                 ),
-                $this->priorityForSpeed($speedKmh, $match['speed_limit_kmh'])
+                $this->priorityForSpeed($speedKmh, $match['speed_limit_kmh']),
+                [
+                    'speed_kmh' => $speedKmh,
+                    'speed_limit_kmh' => $match['speed_limit_kmh'],
+                    'duration_seconds' => $exceededSeconds,
+                ]
             );
         }
 
@@ -262,7 +275,11 @@ class AutoSpeedReportController extends Controller
         }
 
         $duplicate = session($this->reportedSessionKey($match['segment']->id, $match['rule']->id));
-        if (is_array($duplicate) && now()->timestamp - (int) ($duplicate['reported_at'] ?? 0) < self::DUPLICATE_WINDOW_SECONDS) {
+        if (
+            is_array($duplicate) &&
+            ! empty($duplicate['reference_no']) &&
+            now()->timestamp - (int) ($duplicate['reported_at'] ?? 0) < self::DUPLICATE_WINDOW_SECONDS
+        ) {
             return response()->json([
                 'reported' => true,
                 'duplicate' => true,
@@ -329,6 +346,88 @@ class AutoSpeedReportController extends Controller
             'reference_no' => $report->reference_no,
             'driver_id' => $report->driver_id,
         ], 201);
+    }
+
+    public function createDriverReport(Request $request): View|RedirectResponse
+    {
+        $pending = $this->validDriverPendingViolation($request);
+
+        if (! $pending) {
+            return redirect()->route('home')
+                ->with('status', 'No active driver violation is waiting for submission.');
+        }
+
+        return view('driver.report', ['pending' => $pending]);
+    }
+
+    public function storeDriverReport(Request $request): RedirectResponse
+    {
+        $pending = $this->validDriverPendingViolation($request);
+
+        if (! $pending) {
+            return redirect()->route('home')
+                ->with('status', 'The driver report session expired. Please detect the violation again.');
+        }
+
+        $validated = $request->validate([
+            'pending_token' => ['required', 'string', 'size:40'],
+        ]);
+
+        if (! hash_equals((string) $pending['token'], $validated['pending_token'])) {
+            return back()->withErrors([
+                'pending_token' => 'This driver report session is no longer valid.',
+            ]);
+        }
+
+        $driverId = Auth::user()?->isDriver() ? (int) Auth::id() : null;
+
+        if (! $driverId || (int) ($pending['driver_id'] ?? 0) !== $driverId) {
+            $request->session()->forget(self::DRIVER_PENDING_SESSION_KEY);
+
+            return redirect()->route('home')
+                ->with('status', 'The driver report session no longer matches your account.');
+        }
+
+        $duplicate = session($this->reportedSessionKey((int) $pending['segment_id'], (int) $pending['rule_id']));
+        if (
+            is_array($duplicate) &&
+            ! empty($duplicate['reference_no']) &&
+            now()->timestamp - (int) ($duplicate['reported_at'] ?? 0) < self::DUPLICATE_WINDOW_SECONDS
+        ) {
+            $request->session()->forget(self::DRIVER_PENDING_SESSION_KEY);
+
+            return redirect()->route('driver.reports.success')
+                ->with(self::DRIVER_REPORT_REFERENCE_SESSION_KEY, $duplicate['reference_no'] ?? null)
+                ->with(self::DRIVER_REPORT_DUPLICATE_SESSION_KEY, true);
+        }
+
+        $report = $this->createDriverReportFromPending($pending, $driverId);
+
+        session()->put($this->reportedSessionKey((int) $pending['segment_id'], (int) $pending['rule_id']), [
+            'reference_no' => $report->reference_no,
+            'reported_at' => now()->timestamp,
+        ]);
+
+        $this->clearPendingViolationSession($pending);
+        $request->session()->forget(self::DRIVER_PENDING_SESSION_KEY);
+
+        return redirect()->route('driver.reports.success')
+            ->with(self::DRIVER_REPORT_REFERENCE_SESSION_KEY, $report->reference_no)
+            ->with(self::DRIVER_REPORT_DUPLICATE_SESSION_KEY, false);
+    }
+
+    public function driverReportSuccess(Request $request): View|RedirectResponse
+    {
+        $reference = $request->session()->get(self::DRIVER_REPORT_REFERENCE_SESSION_KEY);
+
+        if (! $reference) {
+            return redirect()->route('home');
+        }
+
+        return view('driver.success', [
+            'reference' => $reference,
+            'duplicate' => (bool) $request->session()->get(self::DRIVER_REPORT_DUPLICATE_SESSION_KEY, false),
+        ]);
     }
 
     private function storeNoParkingReport(array $validated, array $match, int $driverId): JsonResponse
@@ -624,7 +723,7 @@ class AutoSpeedReportController extends Controller
         ];
 
         if ($payload['can_submit']) {
-            $payload = $this->withPassengerContinuation(
+            $payload = $this->withViolationContinuation(
                 $payload,
                 $validated,
                 $match,
@@ -635,36 +734,85 @@ class AutoSpeedReportController extends Controller
                     $stationarySeconds,
                     $match['segment']->segment_name
                 ),
-                'medium'
+                'medium',
+                [
+                    'speed_kmh' => $speedKmh,
+                    'speed_limit_kmh' => null,
+                    'duration_seconds' => $stationarySeconds,
+                ]
             );
         }
 
         return $payload;
     }
 
-    private function withPassengerContinuation(
+    private function withViolationContinuation(
         array $payload,
         array $validated,
         array $match,
         string $violationType,
         string $violationDescription,
         string $description,
-        string $priority
+        string $priority,
+        array $metrics = []
     ): array {
+        $pending = array_merge(
+            [
+                'token' => Str::random(40),
+                'expires_at' => now()->addMinutes(10)->timestamp,
+            ],
+            $this->pendingViolationData(
+                $validated,
+                $match,
+                $violationType,
+                $violationDescription,
+                $description,
+                $priority,
+                $metrics
+            )
+        );
+
         if (Auth::user()?->isDriver()) {
+            $pending['driver_id'] = (int) Auth::id();
+
+            session()->put(self::DRIVER_PENDING_SESSION_KEY, $pending);
+
+            $payload['driver_report_url'] = route('driver.reports.create');
+            $payload['report_mode'] = 'driver_confirmation_required';
+
             return $payload;
         }
 
-        $token = Str::random(40);
+        session()->put('passenger.pending_violation', $pending);
 
-        session()->put('passenger.pending_violation', [
-            'token' => $token,
-            'expires_at' => now()->addMinutes(10)->timestamp,
+        $payload['passenger_report_url'] = route('passenger.reports.create');
+        $payload['report_mode'] = 'passenger_details_required';
+
+        return $payload;
+    }
+
+    private function pendingViolationData(
+        array $validated,
+        array $match,
+        string $violationType,
+        string $violationDescription,
+        string $description,
+        string $priority,
+        array $metrics = []
+    ): array {
+        return [
             'violation_type' => $violationType,
             'violation_description' => $violationDescription,
             'description' => $description,
             'latitude' => (float) $validated['latitude'],
             'longitude' => (float) $validated['longitude'],
+            'speed_kmh' => isset($metrics['speed_kmh']) && is_numeric($metrics['speed_kmh'])
+                ? round((float) $metrics['speed_kmh'], 1)
+                : round((float) ($validated['speed_kmh'] ?? 0), 1),
+            'speed_limit_kmh' => isset($metrics['speed_limit_kmh']) && is_numeric($metrics['speed_limit_kmh'])
+                ? round((float) $metrics['speed_limit_kmh'], 1)
+                : null,
+            'duration_seconds' => max(0, (int) ($metrics['duration_seconds'] ?? 0)),
             'location_name' => $match['segment']->segment_name,
             'priority' => $priority,
             'segment_id' => (int) $match['segment']->id,
@@ -674,12 +822,106 @@ class AutoSpeedReportController extends Controller
             'rule_value' => $match['rule']->rule_value,
             'rule_description' => $match['rule']->description,
             'confidence_score' => $this->confidenceForDistance($match['distance_meters']),
+        ];
+    }
+
+    private function validDriverPendingViolation(Request $request): ?array
+    {
+        $pending = $request->session()->get(self::DRIVER_PENDING_SESSION_KEY);
+        $requiredFields = [
+            'token',
+            'expires_at',
+            'driver_id',
+            'violation_type',
+            'violation_description',
+            'description',
+            'latitude',
+            'longitude',
+            'location_name',
+            'priority',
+            'segment_id',
+            'rule_id',
+            'rule_name',
+            'rule_type',
+            'rule_value',
+            'confidence_score',
+        ];
+
+        if (! is_array($pending) || (int) ($pending['expires_at'] ?? 0) < now()->timestamp) {
+            $request->session()->forget(self::DRIVER_PENDING_SESSION_KEY);
+
+            return null;
+        }
+
+        foreach ($requiredFields as $field) {
+            if (! array_key_exists($field, $pending)) {
+                $request->session()->forget(self::DRIVER_PENDING_SESSION_KEY);
+
+                return null;
+            }
+        }
+
+        if ((int) ($pending['driver_id'] ?? 0) !== (int) Auth::id()) {
+            $request->session()->forget(self::DRIVER_PENDING_SESSION_KEY);
+
+            return null;
+        }
+
+        return $pending;
+    }
+
+    private function createDriverReportFromPending(array $pending, int $driverId): Report
+    {
+        return DB::transaction(function () use ($pending, $driverId) {
+            $violationType = ViolationType::firstOrCreate(
+                ['name' => $pending['violation_type']],
+                [
+                    'description' => $pending['violation_description'],
+                    'is_active' => true,
+                ]
+            );
+
+            $report = Report::create([
+                'reference_no' => $this->makeReferenceNumber(),
+                'violation_type_id' => $violationType->id,
+                'description' => $pending['description'],
+                'latitude' => $pending['latitude'],
+                'longitude' => $pending['longitude'],
+                'location_name' => $pending['location_name'],
+                'status' => 'submitted',
+                'priority' => $pending['priority'],
+                'reported_at' => now(),
+                'driver_id' => $driverId,
+                'submitted_by_user_id' => $driverId,
+                'reporter_type' => 'driver',
+            ]);
+
+            RuleViolation::create([
+                'report_id' => $report->id,
+                'segment_id' => (int) $pending['segment_id'],
+                'segment_type_rule_id' => (int) $pending['rule_id'],
+                'rule_name_snapshot' => $pending['rule_name'],
+                'rule_type_snapshot' => $pending['rule_type'],
+                'rule_value_snapshot' => $pending['rule_value'],
+                'rule_description_snapshot' => $pending['rule_description'] ?? null,
+                'matched_automatically' => true,
+                'confidence_score' => (float) $pending['confidence_score'],
+            ]);
+
+            return $report;
+        });
+    }
+
+    private function clearPendingViolationSession(array $pending): void
+    {
+        if (! isset($pending['segment_id'], $pending['rule_id'])) {
+            return;
+        }
+
+        session()->forget([
+            $this->exceededSessionKey((int) $pending['segment_id'], (int) $pending['rule_id']),
+            $this->noParkingSessionKey((int) $pending['segment_id'], (int) $pending['rule_id']),
         ]);
-
-        $payload['passenger_report_url'] = route('passenger.reports.create');
-        $payload['report_mode'] = 'passenger_details_required';
-
-        return $payload;
     }
 
     private function matchRoadSegmentGeometry(float $latitude, float $longitude, float $accuracy): ?array

@@ -20,8 +20,11 @@ use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -47,6 +50,8 @@ class AppServiceProvider extends ServiceProvider
         if (str_contains(config('app.url'), 'ngrok-free.dev') || isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
             URL::forceScheme('https');
         }
+
+        $this->configureRateLimiters();
 
         Schema::defaultStringLength(191);
         Paginator::useBootstrapFive();
@@ -96,5 +101,37 @@ class AppServiceProvider extends ServiceProvider
                 'email' => $event->user->email ?? null,
             ]);
         });
+    }
+
+    private function configureRateLimiters(): void
+    {
+        RateLimiter::for('auto-speed-evaluate', function (Request $request): Limit {
+            return Limit::perMinute(360)->by($this->rateLimitKey($request, 'auto-speed-evaluate'));
+        });
+
+        RateLimiter::for('auto-speed-submit', function (Request $request): Limit {
+            return Limit::perMinute(60)->by($this->rateLimitKey($request, 'auto-speed-submit'));
+        });
+
+        RateLimiter::for('driver-report-submit', function (Request $request): Limit {
+            return Limit::perMinute(60)->by($this->rateLimitKey($request, 'driver-report-submit'));
+        });
+    }
+
+    private function rateLimitKey(Request $request, string $scope): string
+    {
+        $userId = $request->user()?->getAuthIdentifier();
+
+        if ($userId) {
+            return $scope.':user:'.$userId;
+        }
+
+        $sessionId = $request->hasSession() ? $request->session()->getId() : null;
+
+        if ($sessionId) {
+            return $scope.':session:'.$sessionId;
+        }
+
+        return $scope.':ip:'.$request->ip();
     }
 }

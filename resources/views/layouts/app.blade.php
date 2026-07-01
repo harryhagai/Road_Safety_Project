@@ -61,7 +61,7 @@
         }
         @media (max-width: 768px) {
             body.has-fixed-footer {
-                padding-bottom: 80px; /* Taller footer on mobile */
+                padding-bottom: 48px; /* Compact fixed footer on mobile */
             }
         }
     </style>

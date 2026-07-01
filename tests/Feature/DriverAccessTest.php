@@ -80,7 +80,7 @@ class DriverAccessTest extends TestCase
             ->assertSee('saved inside the database');
     }
 
-    public function test_passenger_report_requires_bus_identity_and_captured_image(): void
+    public function test_passenger_report_requires_bus_identity_without_requiring_image(): void
     {
         $pending = [
             'token' => str_repeat('b', 40),
@@ -94,8 +94,58 @@ class DriverAccessTest extends TestCase
             ->assertSessionHasErrors([
                 'bus_operator',
                 'bus_plate_number',
-                'evidence_image',
-            ]);
+            ])
+            ->assertSessionDoesntHaveErrors('evidence_image');
+    }
+
+    public function test_driver_report_form_requires_a_pending_detected_violation(): void
+    {
+        $driver = new User([
+            'name' => 'Submit Driver',
+            'email' => 'submit-driver@example.com',
+            'role' => User::ROLE_DRIVER,
+            'password' => 'password',
+        ]);
+        $driver->id = 44;
+
+        $this->actingAs($driver)
+            ->get('/driver/violation-report')
+            ->assertRedirect(route('home'));
+
+        $pending = [
+            'token' => str_repeat('c', 40),
+            'expires_at' => now()->addMinutes(10)->timestamp,
+            'driver_id' => 44,
+            'violation_type' => 'Overspeeding',
+            'violation_description' => 'Vehicle operating beyond the allowed speed limit.',
+            'description' => 'Automatic overspeeding report.',
+            'latitude' => -6.7924,
+            'longitude' => 39.2083,
+            'speed_kmh' => 72.5,
+            'speed_limit_kmh' => 50,
+            'duration_seconds' => 33,
+            'location_name' => 'Test segment',
+            'priority' => 'medium',
+            'segment_id' => 1,
+            'rule_id' => 1,
+            'rule_name' => 'Speed Limit',
+            'rule_type' => 'speed_limit',
+            'rule_value' => '50 km/h',
+            'rule_description' => 'Test speed limit.',
+            'confidence_score' => 95,
+        ];
+
+        $this->actingAs($driver)
+            ->withSession(['driver.pending_violation' => $pending])
+            ->get('/driver/violation-report')
+            ->assertOk()
+            ->assertSee('Submitting captured violation')
+            ->assertSee('Observed speed')
+            ->assertSee('Submitting automatically')
+            ->assertSee('data-driver-auto-submit-form', false)
+            ->assertDontSee('Submit driver report')
+            ->assertDontSee('Bus operator / company')
+            ->assertDontSee('Start camera');
     }
 
     public function test_authenticated_driver_home_enables_identified_reporting_configuration(): void

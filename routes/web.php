@@ -43,15 +43,24 @@ Route::get('/maps/search', [MapController::class, 'search'])
     ->middleware('throttle:60,1')
     ->name('maps.search');
 Route::post('/auto-speed-reports/evaluate', [AutoSpeedReportController::class, 'evaluate'])
-    ->middleware('throttle:180,1')
+    ->middleware('throttle:auto-speed-evaluate')
     ->name('auto-speed-reports.evaluate');
 Route::post('/auto-speed-reports', [AutoSpeedReportController::class, 'store'])
-    ->middleware(['auth', 'role:driver', 'throttle:12,1'])
+    ->middleware(['auth', 'role:driver', 'throttle:auto-speed-submit'])
     ->name('auto-speed-reports.store');
 
 Route::get('/driver/dashboard', [DriverDashboardController::class, 'index'])
     ->middleware(['auth', 'role:driver'])
     ->name('driver.dashboard');
+Route::get('/driver/violation-report', [AutoSpeedReportController::class, 'createDriverReport'])
+    ->middleware(['auth', 'role:driver'])
+    ->name('driver.reports.create');
+Route::post('/driver/violation-report', [AutoSpeedReportController::class, 'storeDriverReport'])
+    ->middleware(['auth', 'role:driver', 'throttle:driver-report-submit'])
+    ->name('driver.reports.store');
+Route::get('/driver/violation-report/success', [AutoSpeedReportController::class, 'driverReportSuccess'])
+    ->middleware(['auth', 'role:driver'])
+    ->name('driver.reports.success');
 
 Route::get('/passenger/report', [PassengerReportController::class, 'create'])
     ->name('passenger.reports.create');

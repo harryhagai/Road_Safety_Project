@@ -48,7 +48,7 @@ class PassengerReportController extends Controller
             'passenger_name' => ['nullable', 'string', 'max:191'],
             'passenger_phone' => ['nullable', 'string', 'max:50'],
             'passenger_notes' => ['nullable', 'string', 'max:2000'],
-            'evidence_image' => ['required', 'string', 'max:4100000'],
+            'evidence_image' => ['nullable', 'string', 'max:4100000'],
         ]);
 
         if (! hash_equals((string) $pending['token'], $validated['pending_token'])) {
@@ -57,13 +57,18 @@ class PassengerReportController extends Controller
             ]);
         }
 
-        [$imageData, $mimeType] = $this->decodeEvidenceImage($validated['evidence_image']);
+        $evidenceImage = $validated['evidence_image'] ?? null;
+        [$imageData, $mimeType] = is_string($evidenceImage) && trim($evidenceImage) !== ''
+            ? $this->decodeEvidenceImage($evidenceImage)
+            : [null, null];
         $plateNumber = Str::upper(preg_replace('/\s+/', ' ', trim($validated['bus_plate_number'])) ?? '');
-        $extension = match ($mimeType) {
-            'image/png' => 'png',
-            'image/webp' => 'webp',
-            default => 'jpg',
-        };
+        $extension = $mimeType
+            ? match ($mimeType) {
+                'image/png' => 'png',
+                'image/webp' => 'webp',
+                default => 'jpg',
+            }
+            : null;
 
         $report = DB::transaction(function () use ($request, $pending, $validated, $imageData, $mimeType, $plateNumber, $extension) {
             $violationType = ViolationType::firstOrCreate(
@@ -107,14 +112,16 @@ class PassengerReportController extends Controller
                 'confidence_score' => $pending['confidence_score'],
             ]);
 
-            EvidenceFile::create([
-                'report_id' => $report->id,
-                'file_name' => 'passenger-evidence-'.$report->reference_no.'.'.$extension,
-                'file_path' => null,
-                'file_data' => $imageData,
-                'file_type' => $mimeType,
-                'file_size' => strlen($imageData),
-            ]);
+            if ($imageData !== null && $mimeType !== null && $extension !== null) {
+                EvidenceFile::create([
+                    'report_id' => $report->id,
+                    'file_name' => 'passenger-evidence-'.$report->reference_no.'.'.$extension,
+                    'file_path' => null,
+                    'file_data' => $imageData,
+                    'file_type' => $mimeType,
+                    'file_size' => strlen($imageData),
+                ]);
+            }
 
             return $report;
         });

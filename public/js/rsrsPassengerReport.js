@@ -114,13 +114,5 @@
         image.src = URL.createObjectURL(file);
     });
 
-    form.addEventListener('submit', (event) => {
-        if (!evidenceInput.value) {
-            event.preventDefault();
-            setMessage('Capture the bus image before submitting.', true);
-            root.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    });
-
     window.addEventListener('pagehide', stopCamera);
 })();

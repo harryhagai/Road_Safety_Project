@@ -167,8 +167,12 @@
         const config = getAutoReportingConfig();
         const passengerUrl = evaluation?.passenger_report_url;
 
-        if (config?.authenticated || !passengerUrl || state.autoReportInFlight) {
+        if (config?.authenticated || !passengerUrl) {
             return false;
+        }
+
+        if (state.autoReportInFlight) {
+            return true;
         }
 
         state.autoReportInFlight = true;
@@ -181,6 +185,33 @@
 
         window.setTimeout(() => {
             window.location.assign(passengerUrl);
+        }, 500);
+
+        return true;
+    }
+
+    function continueDriverReport(evaluation, sample, popupOptions) {
+        const config = getAutoReportingConfig();
+        const driverUrl = evaluation?.driver_report_url;
+
+        if (!config?.authenticated || !driverUrl) {
+            return false;
+        }
+
+        if (state.autoReportInFlight) {
+            return true;
+        }
+
+        state.autoReportInFlight = true;
+        app.ui.updateSpeedDisplay(sample.speed_kmh, 'Opening driver report confirmation...', sample.speed_kmh >= 1);
+        app.ui.updateSpeedAlert({
+            state: 'danger',
+            ...popupOptions,
+            keepPopup: true,
+        });
+
+        window.setTimeout(() => {
+            window.location.assign(driverUrl);
         }, 500);
 
         return true;
@@ -243,11 +274,17 @@
                 return;
             }
 
-            if (continuePassengerReport(evaluation, sample, {
+            const noParkingPopupOptions = {
                 location: segmentName,
                 ruleLabel: 'RULE',
                 limit: displayRule,
-            })) {
+            };
+
+            if (continueDriverReport(evaluation, sample, noParkingPopupOptions)) {
+                return;
+            }
+
+            if (continuePassengerReport(evaluation, sample, noParkingPopupOptions)) {
                 return;
             }
 
@@ -309,11 +346,17 @@
             return;
         }
 
-        if (continuePassengerReport(evaluation, sample, {
+        const speedPopupOptions = {
             location: segmentName,
             ruleLabel: 'SPEED RULE',
             limit: ruleDisplayForEvaluation(evaluation),
-        })) {
+        };
+
+        if (continueDriverReport(evaluation, sample, speedPopupOptions)) {
+            return;
+        }
+
+        if (continuePassengerReport(evaluation, sample, speedPopupOptions)) {
             return;
         }
 

@@ -8,7 +8,7 @@
             <aside class="passenger-report-summary">
                 <span class="passenger-report-eyebrow"><i class="bi bi-exclamation-triangle"></i> Violation detected</span>
                 <h1>Help identify the bus</h1>
-                <p>The violation has been detected. Add the bus details and capture a current image before submitting.</p>
+                <p>The violation has been detected. Add the bus details before submitting. A bus image can be added if available.</p>
 
                 <div class="passenger-report-detected">
                     <div><span>Violation</span><strong>{{ $pending['violation_type'] }}</strong></div>
@@ -70,8 +70,8 @@
                     <div class="passenger-camera" data-passenger-camera>
                         <div class="passenger-camera__heading">
                             <div>
-                                <span>Bus image <strong>Required</strong></span>
-                                <p>Capture the bus directly. The image is compressed in the browser and saved inside the database, not the server filesystem.</p>
+                                <span>Bus image <small>Optional</small></span>
+                                <p>Capture the bus directly if available. The image is compressed in the browser and saved inside the database, not the server filesystem.</p>
                             </div>
                             <button type="button" class="btn btn-outline-dark" data-camera-start>
                                 <i class="bi bi-camera-video"></i> Start camera
