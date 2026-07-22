@@ -7,6 +7,7 @@ use App\Http\Controllers\DriverDashboardController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\officer\ContactMessageController as OfficerContactMessageController;
 use App\Http\Controllers\officer\OfficerDashboardController;
+use App\Http\Controllers\officer\OfficerDriverController;
 use App\Http\Controllers\officer\OfficerHotspotController;
 use App\Http\Controllers\officer\OfficerNotificationController;
 use App\Http\Controllers\officer\OfficerProfileController;
@@ -73,6 +74,12 @@ Route::get('/passenger/report/success', [PassengerReportController::class, 'succ
 // Protected officer tools that require authentication.
 Route::middleware(['auth', 'role:road_officer,admin'])->group(function () {
     Route::get('/road-officer/notifications', [OfficerNotificationController::class, 'index'])->name('officer.notifications.index');
+    Route::get('/road-officer/drivers', [OfficerDriverController::class, 'index'])->name('officer.drivers.index');
+    Route::post('/road-officer/drivers', [OfficerDriverController::class, 'store'])->name('officer.drivers.store');
+    Route::put('/road-officer/drivers/{driver}', [OfficerDriverController::class, 'update'])->name('officer.drivers.update');
+    Route::patch('/road-officer/drivers/{driver}/password', [OfficerDriverController::class, 'resetPassword'])->name('officer.drivers.password');
+    Route::patch('/road-officer/drivers/{driver}/status', [OfficerDriverController::class, 'updateStatus'])->name('officer.drivers.status');
+    Route::delete('/road-officer/drivers/{driver}', [OfficerDriverController::class, 'destroy'])->name('officer.drivers.destroy');
     Route::get('/road-officer/hotspots', [OfficerHotspotController::class, 'index'])->name('officer.hotspots.index');
     Route::get('/road-officer/notifications/dropdown-data', [OfficerNotificationController::class, 'dropdownData'])->name('officer.notifications.dropdown-data');
     Route::post('/road-officer/notifications/mark-all-read', [OfficerNotificationController::class, 'markAllRead'])->name('officer.notifications.mark-all-read');

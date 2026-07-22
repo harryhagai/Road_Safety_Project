@@ -3,6 +3,10 @@
 @section('title', 'Passenger Violation Report - RSRS')
 
 @section('content')
+    @php
+        $sessionExpiresAt = \Illuminate\Support\Carbon::createFromTimestamp((int) $pending['expires_at']);
+    @endphp
+
     <div class="passenger-report-page container-xl px-3 py-4">
         <section class="passenger-report-shell">
             <aside class="passenger-report-summary">
@@ -14,7 +18,20 @@
                     <div><span>Violation</span><strong>{{ $pending['violation_type'] }}</strong></div>
                     <div><span>Location</span><strong>{{ $pending['location_name'] }}</strong></div>
                     <div><span>Coordinates</span><strong>{{ number_format($pending['latitude'], 6) }}, {{ number_format($pending['longitude'], 6) }}</strong></div>
-                    <div><span>Session expires</span><strong>{{ \Illuminate\Support\Carbon::createFromTimestamp($pending['expires_at'])->diffForHumans() }}</strong></div>
+                    <div class="passenger-session-countdown-card">
+                        <span>Session expires</span>
+                        <strong>
+                            <time
+                                class="passenger-session-countdown"
+                                datetime="{{ $sessionExpiresAt->toIso8601String() }}"
+                                data-session-countdown
+                                data-expires-at="{{ (int) $pending['expires_at'] }}"
+                                data-expired-redirect="{{ route('home') }}"
+                                aria-live="polite"
+                                role="timer"
+                            >{{ $sessionExpiresAt->diffForHumans() }}</time>
+                        </strong>
+                    </div>
                 </div>
             </aside>
 

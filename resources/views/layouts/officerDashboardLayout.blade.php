@@ -65,6 +65,10 @@
                 'title' => 'Officers',
                 'subtitle' => 'Manage officer accounts, roles, and operational access across the system.',
             ],
+            request()->is('road-officer/drivers*') => [
+                'title' => 'Drivers',
+                'subtitle' => 'Manage driver accounts, vehicle details, passwords, and operational access.',
+            ],
             request()->is('admin/mail-settings*') => [
                 'title' => 'Mail Settings',
                 'subtitle' => 'Manage SMTP profiles used for forgot-password and other outgoing email.',

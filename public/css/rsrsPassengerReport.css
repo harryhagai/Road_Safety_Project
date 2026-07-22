@@ -96,6 +96,19 @@
     overflow-wrap: anywhere;
 }
 
+.passenger-session-countdown {
+    color: #0d6f9b;
+    font-variant-numeric: tabular-nums;
+}
+
+.passenger-session-countdown.is-urgent {
+    color: #b54708;
+}
+
+.passenger-session-countdown.is-expired {
+    color: #b42318;
+}
+
 .passenger-report-heading h2 {
     margin: 0.45rem 0 0.4rem;
     font-size: 1.625rem;

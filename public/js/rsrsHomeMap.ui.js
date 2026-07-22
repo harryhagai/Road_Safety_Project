@@ -8,7 +8,6 @@
 
         state.ui.speedWidget = document.querySelector('[data-home-speed-widget]');
         state.ui.speedValueEl = document.querySelector('[data-home-speed-value]');
-        state.ui.speedStatusEl = document.querySelector('[data-home-speed-status]');
         state.ui.speedAlertEl = document.querySelector('[data-home-speed-alert]');
         state.ui.speedAlertLocationEl = document.querySelector('[data-home-speed-alert-location]');
         state.ui.speedAlertLimitEl = document.querySelector('[data-home-speed-alert-limit]');
@@ -16,10 +15,10 @@
         state.ui.speedAlertCountEl = document.querySelector('[data-home-speed-alert-count]');
     }
 
-    function updateSpeedDisplay(speedKmh, statusText, isLive) {
+    function updateSpeedDisplay(speedKmh, _statusText, isLive) {
         cacheSpeedWidget();
 
-        if (!state.ui.speedWidget || !state.ui.speedValueEl || !state.ui.speedStatusEl) {
+        if (!state.ui.speedWidget || !state.ui.speedValueEl) {
             return;
         }
 
@@ -27,7 +26,6 @@
         const ringDuration = Math.max(0.45, 3.2 - Math.min(safeSpeed, 120) / 42);
 
         state.ui.speedValueEl.textContent = String(Math.round(safeSpeed));
-        state.ui.speedStatusEl.textContent = statusText;
         state.ui.speedWidget.style.setProperty('--home-speed-ring-duration', `${ringDuration.toFixed(2)}s`);
         state.ui.speedWidget.classList.toggle('is-live', Boolean(isLive));
         state.ui.speedWidget.classList.toggle('is-idle', !isLive);

@@ -783,6 +783,21 @@ class AutoSpeedReportController extends Controller
             return $payload;
         }
 
+        $recentPassengerReport = $this->recentPassengerReportForRule(
+            (int) $pending['segment_id'],
+            (int) $pending['rule_id']
+        );
+
+        if ($recentPassengerReport) {
+            $payload['can_submit'] = false;
+            $payload['duplicate'] = true;
+            $payload['reference_no'] = $recentPassengerReport['reference_no'] ?? null;
+            $payload['report_mode'] = 'passenger_recently_submitted';
+            $payload['message'] = 'Passenger report for this rule was already submitted recently.';
+
+            return $payload;
+        }
+
         session()->put('passenger.pending_violation', $pending);
 
         $payload['passenger_report_url'] = route('passenger.reports.create');
@@ -1370,6 +1385,21 @@ class AutoSpeedReportController extends Controller
     private function reportedSessionKey(int $segmentId, int $ruleId): string
     {
         return sprintf('auto_speed.reported.%d.%d.%d', $this->authenticatedDriverId(), $segmentId, $ruleId);
+    }
+
+    private function recentPassengerReportForRule(int $segmentId, int $ruleId): ?array
+    {
+        $reported = session($this->reportedSessionKey($segmentId, $ruleId));
+
+        if (
+            ! is_array($reported) ||
+            empty($reported['reference_no']) ||
+            now()->timestamp - (int) ($reported['reported_at'] ?? 0) >= self::DUPLICATE_WINDOW_SECONDS
+        ) {
+            return null;
+        }
+
+        return $reported;
     }
 
     private function authenticatedDriverId(): int

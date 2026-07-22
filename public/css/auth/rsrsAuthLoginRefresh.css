@@ -313,6 +313,15 @@
         border-radius: 20px;
     }
 
+    .auth-login-brand-panel {
+        display: none;
+    }
+
+    .auth-login-form-panel {
+        padding: 1.5rem 1.15rem;
+        box-shadow: none;
+    }
+
     .auth-login-copy h1 {
         max-width: none;
         font-size: 1.95rem;

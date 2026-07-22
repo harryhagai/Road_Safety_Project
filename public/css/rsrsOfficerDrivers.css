@@ -1,0 +1,68 @@
+.driver-admin-shell__header {
+    align-items: center;
+}
+
+.driver-admin-filter {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(160px, 220px) auto;
+    gap: 0.9rem;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid rgba(31, 49, 79, 0.08);
+    background: rgba(248, 251, 255, 0.65);
+}
+
+.driver-admin-filter__field {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.driver-admin-filter__field label {
+    color: #5f6e84;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.driver-admin-filter__actions {
+    display: flex;
+    align-items: end;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.driver-admin-muted {
+    margin-top: 0.2rem;
+    color: #6a778d;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.driver-admin-pagination {
+    padding: 1rem 1.2rem;
+    border-top: 1px solid rgba(31, 49, 79, 0.08);
+}
+
+.driver-admin-pagination nav {
+    margin: 0;
+}
+
+@media (max-width: 991.98px) {
+    .driver-admin-filter {
+        grid-template-columns: 1fr;
+    }
+
+    .driver-admin-filter__actions {
+        align-items: stretch;
+    }
+
+    .driver-admin-filter__actions .btn {
+        flex: 1 1 160px;
+    }
+}
+
+@media (max-width: 768px) {
+    .driver-admin-shell__header {
+        align-items: stretch;
+    }
+}

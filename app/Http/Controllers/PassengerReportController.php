@@ -19,6 +19,8 @@ class PassengerReportController extends Controller
 
     private const MAX_EVIDENCE_BYTES = 3_000_000;
 
+    private const DUPLICATE_WINDOW_SECONDS = 600;
+
     public function create(Request $request): View|RedirectResponse
     {
         $pending = $this->validPendingViolation($request);
@@ -126,6 +128,8 @@ class PassengerReportController extends Controller
             return $report;
         });
 
+        $this->rememberSubmittedRule($request, $pending, $report->reference_no);
+        $this->clearDetectedRuleSession($request, $pending);
         $request->session()->forget(self::PENDING_SESSION_KEY);
 
         return redirect()->route('passenger.reports.success')
@@ -197,6 +201,42 @@ class PassengerReportController extends Controller
         $value = trim((string) $value);
 
         return $value !== '' ? $value : null;
+    }
+
+    private function rememberSubmittedRule(Request $request, array $pending, string $referenceNo): void
+    {
+        if (! isset($pending['segment_id'], $pending['rule_id'])) {
+            return;
+        }
+
+        $request->session()->put(
+            $this->reportedSessionKey((int) $pending['segment_id'], (int) $pending['rule_id']),
+            [
+                'reference_no' => $referenceNo,
+                'reported_at' => now()->timestamp,
+                'expires_at' => now()->addSeconds(self::DUPLICATE_WINDOW_SECONDS)->timestamp,
+            ]
+        );
+    }
+
+    private function clearDetectedRuleSession(Request $request, array $pending): void
+    {
+        if (! isset($pending['segment_id'], $pending['rule_id'])) {
+            return;
+        }
+
+        $segmentId = (int) $pending['segment_id'];
+        $ruleId = (int) $pending['rule_id'];
+
+        $request->session()->forget([
+            sprintf('auto_speed.exceeded.%d.%d.%d', 0, $segmentId, $ruleId),
+            sprintf('auto_no_parking.stationary.%d.%d.%d', 0, $segmentId, $ruleId),
+        ]);
+    }
+
+    private function reportedSessionKey(int $segmentId, int $ruleId): string
+    {
+        return sprintf('auto_speed.reported.%d.%d.%d', 0, $segmentId, $ruleId);
     }
 
     private function makeReferenceNumber(): string

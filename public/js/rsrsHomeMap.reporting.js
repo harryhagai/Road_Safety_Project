@@ -190,6 +190,43 @@
         return true;
     }
 
+    function continueRecentlySubmittedPassengerReport(evaluation, sample, popupOptions) {
+        if (evaluation?.report_mode !== 'passenger_recently_submitted') {
+            return false;
+        }
+
+        const ruleId = Number(evaluation?.rule?.id);
+        const reference = evaluation?.reference_no || '';
+        const referenceStatus = reference ? `: ${reference}` : '';
+
+        if (ruleId) {
+            state.reportedRuleIds.add(ruleId);
+        }
+
+        app.ui.updateSpeedDisplay(
+            sample.speed_kmh,
+            `Passenger report already submitted${referenceStatus}`,
+            sample.speed_kmh >= 1
+        );
+        app.ui.updateSpeedAlert({
+            state: 'success',
+            ...popupOptions,
+        });
+
+        if (ruleId && !state.recentPassengerReportPopupRuleIds?.has(ruleId)) {
+            state.recentPassengerReportPopupRuleIds = state.recentPassengerReportPopupRuleIds || new Set();
+            state.recentPassengerReportPopupRuleIds.add(ruleId);
+            app.ui.showReportSubmittedPopup({
+                ...popupOptions,
+                title: 'Violation already reported',
+                reference,
+                duplicate: true,
+            });
+        }
+
+        return true;
+    }
+
     function continueDriverReport(evaluation, sample, popupOptions) {
         const config = getAutoReportingConfig();
         const driverUrl = evaluation?.driver_report_url;
@@ -280,6 +317,10 @@
                 limit: displayRule,
             };
 
+            if (continueRecentlySubmittedPassengerReport(evaluation, sample, noParkingPopupOptions)) {
+                return;
+            }
+
             if (continueDriverReport(evaluation, sample, noParkingPopupOptions)) {
                 return;
             }
@@ -351,6 +392,10 @@
             ruleLabel: 'SPEED RULE',
             limit: ruleDisplayForEvaluation(evaluation),
         };
+
+        if (continueRecentlySubmittedPassengerReport(evaluation, sample, speedPopupOptions)) {
+            return;
+        }
 
         if (continueDriverReport(evaluation, sample, speedPopupOptions)) {
             return;

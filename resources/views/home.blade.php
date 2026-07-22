@@ -60,7 +60,6 @@
                                 <strong data-home-speed-value>0</strong>
                                 <span>km/h</span>
                             </div>
-                            <small data-home-speed-status>Waiting for movement...</small>
                         </div>
                         <x-map.canvas id="mainPublicMap" :config="$mapConfig" height="100%" :show-toolbar="false" mode="viewer" />
                     </div>

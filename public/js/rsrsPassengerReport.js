@@ -1,6 +1,60 @@
 (function () {
     const root = document.querySelector('[data-passenger-camera]');
     const form = document.querySelector('[data-passenger-report-form]');
+    const sessionCountdown = document.querySelector('[data-session-countdown]');
+
+    function pluralize(value, singular, plural = `${singular}s`) {
+        return `${value} ${value === 1 ? singular : plural}`;
+    }
+
+    function formatRemaining(seconds) {
+        if (seconds <= 0) {
+            return 'Expired';
+        }
+
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainingSeconds = seconds % 60;
+
+        if (hours > 0) {
+            return `${pluralize(hours, 'hour')} ${pluralize(minutes, 'minute')} remaining`;
+        }
+
+        return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')} remaining`;
+    }
+
+    function startSessionCountdown() {
+        if (!sessionCountdown) return;
+
+        const expiresAt = Number.parseInt(sessionCountdown.dataset.expiresAt, 10) * 1000;
+        const expiredRedirectUrl = sessionCountdown.dataset.expiredRedirect;
+
+        if (!Number.isFinite(expiresAt)) return;
+
+        let timer = null;
+        const updateCountdown = () => {
+            const secondsRemaining = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
+            sessionCountdown.textContent = formatRemaining(secondsRemaining);
+            sessionCountdown.classList.toggle('is-urgent', secondsRemaining > 0 && secondsRemaining <= 60);
+            sessionCountdown.classList.toggle('is-expired', secondsRemaining <= 0);
+
+            if (secondsRemaining <= 0 && timer) {
+                window.clearInterval(timer);
+            }
+
+            if (secondsRemaining <= 0 && expiredRedirectUrl) {
+                window.location.assign(expiredRedirectUrl);
+            }
+        };
+
+        updateCountdown();
+
+        if (!sessionCountdown.classList.contains('is-expired')) {
+            timer = window.setInterval(updateCountdown, 1000);
+        }
+    }
+
+    startSessionCountdown();
 
     if (!root || !form) return;
 

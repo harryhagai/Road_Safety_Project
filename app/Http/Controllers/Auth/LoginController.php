@@ -53,6 +53,17 @@ class LoginController extends Controller
 
         /** @var User $account */
         $account = Auth::user();
+
+        if (! $account->is_active) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            throw ValidationException::withMessages([
+                'email' => 'This account is inactive. Please contact a road officer.',
+            ]);
+        }
+
         $account->forceFill([
             'last_login_at' => now(),
         ])->save();

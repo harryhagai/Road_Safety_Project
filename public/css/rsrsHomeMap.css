@@ -87,12 +87,11 @@ main.flex-grow-1 {
     grid-template-columns: 42px minmax(0, 1fr);
     grid-template-areas:
         "dial label"
-        "dial value"
-        "dial status";
+        "dial value";
     align-items: center;
     column-gap: 0.7rem;
-    min-width: 154px;
-    max-width: 190px;
+    min-width: 132px;
+    max-width: 160px;
     padding: 0.68rem 0.78rem;
     border: 1px solid rgba(35, 44, 58, 0.1);
     border-radius: 18px;
@@ -167,15 +166,6 @@ main.flex-grow-1 {
     letter-spacing: 0;
     text-transform: none;
     color: #8a6a28;
-}
-
-.home-speed-widget small {
-    grid-area: status;
-    color: #6a778b;
-    font-size: 0.62rem;
-    line-height: 1.2;
-    text-align: left;
-    white-space: normal;
 }
 
 .home-speed-widget.is-live .home-speed-widget__ring {
@@ -983,8 +973,8 @@ main.flex-grow-1 {
     .home-speed-widget {
         bottom: 2.75rem;
         left: 0.35rem;
-        min-width: 164px;
-        max-width: 188px;
+        min-width: 136px;
+        max-width: 164px;
         padding: 0.68rem 0.75rem;
         border-radius: 16px;
         column-gap: 0.68rem;
@@ -1001,10 +991,6 @@ main.flex-grow-1 {
 
     .home-speed-widget__value strong {
         font-size: 1.16rem;
-    }
-
-    .home-speed-widget small {
-        font-size: 0.6rem;
     }
 
     .home-speed-alert {

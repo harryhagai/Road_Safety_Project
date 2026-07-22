@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class DriverAccessTest extends TestCase
@@ -295,5 +296,104 @@ class DriverAccessTest extends TestCase
             ->assertOk()
             ->assertSee('Passenger')
             ->assertDontSee('> Login</a>', false);
+    }
+
+    public function test_officer_can_manage_driver_accounts(): void
+    {
+        $suffix = strtolower(str()->random(8));
+
+        $officer = User::factory()->create([
+            'role' => User::ROLE_ROAD_OFFICER,
+            'email' => "driver-manager-{$suffix}@example.com",
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($officer)
+            ->get(route('officer.drivers.index'))
+            ->assertOk()
+            ->assertSee('Driver accounts')
+            ->assertSee('New Driver');
+
+        $this->actingAs($officer)
+            ->post(route('officer.drivers.store'), [
+                'name' => 'Managed Driver',
+                'email' => "managed-driver-{$suffix}@example.com",
+                'vehicle_name' => 'Toyota Hiace',
+                'plate_number' => "T 1{$suffix}",
+                'organization' => 'Managed Transport',
+                'password' => 'password123',
+                'password_confirmation' => 'password123',
+                'is_active' => '1',
+            ])
+            ->assertRedirect(route('officer.drivers.index'));
+
+        $driver = User::where('email', "managed-driver-{$suffix}@example.com")->firstOrFail();
+
+        $this->assertTrue($driver->isDriver());
+        $this->assertTrue($driver->is_active);
+
+        $this->actingAs($officer)
+            ->put(route('officer.drivers.update', $driver), [
+                'name' => 'Updated Managed Driver',
+                'email' => "updated-managed-driver-{$suffix}@example.com",
+                'vehicle_name' => 'Isuzu N-Series',
+                'plate_number' => "T 2{$suffix}",
+                'organization' => 'Updated Transport',
+                'is_active' => '1',
+            ])
+            ->assertRedirect(route('officer.drivers.index'));
+
+        $driver->refresh();
+        $this->assertSame('Updated Managed Driver', $driver->name);
+        $this->assertSame(strtoupper("T 2{$suffix}"), $driver->plate_number);
+
+        $this->actingAs($officer)
+            ->patch(route('officer.drivers.password', $driver), [
+                'password' => 'new-password123',
+                'password_confirmation' => 'new-password123',
+            ])
+            ->assertRedirect(route('officer.drivers.index'));
+
+        $this->assertTrue(Hash::check('new-password123', $driver->refresh()->password));
+
+        $this->actingAs($officer)
+            ->patch(route('officer.drivers.status', $driver), [
+                'is_active' => '0',
+            ])
+            ->assertRedirect(route('officer.drivers.index'));
+
+        $this->assertFalse($driver->refresh()->is_active);
+
+        $this->actingAs($officer)
+            ->delete(route('officer.drivers.destroy', $driver))
+            ->assertRedirect(route('officer.drivers.index'));
+
+        $this->assertDatabaseMissing('users', [
+            'id' => $driver->id,
+        ]);
+
+        $officer->delete();
+    }
+
+    public function test_inactive_driver_cannot_login(): void
+    {
+        $suffix = strtolower(str()->random(8));
+
+        $driver = User::factory()->create([
+            'role' => User::ROLE_DRIVER,
+            'email' => "inactive-driver-{$suffix}@example.com",
+            'password' => Hash::make('password123'),
+            'is_active' => false,
+        ]);
+
+        $this->post(route('login.submit'), [
+            'email' => $driver->email,
+            'password' => 'password123',
+        ])
+            ->assertSessionHasErrors('email');
+
+        $this->assertGuest();
+
+        $driver->delete();
     }
 }

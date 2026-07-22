@@ -11,6 +11,7 @@
         request()->is('road-officer/contact-messages*') ||
         request()->is('road-officer/notifications*');
     $isAdministrationMenuOpen =
+        request()->is('road-officer/drivers*') ||
         request()->is('road-officer/officers*') ||
         request()->is('road-officer/profile*') ||
         request()->is('admin/mail-settings*');
@@ -144,6 +145,12 @@
                 </a>
                 <div class="collapse ps-3 {{ $isAdministrationMenuOpen ? 'show' : '' }}" id="administrationMenu">
                     <ul class="nav flex-column">
+                        <li class="nav-item mb-1">
+                            <a href="{{ route('officer.drivers.index') }}"
+                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/drivers*') ? 'active is-current fw-bold shadow-sm' : '' }}">
+                                <i class="bi bi-bus-front"></i> Drivers
+                            </a>
+                        </li>
                         <li class="nav-item mb-1">
                             <a href="{{ url('/road-officer/officers') }}"
                                 class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/officers*') ? 'active is-current fw-bold shadow-sm' : '' }}">

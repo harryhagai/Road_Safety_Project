@@ -176,6 +176,7 @@
 
         ensureSpinnerStyles();
         button.dataset.spinnerActive = '1';
+        button.setAttribute('aria-busy', 'true');
         button.disabled = true;
 
         if (spinnerTheme === 'blue') {
@@ -245,6 +246,7 @@
 
         ensureSpinnerStyles();
         link.dataset.spinnerActive = '1';
+        link.setAttribute('aria-busy', 'true');
         link.dataset.originalHtml = link.innerHTML;
         link.style.pointerEvents = 'none';
         link.innerHTML = `
@@ -358,7 +360,7 @@
             return;
         }
 
-        const link = event.target.closest('.header-nav a, .footer-wrapper a, a.btn, .hero-chip-link, .auth-text-link, .auth-back-link, .auth-login-back-link, a[data-inline-spinner-link]');
+        const link = event.target.closest('.header-nav a, .footer-wrapper a, #sidebar a.nav-link, a.btn, .hero-chip-link, .auth-text-link, .auth-back-link, .auth-login-back-link, a[data-inline-spinner-link]');
         if (!shouldHandleLink(link, event)) {
             return;
         }

@@ -64,6 +64,7 @@
         pendingInitialPosition: null,
         reloadScheduled: false,
         reportedRuleIds: new Set(),
+        recentPassengerReportPopupRuleIds: new Set(),
         ui: {},
     };
 })(window);
