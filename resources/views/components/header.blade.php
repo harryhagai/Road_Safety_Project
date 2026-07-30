@@ -30,6 +30,7 @@
                 <li><a href="/" class="{{ $currentPath === '' ? 'active' : '' }}"><i class="bi bi-house-door"></i> Home</a></li>
                 <li><a href="/about" class="{{ $currentPath === 'about' ? 'active' : '' }}"><i class="bi bi-info-circle"></i> About us</a></li>
                 <li><a href="{{ route('contact') }}" class="{{ $currentPath === 'contact' ? 'active' : '' }}"><i class="bi bi-envelope-paper"></i> Contact</a></li>
+                <li><a href="{{ route('privacy') }}" class="{{ $currentPath === 'privacy' ? 'active' : '' }}"><i class="bi bi-shield-lock"></i> Privacy</a></li>
                 @if ($currentUser?->isDriver())
                     <li>
                         <a href="{{ route('driver.dashboard') }}" class="{{ str_starts_with($currentPath, 'driver/dashboard') ? 'active' : '' }}">

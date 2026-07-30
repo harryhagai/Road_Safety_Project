@@ -22,6 +22,14 @@
 <body data-disable-navigation-overlay="1">
     @php
         $roadofficerPageHeader = match (true) {
+            request()->is('admin/dashboard') => [
+                'title' => 'Admin Dashboard',
+                'subtitle' => 'Manage users, access, and system-level account controls.',
+            ],
+            request()->is('admin/users*') => [
+                'title' => 'All Users',
+                'subtitle' => 'Manage every account, role, password, and access status across RSRS.',
+            ],
             request()->is('road-officer/dashboard') || request()->is('roadofficer/dashboard') => [
                 'title' => 'Road Officer Dashboard',
                 'subtitle' => 'Monitor reports, violations, rules, and hotspot activity from one workspace.',

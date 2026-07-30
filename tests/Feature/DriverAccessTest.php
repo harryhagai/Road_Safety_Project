@@ -75,10 +75,11 @@ class DriverAccessTest extends TestCase
             ->assertSee('Bus operator / company')
             ->assertSee('Bus plate number')
             ->assertDontSee('Fleet / side number')
-            ->assertSee('Start camera')
             ->assertSee('Required')
             ->assertSee('Optional')
-            ->assertSee('saved inside the database');
+            ->assertDontSee('Start camera')
+            ->assertDontSee('Bus image')
+            ->assertDontSee('saved inside the database');
     }
 
     public function test_passenger_report_requires_bus_identity_without_requiring_image(): void
@@ -97,6 +98,49 @@ class DriverAccessTest extends TestCase
                 'bus_plate_number',
             ])
             ->assertSessionDoesntHaveErrors('evidence_image');
+    }
+
+    public function test_passenger_bus_suggestions_match_registered_active_drivers(): void
+    {
+        $suffix = strtolower(str()->random(8));
+
+        $activeDriver = User::factory()->create([
+            'role' => User::ROLE_DRIVER,
+            'email' => "suggest-active-{$suffix}@example.com",
+            'is_active' => true,
+            'vehicle_name' => 'Toyota Coaster',
+            'plate_number' => 'T 345 SUG',
+            'organization' => 'Safari Link',
+        ]);
+
+        $inactiveDriver = User::factory()->create([
+            'role' => User::ROLE_DRIVER,
+            'email' => "suggest-inactive-{$suffix}@example.com",
+            'is_active' => false,
+            'vehicle_name' => 'Inactive Bus',
+            'plate_number' => 'T 999 SUG',
+            'organization' => 'Hidden Link',
+        ]);
+
+        $officer = User::factory()->create([
+            'role' => User::ROLE_ROAD_OFFICER,
+            'email' => "suggest-officer-{$suffix}@example.com",
+            'is_active' => true,
+            'vehicle_name' => 'Officer Vehicle',
+            'plate_number' => 'T 888 SUG',
+            'organization' => 'Officer Link',
+        ]);
+
+        $this->getJson(route('passenger.bus-suggestions', ['q' => 'Safari']))
+            ->assertOk()
+            ->assertJsonPath('data.0.operator', 'Safari Link')
+            ->assertJsonPath('data.0.plate_number', 'T 345 SUG')
+            ->assertJsonMissing(['operator' => 'Hidden Link'])
+            ->assertJsonMissing(['operator' => 'Officer Link']);
+
+        $activeDriver->delete();
+        $inactiveDriver->delete();
+        $officer->delete();
     }
 
     public function test_driver_report_form_requires_a_pending_detected_violation(): void
@@ -296,6 +340,51 @@ class DriverAccessTest extends TestCase
             ->assertOk()
             ->assertSee('Passenger')
             ->assertDontSee('> Login</a>', false);
+    }
+
+    public function test_admin_has_dashboard_and_can_manage_all_users(): void
+    {
+        $suffix = strtolower(str()->random(8));
+
+        $admin = User::factory()->create([
+            'role' => User::ROLE_ADMIN,
+            'email' => "admin-manage-{$suffix}@example.com",
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('Admin overview')
+            ->assertSee(route('admin.users.index'), false);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('All users')
+            ->assertSee('New User')
+            ->assertSee('All Users')
+            ->assertDontSee('> Officers</a>', false);
+
+        $this->actingAs($admin)
+            ->post(route('admin.users.store'), [
+                'name' => 'Managed Passenger',
+                'email' => "managed-passenger-{$suffix}@example.com",
+                'role' => User::ROLE_PASSENGER,
+                'password' => 'password123',
+                'password_confirmation' => 'password123',
+                'is_active' => '1',
+            ])
+            ->assertRedirect(route('admin.users.index'));
+
+        $this->assertDatabaseHas('users', [
+            'email' => "managed-passenger-{$suffix}@example.com",
+            'role' => User::ROLE_PASSENGER,
+            'is_active' => true,
+        ]);
+
+        User::where('email', "managed-passenger-{$suffix}@example.com")->delete();
+        $admin->delete();
     }
 
     public function test_officer_can_manage_driver_accounts(): void

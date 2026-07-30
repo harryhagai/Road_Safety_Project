@@ -7,7 +7,7 @@
 @section('content')
     @php
         $objectives = [
-            ['icon' => 'bi-phone', 'title' => 'Mobile-first reporting', 'text' => 'A Bootstrap web interface that supports registered driver tracking and evidence-backed passenger reports from phones or desktop devices.'],
+            ['icon' => 'bi-phone', 'title' => 'Mobile-first reporting', 'text' => 'A Bootstrap web interface that supports registered driver tracking and passenger bus reports from phones or desktop devices.'],
             ['icon' => 'bi-geo-alt', 'title' => 'Geospatial accuracy', 'text' => 'Map-based location capture helps reports include coordinates, nearby places, and safer context for response teams.'],
             ['icon' => 'bi-shield-lock', 'title' => 'Secure officer portal', 'text' => 'Authorized road officers can log in, review reports, manage rules, and make decisions from a protected dashboard.'],
             ['icon' => 'bi-graph-up-arrow', 'title' => 'Preventive analysis', 'text' => 'Reported patterns can reveal risky roads, recurring violations, and hotspot areas before more serious crashes happen.'],
@@ -15,14 +15,14 @@
 
         $stakeholders = [
             ['icon' => 'bi-car-front', 'title' => 'Registered drivers', 'text' => 'Track movement and submit reports linked to a driver, vehicle, plate number, and organization.'],
-            ['icon' => 'bi-person-walking', 'title' => 'Passengers', 'text' => 'Submit bus details and capture direct camera evidence without creating an account.'],
+            ['icon' => 'bi-person-walking', 'title' => 'Passengers', 'text' => 'Submit bus details without creating an account.'],
             ['icon' => 'bi-person-badge', 'title' => 'Road officers', 'text' => 'Receive structured reports, review evidence, update status, and coordinate enforcement actions.'],
             ['icon' => 'bi-building-check', 'title' => 'Transport authorities', 'text' => 'Use location data, analytics, and summaries to support planning and road safety decisions.'],
         ];
 
         $features = [
             'Identified driver traffic violation reporting',
-            'Passenger bus reporting with direct camera evidence',
+            'Passenger bus reporting with operator and plate details',
             'Map location selection and GPS coordinates',
             'Evidence upload support for photos or videos',
             'Reference number tracking for submitted reports',

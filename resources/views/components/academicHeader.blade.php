@@ -8,6 +8,8 @@
     $headerNotifications = $notificationSource ? $notificationSource->latest()->limit(6)->get() : collect();
     $headerUnreadCount = $notificationSource ? $notificationSource->unread()->count() : 0;
     $officerDisplayName = $currentOfficer->name ?? 'Road Officer';
+    $panelTitle = $currentOfficer?->isAdmin() ? 'Admin Panel' : 'Road Officer Panel';
+    $dashboardHref = $currentOfficer?->isAdmin() ? route('admin.dashboard') : url('/road-officer/dashboard');
 @endphp
 
 <header id="main-header" class="d-flex align-items-center justify-content-between bg-white border-bottom shadow-sm px-3">
@@ -16,9 +18,9 @@
             <i id="sidebarToggleIcon" class="bi bi-layout-sidebar-inset fs-5"></i>
         </button>
 
-        <div id="activePageTitle" class="header-page-pill" data-default-title="Road Officer Panel">
+        <div id="activePageTitle" class="header-page-pill" data-default-title="{{ $panelTitle }}">
             <span class="header-page-dot" aria-hidden="true"></span>
-            <span class="header-page-label">Road Officer Panel</span>
+            <span class="header-page-label">{{ $panelTitle }}</span>
         </div>
     </div>
 
@@ -40,7 +42,7 @@
                     <div class="text-muted small">Jump to commonly used pages.</div>
                 </div>
                 <div class="py-2">
-                    <a href="{{ url('/road-officer/dashboard') }}" class="dropdown-item d-flex align-items-center gap-2 py-2">
+                    <a href="{{ $dashboardHref }}" class="dropdown-item d-flex align-items-center gap-2 py-2">
                         <i class="bi bi-speedometer2 header-theme-icon"></i>
                         <span>Dashboard</span>
                     </a>

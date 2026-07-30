@@ -12,7 +12,7 @@
             <aside class="passenger-report-summary">
                 <span class="passenger-report-eyebrow"><i class="bi bi-exclamation-triangle"></i> Violation detected</span>
                 <h1>Help identify the bus</h1>
-                <p>The violation has been detected. Add the bus details before submitting. A bus image can be added if available.</p>
+                <p>The violation has been detected. Add the bus details before submitting.</p>
 
                 <div class="passenger-report-detected">
                     <div><span>Violation</span><strong>{{ $pending['violation_type'] }}</strong></div>
@@ -52,20 +52,25 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('passenger.reports.store') }}" class="passenger-report-form" data-passenger-report-form>
+                <form method="POST" action="{{ route('passenger.reports.store') }}" class="passenger-report-form" data-passenger-report-form data-bus-suggestions-url="{{ route('passenger.bus-suggestions') }}">
                     @csrf
                     <input type="hidden" name="pending_token" value="{{ $pending['token'] }}">
-                    <input type="hidden" name="evidence_image" value="" data-passenger-evidence-input>
 
                     <div class="passenger-report-grid">
                         <div class="passenger-field">
                             <label for="bus_operator">Bus operator / company <span>Required</span></label>
-                            <input id="bus_operator" name="bus_operator" type="text" value="{{ old('bus_operator') }}" maxlength="191" placeholder="Example: ABC Transport" required>
+                            <div class="passenger-autocomplete" data-bus-autocomplete>
+                                <input id="bus_operator" name="bus_operator" type="text" value="{{ old('bus_operator') }}" maxlength="191" placeholder="Example: ABC Transport" autocomplete="off" data-bus-operator-input required>
+                                <div class="passenger-autocomplete__menu" data-bus-suggestions role="listbox" hidden></div>
+                            </div>
                         </div>
 
                         <div class="passenger-field">
                             <label for="bus_plate_number">Bus plate number <span>Required</span></label>
-                            <input id="bus_plate_number" name="bus_plate_number" type="text" value="{{ old('bus_plate_number') }}" maxlength="50" placeholder="Example: T 123 ABC" required>
+                            <div class="passenger-autocomplete" data-bus-autocomplete>
+                                <input id="bus_plate_number" name="bus_plate_number" type="text" value="{{ old('bus_plate_number') }}" maxlength="50" placeholder="Example: T 123 ABC" autocomplete="off" data-bus-plate-input required>
+                                <div class="passenger-autocomplete__menu" data-bus-suggestions role="listbox" hidden></div>
+                            </div>
                         </div>
 
                         <div class="passenger-field">
@@ -82,41 +87,6 @@
                             <label for="passenger_phone">Phone number <small>Optional</small></label>
                             <input id="passenger_phone" name="passenger_phone" type="tel" value="{{ old('passenger_phone') }}" maxlength="50" placeholder="For officer follow-up only">
                         </div>
-                    </div>
-
-                    <div class="passenger-camera" data-passenger-camera>
-                        <div class="passenger-camera__heading">
-                            <div>
-                                <span>Bus image <small>Optional</small></span>
-                                <p>Capture the bus directly if available. The image is compressed in the browser and saved inside the database, not the server filesystem.</p>
-                            </div>
-                            <button type="button" class="btn btn-outline-dark" data-camera-start>
-                                <i class="bi bi-camera-video"></i> Start camera
-                            </button>
-                        </div>
-
-                        <div class="passenger-camera__stage">
-                            <video playsinline autoplay muted data-camera-video hidden></video>
-                            <img alt="Captured bus evidence preview" data-camera-preview hidden>
-                            <div class="passenger-camera__empty" data-camera-empty>
-                                <i class="bi bi-camera"></i>
-                                <span>No image captured yet.</span>
-                            </div>
-                        </div>
-
-                        <div class="passenger-camera__actions">
-                            <button type="button" class="btn btn-dark" data-camera-capture disabled>
-                                <i class="bi bi-camera-fill"></i> Capture image
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary" data-camera-retake hidden>
-                                <i class="bi bi-arrow-counterclockwise"></i> Retake
-                            </button>
-                            <label class="btn btn-outline-dark passenger-camera__fallback" data-camera-fallback-label hidden>
-                                <i class="bi bi-phone"></i> Open device camera
-                                <input type="file" accept="image/*" capture="environment" data-camera-fallback hidden>
-                            </label>
-                        </div>
-                        <div class="passenger-camera__message" data-camera-message aria-live="polite"></div>
                     </div>
 
                     <div class="passenger-field">

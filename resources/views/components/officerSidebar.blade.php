@@ -1,6 +1,8 @@
 {{-- Reusable Blade component used across multiple RSRS pages. --}}
 
 @php
+    $dashboardUrl = auth()->user()?->isAdmin() ? route('admin.dashboard') : url('/road-officer/dashboard');
+    $dashboardActive = request()->is('admin/dashboard') || request()->is('road-officer/dashboard');
     $isOperationsMenuOpen =
         request()->is('road-officer/road-segments*') ||
         request()->is('road-officer/segment-types*') ||
@@ -11,8 +13,8 @@
         request()->is('road-officer/contact-messages*') ||
         request()->is('road-officer/notifications*');
     $isAdministrationMenuOpen =
+        request()->is('admin/users*') ||
         request()->is('road-officer/drivers*') ||
-        request()->is('road-officer/officers*') ||
         request()->is('road-officer/profile*') ||
         request()->is('admin/mail-settings*');
 @endphp
@@ -25,13 +27,13 @@
             </div>
             <div class="officer-sidebar-brand-text">
                 <div class="officer-sidebar-brand-title">RSRS</div>
-                <div class="officer-sidebar-brand-subtitle">Officer Panel</div>
+                <div class="officer-sidebar-brand-subtitle">{{ auth()->user()?->isAdmin() ? 'Admin Panel' : 'Officer Panel' }}</div>
             </div>
         </div>
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a href="{{ url('/road-officer/dashboard') }}"
-                    class="nav-link {{ request()->is('road-officer/dashboard') ? 'active' : '' }}">
+                <a href="{{ $dashboardUrl }}"
+                    class="nav-link {{ $dashboardActive ? 'active' : '' }}">
                     <i class="bi bi-signpost-2-fill"></i> Dashboard
                 </a>
             </li>
@@ -151,13 +153,13 @@
                                 <i class="bi bi-bus-front"></i> Drivers
                             </a>
                         </li>
-                        <li class="nav-item mb-1">
-                            <a href="{{ url('/road-officer/officers') }}"
-                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/officers*') ? 'active is-current fw-bold shadow-sm' : '' }}">
-                                <i class="bi bi-person-vcard"></i> Officers
-                            </a>
-                        </li>
                         @if (auth()->user()?->isAdmin())
+                            <li class="nav-item mb-1">
+                                <a href="{{ route('admin.users.index') }}"
+                                    class="nav-link officer-sidebar-sub-link {{ request()->is('admin/users*') ? 'active is-current fw-bold shadow-sm' : '' }}">
+                                    <i class="bi bi-people-fill"></i> All Users
+                                </a>
+                            </li>
                             <li class="nav-item mb-1">
                                 <a href="{{ route('admin.mail_settings.content') }}"
                                     class="nav-link officer-sidebar-sub-link {{ request()->is('admin/mail-settings*') ? 'active is-current fw-bold shadow-sm' : '' }}">

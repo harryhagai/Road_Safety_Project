@@ -1,5 +1,4 @@
 (function () {
-    const root = document.querySelector('[data-passenger-camera]');
     const form = document.querySelector('[data-passenger-report-form]');
     const sessionCountdown = document.querySelector('[data-session-countdown]');
 
@@ -56,117 +55,122 @@
 
     startSessionCountdown();
 
-    if (!root || !form) return;
+    function initBusSuggestions() {
+        if (!form) return;
 
-    const video = root.querySelector('[data-camera-video]');
-    const preview = root.querySelector('[data-camera-preview]');
-    const empty = root.querySelector('[data-camera-empty]');
-    const startButton = root.querySelector('[data-camera-start]');
-    const captureButton = root.querySelector('[data-camera-capture]');
-    const retakeButton = root.querySelector('[data-camera-retake]');
-    const fallbackInput = root.querySelector('[data-camera-fallback]');
-    const fallbackLabel = root.querySelector('[data-camera-fallback-label]');
-    const message = root.querySelector('[data-camera-message]');
-    const evidenceInput = form.querySelector('[data-passenger-evidence-input]');
-    let stream = null;
+        const suggestionsUrl = form.dataset.busSuggestionsUrl;
+        const operatorInput = form.querySelector('[data-bus-operator-input]');
+        const plateInput = form.querySelector('[data-bus-plate-input]');
+        const menus = Array.from(form.querySelectorAll('[data-bus-suggestions]'));
+        let controller = null;
+        let activeInput = null;
+        let debounceTimer = null;
 
-    function setMessage(text, isError = false) {
-        message.textContent = text;
-        message.classList.toggle('is-error', isError);
-    }
+        if (!suggestionsUrl || !operatorInput || !plateInput || menus.length === 0) return;
 
-    function stopCamera() {
-        if (!stream) return;
-        stream.getTracks().forEach((track) => track.stop());
-        stream = null;
-        video.srcObject = null;
-    }
-
-    function showCaptured(dataUrl) {
-        evidenceInput.value = dataUrl;
-        preview.src = dataUrl;
-        preview.hidden = false;
-        video.hidden = true;
-        empty.hidden = true;
-        captureButton.disabled = true;
-        retakeButton.hidden = false;
-        setMessage('Image captured and ready to submit.');
-        stopCamera();
-    }
-
-    function compressImage(source, sourceWidth, sourceHeight) {
-        const maxWidth = 1280;
-        const maxHeight = 960;
-        const scale = Math.min(1, maxWidth / sourceWidth, maxHeight / sourceHeight);
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.max(1, Math.round(sourceWidth * scale));
-        canvas.height = Math.max(1, Math.round(sourceHeight * scale));
-        canvas.getContext('2d').drawImage(source, 0, 0, canvas.width, canvas.height);
-
-        return canvas.toDataURL('image/jpeg', 0.8);
-    }
-
-    async function startCamera() {
-        if (!navigator.mediaDevices?.getUserMedia) {
-            fallbackLabel.hidden = false;
-            setMessage('Live camera is unavailable. Use the device camera button.', true);
-            return;
-        }
-
-        try {
-            stopCamera();
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: { ideal: 'environment' } },
-                audio: false,
+        function hideMenus() {
+            menus.forEach((menu) => {
+                menu.hidden = true;
+                menu.innerHTML = '';
             });
-            video.srcObject = stream;
-            video.hidden = false;
-            preview.hidden = true;
-            empty.hidden = true;
-            captureButton.disabled = false;
-            retakeButton.hidden = true;
-            setMessage('Camera ready. Keep the bus and plate number visible.');
-        } catch (error) {
-            fallbackLabel.hidden = false;
-            setMessage('Camera permission was not available. Use the device camera button.', true);
         }
+
+        function suggestionText(item) {
+            return [item.operator, item.vehicle, item.plate_number].filter(Boolean).join(' · ');
+        }
+
+        function applySuggestion(item) {
+            operatorInput.value = item.operator || '';
+            plateInput.value = item.plate_number || '';
+            hideMenus();
+        }
+
+        function renderSuggestions(items) {
+            hideMenus();
+
+            if (!activeInput || items.length === 0) return;
+
+            const autocomplete = activeInput.closest('[data-bus-autocomplete]');
+            const menu = autocomplete?.querySelector('[data-bus-suggestions]');
+            if (!menu) return;
+
+            const fragment = document.createDocumentFragment();
+
+            items.forEach((item) => {
+                const option = document.createElement('button');
+                const title = document.createElement('strong');
+                const meta = document.createElement('span');
+                option.type = 'button';
+                option.className = 'passenger-autocomplete__option';
+                option.setAttribute('role', 'option');
+                title.textContent = item.label || item.operator || 'Registered bus';
+                meta.textContent = suggestionText(item);
+                option.append(title, meta);
+                option.addEventListener('mousedown', (event) => event.preventDefault());
+                option.addEventListener('click', () => applySuggestion(item));
+                fragment.appendChild(option);
+            });
+
+            menu.appendChild(fragment);
+            menu.hidden = false;
+        }
+
+        async function fetchSuggestions(query) {
+            if (controller) {
+                controller.abort();
+            }
+
+            controller = new AbortController();
+            const url = new URL(suggestionsUrl, window.location.origin);
+            url.searchParams.set('q', query);
+
+            try {
+                const response = await fetch(url, {
+                    headers: { Accept: 'application/json' },
+                    signal: controller.signal,
+                });
+
+                if (!response.ok) return;
+
+                const payload = await response.json();
+                renderSuggestions(Array.isArray(payload.data) ? payload.data : []);
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    hideMenus();
+                }
+            }
+        }
+
+        function queueSuggestions(input) {
+            activeInput = input;
+            const query = input.value.trim();
+            window.clearTimeout(debounceTimer);
+
+            if (query.length < 2) {
+                hideMenus();
+                return;
+            }
+
+            debounceTimer = window.setTimeout(() => fetchSuggestions(query), 220);
+        }
+
+        [operatorInput, plateInput].forEach((input) => {
+            input.addEventListener('input', () => queueSuggestions(input));
+            input.addEventListener('focus', () => queueSuggestions(input));
+            input.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    hideMenus();
+                }
+            });
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('[data-bus-autocomplete]')) {
+                hideMenus();
+            }
+        });
     }
 
-    startButton.addEventListener('click', startCamera);
+    initBusSuggestions();
 
-    captureButton.addEventListener('click', () => {
-        if (!video.videoWidth || !video.videoHeight) {
-            setMessage('Wait for the camera preview, then capture again.', true);
-            return;
-        }
-
-        showCaptured(compressImage(video, video.videoWidth, video.videoHeight));
-    });
-
-    retakeButton.addEventListener('click', () => {
-        evidenceInput.value = '';
-        preview.src = '';
-        preview.hidden = true;
-        empty.hidden = false;
-        retakeButton.hidden = true;
-        startCamera();
-    });
-
-    fallbackInput.addEventListener('change', () => {
-        const file = fallbackInput.files?.[0];
-        if (!file || !file.type.startsWith('image/')) {
-            setMessage('Select a valid image from the device camera.', true);
-            return;
-        }
-
-        const image = new Image();
-        image.onload = () => {
-            showCaptured(compressImage(image, image.naturalWidth, image.naturalHeight));
-            URL.revokeObjectURL(image.src);
-        };
-        image.onerror = () => setMessage('The selected image could not be read.', true);
-        image.src = URL.createObjectURL(file);
-    });
-
-    window.addEventListener('pagehide', stopCamera);
 })();

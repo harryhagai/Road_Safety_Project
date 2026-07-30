@@ -130,7 +130,8 @@ class User extends Authenticatable
     {
         return match ($this->role) {
             self::ROLE_DRIVER => 'driver.dashboard',
-            self::ROLE_ROAD_OFFICER, self::ROLE_ADMIN => 'officer.dashboard',
+            self::ROLE_ROAD_OFFICER => 'officer.dashboard',
+            self::ROLE_ADMIN => 'admin.dashboard',
             default => 'home',
         };
     }

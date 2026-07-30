@@ -82,7 +82,7 @@
                     Reports sent to the officer dashboard may include the selected violation type, description, time,
                     coordinates, resolved location name, automatic rule-match details, driver ID, driver name, email,
                     vehicle name, plate number, and organization. Passenger reports may include bus operator, bus plate
-                    number, route, optional passenger contact details, and a camera image stored directly in the database.
+                    number, route, optional passenger contact details, and additional notes.
                 </p>
 
                 <h2>User Control</h2>
@@ -90,7 +90,7 @@
                     <li>Browser location access depends on your permission.</li>
                     <li>You can deny or revoke location access from browser settings.</li>
                     <li>Automatic reports are created only when the saved rule conditions are met.</li>
-                    <li>Automatic driver submission requires driver login; passenger submission requires bus identification and captured evidence.</li>
+                    <li>Automatic driver submission requires driver login; passenger submission requires bus identification details.</li>
                     <li>Passengers do not need an account and may omit their name and phone number.</li>
                 </ul>
             </article>

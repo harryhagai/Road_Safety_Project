@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\MailSettingController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\AutoSpeedReportController;
 use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\DriverDashboardController;
@@ -65,6 +67,9 @@ Route::get('/driver/violation-report/success', [AutoSpeedReportController::class
 
 Route::get('/passenger/report', [PassengerReportController::class, 'create'])
     ->name('passenger.reports.create');
+Route::get('/passenger/bus-suggestions', [PassengerReportController::class, 'busSuggestions'])
+    ->middleware('throttle:60,1')
+    ->name('passenger.bus-suggestions');
 Route::post('/passenger/report', [PassengerReportController::class, 'store'])
     ->middleware('throttle:8,1')
     ->name('passenger.reports.store');
@@ -114,6 +119,20 @@ Route::middleware(['auth', 'role:road_officer,admin'])->group(function () {
 });
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])
+        ->name('admin.dashboard');
+    Route::get('/users', [AdminUserController::class, 'index'])
+        ->name('admin.users.index');
+    Route::post('/users', [AdminUserController::class, 'store'])
+        ->name('admin.users.store');
+    Route::put('/users/{user}', [AdminUserController::class, 'update'])
+        ->name('admin.users.update');
+    Route::patch('/users/{user}/password', [AdminUserController::class, 'resetPassword'])
+        ->name('admin.users.password');
+    Route::patch('/users/{user}/status', [AdminUserController::class, 'updateStatus'])
+        ->name('admin.users.status');
+    Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])
+        ->name('admin.users.destroy');
     Route::get('/mail-settings/content', [MailSettingController::class, 'content'])
         ->name('admin.mail_settings.content');
     Route::post('/mail-settings/store', [MailSettingController::class, 'store'])

@@ -15,6 +15,17 @@ class UserSeeder extends Seeder
                 'name' => 'Hagai Road Officer',
                 'password' => 'rsrs@44242444!',
                 'role' => User::ROLE_ROAD_OFFICER,
+                'is_active' => true,
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'admin@rsrs.test'],
+            [
+                'name' => 'RSRS Admin',
+                'password' => 'Admin@12345',
+                'role' => User::ROLE_ADMIN,
+                'is_active' => true,
             ]
         );
     }

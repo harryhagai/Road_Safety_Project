@@ -25,7 +25,7 @@ class UnifiedUserRolesTest extends TestCase
         $this->assertSame('home', $passenger->dashboardRouteName());
         $this->assertSame('driver.dashboard', $driver->dashboardRouteName());
         $this->assertSame('officer.dashboard', $roadOfficer->dashboardRouteName());
-        $this->assertSame('officer.dashboard', $admin->dashboardRouteName());
+        $this->assertSame('admin.dashboard', $admin->dashboardRouteName());
         $this->assertTrue($roadOfficer->canAccessOfficerWorkspace());
         $this->assertTrue($admin->canAccessOfficerWorkspace());
         $this->assertFalse($driver->canAccessOfficerWorkspace());
