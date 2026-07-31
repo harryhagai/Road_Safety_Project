@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\MailSetting;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 
@@ -24,6 +25,8 @@ class MailSettingService
             config([
                 ...$this->configForSetting($setting),
             ]);
+
+            Mail::purge($setting->mailer);
         } catch (Throwable) {
             return;
         }
@@ -32,6 +35,7 @@ class MailSettingService
     public function applySetting(MailSetting $setting): void
     {
         config($this->configForSetting($setting));
+        Mail::purge($setting->mailer);
     }
 
     public function activeSettingForPurpose(string $purpose = 'password_reset'): ?MailSetting

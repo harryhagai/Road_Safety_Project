@@ -183,14 +183,16 @@
                 <div class="section-shell">
                     <div class="text-center mb-4">
                         <h2 class="section-title mb-2">Contact Us</h2>
-                        <p class="section-intro mb-0">Reach out to Road Safety Reporting System for support or general enquiries.</p>
+                        <p class="section-intro mb-0">Reach out to Road Safety Reporting System for support or general
+                            enquiries.</p>
                     </div>
 
                     <div class="row g-4 justify-content-center">
                         <div class="col-lg-8">
                             <div class="contact-form-card">
                                 <h4>Send a Message</h4>
-                                <p class="mb-4">Fill in the form below and our team will review your message as soon as possible.</p>
+                                <p class="mb-4">Fill in the form below and our team will review your message as soon as
+                                    possible.</p>
 
                                 @if (session('status'))
                                     <div class="alert alert-success contact-feedback mb-4">{{ session('status') }}</div>
@@ -204,19 +206,15 @@
 
                                 <form method="POST" action="{{ route('contact.store') }}">
                                     @csrf
-                                    <input type="text" name="website" class="d-none" tabindex="-1" autocomplete="off" aria-hidden="true">
+                                    <input type="text" name="website" class="d-none" tabindex="-1" autocomplete="off"
+                                        aria-hidden="true">
 
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label for="contact_name" class="form-label">Full Name</label>
-                                            <input
-                                                id="contact_name"
-                                                type="text"
-                                                name="name"
+                                            <input id="contact_name" type="text" name="name"
                                                 class="form-control @error('name') is-invalid @enderror"
-                                                value="{{ old('name') }}"
-                                                placeholder="Enter your full name"
-                                                required>
+                                                value="{{ old('name') }}" placeholder="Enter your full name" required>
                                             @error('name')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -224,14 +222,9 @@
 
                                         <div class="col-md-6">
                                             <label for="contact_email" class="form-label">Email Address</label>
-                                            <input
-                                                id="contact_email"
-                                                type="email"
-                                                name="email"
+                                            <input id="contact_email" type="email" name="email"
                                                 class="form-control @error('email') is-invalid @enderror"
-                                                value="{{ old('email') }}"
-                                                placeholder="name@example.com"
-                                                required>
+                                                value="{{ old('email') }}" placeholder="name@example.com" required>
                                             @error('email')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -239,13 +232,9 @@
 
                                         <div class="col-md-6">
                                             <label for="contact_phone" class="form-label">Phone Number</label>
-                                            <input
-                                                id="contact_phone"
-                                                type="text"
-                                                name="phone"
+                                            <input id="contact_phone" type="text" name="phone"
                                                 class="form-control @error('phone') is-invalid @enderror"
-                                                value="{{ old('phone') }}"
-                                                placeholder="Optional phone number">
+                                                value="{{ old('phone') }}" placeholder="Optional phone number">
                                             @error('phone')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -253,14 +242,9 @@
 
                                         <div class="col-md-6">
                                             <label for="contact_subject" class="form-label">Subject</label>
-                                            <input
-                                                id="contact_subject"
-                                                type="text"
-                                                name="subject"
+                                            <input id="contact_subject" type="text" name="subject"
                                                 class="form-control @error('subject') is-invalid @enderror"
-                                                value="{{ old('subject') }}"
-                                                placeholder="What is this about?"
-                                                required>
+                                                value="{{ old('subject') }}" placeholder="What is this about?" required>
                                             @error('subject')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -268,12 +252,8 @@
 
                                         <div class="col-12">
                                             <label for="contact_message" class="form-label">Message</label>
-                                            <textarea
-                                                id="contact_message"
-                                                name="message"
-                                                class="form-control @error('message') is-invalid @enderror"
-                                                placeholder="Write your message here..."
-                                                required>{{ old('message') }}</textarea>
+                                            <textarea id="contact_message" name="message" class="form-control @error('message') is-invalid @enderror"
+                                                placeholder="Write your message here..." required>{{ old('message') }}</textarea>
                                             @error('message')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -281,7 +261,8 @@
                                     </div>
 
                                     <div class="mt-4 text-center">
-                                        <button type="submit" class="btn btn-primary btn-lg contact-submit-btn" data-auth-submit data-loading-text="Sending message...">
+                                        <button type="submit" class="btn btn-primary btn-lg contact-submit-btn"
+                                            data-auth-submit data-loading-text="Sending message...">
                                             <i class="bi bi-send"></i>
                                             <span data-auth-submit-label>Send Message</span>
                                         </button>
@@ -321,7 +302,8 @@
                                     <i class="bi bi-envelope-fill feature-icon"></i>
                                     <h5>Email Us</h5>
                                     <p>
-                                        <a href="mailto:lucretianjau506@gmail.com" class="contact-link">lucretianjau506@gmail.com</a><br>
+                                        <a href="mailto:lucretianjau506@gmail.com"
+                                            class="contact-link">lucretianjau506@gmail.com</a><br>
                                         <a href="mailto:hgogarty75@gmail.com" class="contact-link">hgogarty75@gmail.com</a>
                                     </p>
                                 </div>

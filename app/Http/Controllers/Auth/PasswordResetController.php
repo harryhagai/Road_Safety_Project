@@ -4,14 +4,17 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\MailSettingService;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\View\View;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 /**
  * Auth controller that manages the PasswordResetController flow for RSRS users.
@@ -35,9 +38,24 @@ class PasswordResetController extends Controller
             'email' => ['required', 'email', 'exists:users,email'],
         ]);
 
-        $status = Password::broker('users')->sendResetLink(
-            $request->only('email')
-        );
+        app(MailSettingService::class)->applyActiveSetting('password_reset');
+
+        try {
+            $status = Password::sendResetLink(
+                $request->only('email')
+            );
+        } catch (TransportExceptionInterface $exception) {
+            Log::error('Password reset email could not be sent.', [
+                'email' => $request->input('email'),
+                'message' => $exception->getMessage(),
+            ]);
+
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors([
+                    'email' => 'We could not send the reset email. Please check the SMTP host, port, encryption, username, and password in Mail Settings.',
+                ]);
+        }
 
         if ($status !== Password::RESET_LINK_SENT) {
             return back()

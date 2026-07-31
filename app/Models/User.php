@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\RsrsResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -99,6 +100,11 @@ class User extends Authenticatable
     public function handledContactMessages(): HasMany
     {
         return $this->hasMany(ContactMessage::class, 'officer_id');
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new RsrsResetPasswordNotification($token));
     }
 
     public function isDriver(): bool
