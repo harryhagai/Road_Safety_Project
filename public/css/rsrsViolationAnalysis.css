@@ -32,7 +32,7 @@
     margin-bottom: 0.28rem;
     color: var(--analysis-muted);
     font-size: 0.76rem;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .officer-analysis-panel--filters :is(.form-control, .form-select, .btn) {
@@ -70,7 +70,7 @@
     color: #12345d;
     font-size: 1.25rem;
     line-height: 1;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .officer-analysis-stat__icon {
@@ -117,11 +117,12 @@
     margin: 0.15rem 0 0;
     color: #12345d;
     font-size: 0.94rem;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .officer-analysis-panel__head strong {
     color: var(--analysis-accent);
+    font-weight: 500;
     white-space: nowrap;
 }
 
@@ -164,6 +165,7 @@
 .officer-analysis-rank strong {
     color: #12345d;
     flex-shrink: 0;
+    font-weight: 500;
 }
 
 .officer-analysis-empty {
@@ -188,7 +190,7 @@
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .officer-analysis-badge {
@@ -199,7 +201,7 @@
     background: var(--analysis-primary-soft);
     color: var(--analysis-primary);
     font-size: 0.72rem;
-    font-weight: 600;
+    font-weight: 500;
     white-space: nowrap;
 }
 

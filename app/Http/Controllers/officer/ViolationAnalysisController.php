@@ -5,11 +5,9 @@ namespace App\Http\Controllers\officer;
 use App\Http\Controllers\Controller;
 use App\Models\Report;
 use App\Models\ViolationType;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -29,18 +27,6 @@ class ViolationAnalysisController extends Controller
         $data = $this->analysisData($request);
 
         return view('officer.violation-analysis.index', $data);
-    }
-
-    public function downloadPdf(Request $request): Response
-    {
-        $data = $this->analysisData($request);
-
-        $pdf = Pdf::loadView('officer.violation-analysis.pdf', $data)
-            ->setPaper('a4', 'portrait');
-
-        $generatedAt = now()->format('Ymd-His');
-
-        return $pdf->download("violation-analysis-{$generatedAt}.pdf");
     }
 
     private function analysisData(Request $request): array
@@ -65,6 +51,8 @@ class ViolationAnalysisController extends Controller
             'total' => $totalReports,
             'automatic' => $automaticReports,
             'manual' => max($totalReports - $automaticReports, 0),
+            'automatic_ratio' => $totalReports > 0 ? round(($automaticReports / $totalReports) * 100, 1) : 0,
+            'manual_ratio' => $totalReports > 0 ? round(((max($totalReports - $automaticReports, 0)) / $totalReports) * 100, 1) : 0,
             'verified' => $verifiedReports,
             'high_priority' => $highPriorityReports,
             'reviewed' => $reviewedReports,
@@ -143,7 +131,11 @@ class ViolationAnalysisController extends Controller
         ];
 
         $recentReports = (clone $baseQuery)
-            ->with(['violationType:id,name', 'driver:id,name,plate_number,vehicle_name'])
+            ->with([
+                'violationType:id,name',
+                'driver:id,name,plate_number,vehicle_name',
+                'ruleViolations.segment:id,segment_name',
+            ])
             ->latest('reported_at')
             ->latest('id')
             ->limit(12)
@@ -162,6 +154,7 @@ class ViolationAnalysisController extends Controller
             'movementTrend' => $movementTrend,
             'recentReports' => $recentReports,
             'generatedAt' => now(),
+            'generatedBy' => $request->user()?->name ?? 'Road Safety Officer',
         ];
     }
 

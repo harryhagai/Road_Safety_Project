@@ -10,13 +10,6 @@
     ];
 @endphp
 
-@section('page_header_actions')
-    <a href="{{ route('officer.violation-analysis.pdf', request()->query()) }}" class="btn btn-outline-danger d-inline-flex align-items-center gap-2" data-no-spinner data-analysis-pdf-download>
-        <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
-        <span>Download PDF</span>
-    </a>
-@endsection
-
 @section('content')
 <div class="container-fluid px-3 px-lg-4 py-4 officer-analysis-page">
     <section class="officer-analysis-panel officer-analysis-panel--filters mb-4">
@@ -173,73 +166,6 @@
                 field.addEventListener('change', () => {
                     form.requestSubmit();
                 });
-            });
-        })();
-    </script>
-    <script>
-        (() => {
-            const link = document.querySelector('[data-analysis-pdf-download]');
-            if (!link) return;
-
-            const originalHtml = link.innerHTML;
-
-            const setLoading = (loading) => {
-                link.classList.toggle('disabled', loading);
-                link.setAttribute('aria-busy', loading ? 'true' : 'false');
-
-                if (!loading) {
-                    link.innerHTML = originalHtml;
-                    return;
-                }
-
-                link.innerHTML = `
-                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                    <span>Downloading...</span>
-                `;
-            };
-
-            const filenameFromResponse = (response) => {
-                const disposition = response.headers.get('Content-Disposition') || '';
-                const match = disposition.match(/filename="?([^"]+)"?/i);
-
-                return match?.[1] || 'violation-analysis.pdf';
-            };
-
-            link.addEventListener('click', async (event) => {
-                event.preventDefault();
-
-                if (link.classList.contains('disabled')) {
-                    return;
-                }
-
-                setLoading(true);
-
-                try {
-                    const response = await fetch(link.href, {
-                        credentials: 'same-origin',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('PDF download failed.');
-                    }
-
-                    const blob = await response.blob();
-                    const objectUrl = window.URL.createObjectURL(blob);
-                    const downloadLink = document.createElement('a');
-                    downloadLink.href = objectUrl;
-                    downloadLink.download = filenameFromResponse(response);
-                    document.body.appendChild(downloadLink);
-                    downloadLink.click();
-                    downloadLink.remove();
-                    window.URL.revokeObjectURL(objectUrl);
-                } catch (error) {
-                    window.location.href = link.href;
-                } finally {
-                    setLoading(false);
-                }
             });
         })();
     </script>
