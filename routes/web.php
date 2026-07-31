@@ -17,6 +17,7 @@ use App\Http\Controllers\officer\OfficerProfileController;
 use App\Http\Controllers\officer\OfficerReportController;
 use App\Http\Controllers\officer\RoadSegmentController;
 use App\Http\Controllers\officer\SegmentTypeController;
+use App\Http\Controllers\officer\ViolationAnalysisController;
 use App\Http\Controllers\officer\ViolationTypeController;
 use App\Http\Controllers\PassengerReportController;
 use App\Http\Controllers\PublicHotspotController;
@@ -95,6 +96,8 @@ Route::middleware(['auth', 'role:road_officer,admin'])->group(function () {
     Route::put('/road-officer/contact-messages/{contactMessage}', [OfficerContactMessageController::class, 'update'])->name('officer.contact-messages.update');
     Route::delete('/road-officer/contact-messages/{contactMessage}', [OfficerContactMessageController::class, 'destroy'])->name('officer.contact-messages.destroy');
     Route::get('/road-officer/reports', [OfficerReportController::class, 'index'])->name('officer.reports.index');
+    Route::get('/road-officer/violation-analysis', [ViolationAnalysisController::class, 'index'])->name('officer.violation-analysis.index');
+    Route::get('/road-officer/violation-analysis/pdf', [ViolationAnalysisController::class, 'downloadPdf'])->name('officer.violation-analysis.pdf');
     Route::get('/road-officer/reports/{report}', [OfficerReportController::class, 'show'])->name('officer.reports.show');
     Route::get('/road-officer/evidence/{evidenceFile}', [OfficerReportController::class, 'evidence'])->name('officer.reports.evidence');
     Route::put('/road-officer/reports/{report}', [OfficerReportController::class, 'update'])->name('officer.reports.update');

@@ -7,7 +7,7 @@
         request()->is('road-officer/road-segments*') ||
         request()->is('road-officer/segment-types*') ||
         request()->is('road-officer/violation-types*');
-    $isReportsMenuOpen = request()->is('road-officer/reports*');
+    $isReportsMenuOpen = request()->is('road-officer/reports*') || request()->is('road-officer/violation-analysis*');
     $isMonitoringMenuOpen =
         request()->is('road-officer/hotspots*') ||
         request()->is('road-officer/contact-messages*') ||
@@ -95,6 +95,12 @@
                             <a href="{{ url('/road-officer/reports') }}"
                                 class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/reports*') ? 'active is-current fw-bold shadow-sm' : '' }}">
                                 <i class="bi bi-clipboard2-pulse"></i> Incident Reports
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a href="{{ route('officer.violation-analysis.index') }}"
+                                class="nav-link officer-sidebar-sub-link {{ request()->is('road-officer/violation-analysis*') ? 'active is-current fw-bold shadow-sm' : '' }}">
+                                <i class="bi bi-bar-chart-line"></i> Violation Analysis
                             </a>
                         </li>
                     </ul>

@@ -38,6 +38,10 @@
                 'title' => 'Incident Reports',
                 'subtitle' => 'Review submitted cases, progress updates, and field reporting activity.',
             ],
+            request()->is('road-officer/violation-analysis*') => [
+                'title' => 'Violation Analysis',
+                'subtitle' => 'Analyze violation trends, source patterns, hotspots, and operational review progress.',
+            ],
             request()->is('road-officer/road-segments/manage') => [
                 'title' => 'Segment Management',
                 'subtitle' => 'Preview, update, and remove saved road segments from one workspace.',
