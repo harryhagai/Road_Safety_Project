@@ -232,12 +232,30 @@
         };
 
         window.refreshroadofficerNotifications = refreshNotifications;
-        window.setInterval(refreshNotifications, 15000);
+        window.setInterval(refreshNotifications, 3000);
 
         document.getElementById('notificationDropdown')?.addEventListener('show.bs.dropdown', refreshNotifications);
 
-        markAllForm.addEventListener('submit', () => {
-            window.setTimeout(refreshNotifications, 800);
+        markAllForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            try {
+                const response = await fetch(markAllForm.getAttribute('action'), {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                    body: new FormData(markAllForm),
+                    credentials: 'same-origin',
+                });
+
+                if (response.ok) {
+                    refreshNotifications();
+                }
+            } catch (error) {
+                markAllForm.submit();
+            }
         });
     })();
 </script>

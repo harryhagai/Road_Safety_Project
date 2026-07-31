@@ -46,6 +46,7 @@ class OfficerNotificationController extends Controller
                     'status_label' => ucfirst($notification->status ?? 'read'),
                     'time' => optional($notification->created_at)?->diffForHumans() ?? 'Just now',
                     'open_url' => url('/road-officer/notifications/' . $notification->id),
+                    'action_url' => $notification->action_url,
                 ];
             })->values(),
         ]);
@@ -55,12 +56,19 @@ class OfficerNotificationController extends Controller
      * Handle the markAllRead workflow for this class.
      */
 
-    public function markAllRead(Request $request): RedirectResponse
+    public function markAllRead(Request $request): RedirectResponse|JsonResponse
     {
         $source = $this->notificationSource($request);
 
         if ($source && method_exists($source, 'unread')) {
-            $source->unread()->update(['status' => 'read']);
+            $source->unread()->update([
+                'status' => 'read',
+                'read_at' => now(),
+            ]);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true]);
         }
 
         return back()->with('success', 'Notifications updated.');
@@ -88,8 +96,17 @@ class OfficerNotificationController extends Controller
                 ->with('error', 'Notification not found.');
         }
 
-        if (($notification->status ?? null) === 'unread') {
-            $notification->update(['status' => 'read']);
+        if (method_exists($notification, 'markAsRead')) {
+            $notification->markAsRead();
+        } elseif (($notification->status ?? null) === 'unread') {
+            $notification->update([
+                'status' => 'read',
+                'read_at' => now(),
+            ]);
+        }
+
+        if (filled($notification->action_url)) {
+            return redirect()->to($notification->action_url);
         }
 
         return view('officer.notifications.show', [

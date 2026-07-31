@@ -102,6 +102,11 @@ class User extends Authenticatable
         return $this->hasMany(ContactMessage::class, 'officer_id');
     }
 
+    public function systemNotifications(): HasMany
+    {
+        return $this->hasMany(SystemNotification::class, 'recipient_id');
+    }
+
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new RsrsResetPasswordNotification($token));

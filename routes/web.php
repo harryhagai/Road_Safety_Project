@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\MailSettingController;
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\AutoSpeedReportController;
@@ -143,4 +144,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
         ->name('admin.mail_settings.destroy');
     Route::patch('/mail-settings/{mailSetting}/activate', [MailSettingController::class, 'activate'])
         ->name('admin.mail_settings.activate');
+    Route::get('/audit-logs', [AuditLogController::class, 'index'])
+        ->name('admin.audit-logs.index');
 });

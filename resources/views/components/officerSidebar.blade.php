@@ -16,7 +16,8 @@
         request()->is('admin/users*') ||
         request()->is('road-officer/drivers*') ||
         request()->is('road-officer/profile*') ||
-        request()->is('admin/mail-settings*');
+        request()->is('admin/mail-settings*') ||
+        request()->is('admin/audit-logs*');
 @endphp
 
 <aside id="sidebar">
@@ -164,6 +165,12 @@
                                 <a href="{{ route('admin.mail_settings.content') }}"
                                     class="nav-link officer-sidebar-sub-link {{ request()->is('admin/mail-settings*') ? 'active is-current fw-bold shadow-sm' : '' }}">
                                     <i class="bi bi-envelope-fill"></i> Mail Settings
+                                </a>
+                            </li>
+                            <li class="nav-item mb-1">
+                                <a href="{{ route('admin.audit-logs.index') }}"
+                                    class="nav-link officer-sidebar-sub-link {{ request()->is('admin/audit-logs*') ? 'active is-current fw-bold shadow-sm' : '' }}">
+                                    <i class="bi bi-activity"></i> Audit Logs
                                 </a>
                             </li>
                         @endif

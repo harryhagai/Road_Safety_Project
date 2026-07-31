@@ -81,6 +81,10 @@
                 'title' => 'Mail Settings',
                 'subtitle' => 'Manage SMTP profiles used for forgot-password and other outgoing email.',
             ],
+            request()->is('admin/audit-logs*') => [
+                'title' => 'Audit Logs',
+                'subtitle' => 'Monitor admin, officer, and system activity across RSRS.',
+            ],
             request()->is('road-officer/notifications*') || request()->is('roadofficer/notifications*') => [
                 'title' => 'Notifications',
                 'subtitle' => 'Review alerts, assignment updates, and workflow messages for road officers.',

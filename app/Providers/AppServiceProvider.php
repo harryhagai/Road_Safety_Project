@@ -12,6 +12,7 @@ use App\Models\RuleViolation;
 use App\Models\SegmentTypeRule;
 use App\Models\User;
 use App\Models\ViolationType;
+use App\Observers\ReportNotificationObserver;
 use App\Observers\SensitiveActivityObserver;
 use App\Services\AuditTrailService;
 use App\Services\MailSettingService;
@@ -61,6 +62,7 @@ class AppServiceProvider extends ServiceProvider
         User::observe(SensitiveActivityObserver::class);
         MailSetting::observe(SensitiveActivityObserver::class);
         ContactMessage::observe(SensitiveActivityObserver::class);
+        Report::observe(ReportNotificationObserver::class);
         Report::observe(SensitiveActivityObserver::class);
         SegmentTypeRule::observe(SensitiveActivityObserver::class);
         RoadSegment::observe(SensitiveActivityObserver::class);
