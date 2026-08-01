@@ -381,7 +381,7 @@
 
     .passenger-report-submit {
         align-items: stretch;
-        flex-direction: column;
+        justify-content: stretch;
     }
 
     .passenger-report-submit .btn {

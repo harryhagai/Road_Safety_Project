@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\officer;
 
 use App\Http\Controllers\Controller;
-use App\Models\Hotspot;
 use App\Models\Report;
 use App\Models\RoadSegment;
 use App\Models\SegmentTypeRule;
@@ -163,25 +162,6 @@ class OfficerDashboardController extends Controller
             ->limit(6)
             ->get();
 
-        // Latest hotspot records used by map/list sections.
-        $hotspots = Hotspot::query()
-            ->with('rule:id,rule_name')
-            ->latest('id')
-            ->limit(5)
-            ->get();
-
-        $hotspotPayload = $hotspots->map(fn (Hotspot $hotspot): array => [
-            'id' => $hotspot->id,
-            'name' => $hotspot->name ?: 'Unnamed hotspot',
-            'lat' => (float) $hotspot->latitude,
-            'lng' => (float) $hotspot->longitude,
-            'radius' => (float) ($hotspot->radius_meters ?: 100),
-            'frequency' => (int) ($hotspot->frequency ?: 0),
-            'severity' => $hotspot->severity ?: 'medium',
-            'rule' => $hotspot->rule?->rule_name,
-            'updated' => optional($hotspot->last_updated_at ?? $hotspot->updated_at)->format('d M Y, H:i'),
-        ])->values();
-
         // Aggregate report pressure per segment to find areas needing attention.
         $segmentViolationSummary = Report::query()
             ->join('rule_violations', 'rule_violations.report_id', '=', 'reports.id')
@@ -254,8 +234,6 @@ class OfficerDashboardController extends Controller
             'speedAnalytics',
             'recentReports',
             'attentionReports',
-            'hotspots',
-            'hotspotPayload',
             'attentionSegments',
             'attentionHotspotPayload',
             'mapConfig',

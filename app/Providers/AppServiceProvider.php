@@ -3,8 +3,6 @@
 namespace App\Providers;
 
 use App\Models\ContactMessage;
-use App\Models\EvidenceFile;
-use App\Models\Hotspot;
 use App\Models\MailSetting;
 use App\Models\Report;
 use App\Models\RoadSegment;
@@ -68,8 +66,6 @@ class AppServiceProvider extends ServiceProvider
         RoadSegment::observe(SensitiveActivityObserver::class);
         ViolationType::observe(SensitiveActivityObserver::class);
         RuleViolation::observe(SensitiveActivityObserver::class);
-        Hotspot::observe(SensitiveActivityObserver::class);
-        EvidenceFile::observe(SensitiveActivityObserver::class);
 
         Event::listen(Login::class, function (Login $event): void {
             app(AuditTrailService::class)->logAuthEvent('login', $event->user, [

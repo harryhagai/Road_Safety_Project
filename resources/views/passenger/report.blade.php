@@ -95,7 +95,6 @@
                     </div>
 
                     <div class="passenger-report-submit">
-                        <a href="{{ route('home') }}" class="btn btn-outline-secondary">Cancel</a>
                         <button type="submit" class="btn btn-dark" data-passenger-submit>
                             <i class="bi bi-send-check-fill"></i> Submit passenger report
                         </button>

@@ -86,14 +86,6 @@ class Report extends Model
     }
 
     /**
-     * Handle the evidenceFiles workflow for this class.
-     */
-    public function evidenceFiles(): HasMany
-    {
-        return $this->hasMany(EvidenceFile::class);
-    }
-
-    /**
      * Handle the ruleViolations workflow for this class.
      */
     public function ruleViolations(): HasMany

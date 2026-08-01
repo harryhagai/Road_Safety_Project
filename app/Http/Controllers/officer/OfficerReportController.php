@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\officer;
 
 use App\Http\Controllers\Controller;
-use App\Models\EvidenceFile;
 use App\Models\Report;
 use App\Models\ViolationType;
 use Illuminate\Contracts\View\View;
@@ -11,7 +10,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Officer-facing controller responsible for OfficerReportController actions inside the dashboard.
@@ -125,7 +123,6 @@ class OfficerReportController extends Controller
         $report->load([
             'violationType:id,name,description',
             'driver:id,name,email,vehicle_name,plate_number,organization',
-            'evidenceFiles:id,report_id,file_name,file_type,file_size',
             'ruleViolations.segment:id,segment_name,segment_type_id,boundary_coordinates,length_km,description',
             'ruleViolations.segment.segmentType:id,name',
             'ruleViolations.rule:id,rule_name,rule_type,rule_value',
@@ -157,16 +154,6 @@ class OfficerReportController extends Controller
         ]);
 
         return back()->with('success', 'Report updated successfully.');
-    }
-
-    public function evidence(EvidenceFile $evidenceFile): Response
-    {
-        abort_unless(filled($evidenceFile->file_data), 404);
-
-        return response($evidenceFile->file_data)
-            ->header('Content-Type', $evidenceFile->file_type ?: 'image/jpeg')
-            ->header('Content-Disposition', 'inline; filename="'.basename($evidenceFile->file_name).'"')
-            ->header('Cache-Control', 'private, max-age=300');
     }
 
     public static function labelStatus(string $status): string

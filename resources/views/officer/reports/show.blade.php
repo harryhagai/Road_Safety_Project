@@ -287,27 +287,6 @@
                     @endif
                 </div>
 
-                @if ($report->evidenceFiles->isNotEmpty())
-                    <div class="report-detail-block mb-4">
-                        <h4>Captured Evidence</h4>
-                        <div class="row g-3">
-                            @foreach ($report->evidenceFiles as $evidence)
-                                <div class="col-12 col-md-6">
-                                    <a href="{{ route('officer.reports.evidence', $evidence) }}" target="_blank" rel="noopener" class="d-block text-decoration-none">
-                                        <img
-                                            src="{{ route('officer.reports.evidence', $evidence) }}"
-                                            alt="Evidence for report {{ $report->reference_no }}"
-                                            class="img-fluid rounded border"
-                                            loading="lazy"
-                                        >
-                                        <small class="d-block mt-2 text-muted">{{ $evidence->file_name }}</small>
-                                    </a>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
-
                 <div class="report-detail-block">
                     <h4>Location Summary</h4>
                     <div class="report-location-grid">
