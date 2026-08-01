@@ -5,9 +5,11 @@ namespace App\Http\Controllers\officer;
 use App\Http\Controllers\Controller;
 use App\Models\Report;
 use App\Models\ViolationType;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -27,6 +29,16 @@ class ViolationAnalysisController extends Controller
         $data = $this->analysisData($request);
 
         return view('officer.violation-analysis.index', $data);
+    }
+
+    public function downloadPdf(Request $request): Response
+    {
+        $data = $this->analysisData($request);
+
+        $pdf = Pdf::loadView('officer.violation-analysis.pdf', $data)
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('rsrs-violation-analysis-'.$data['generatedAt']->format('Ymd-His').'.pdf');
     }
 
     private function analysisData(Request $request): array
@@ -50,9 +62,7 @@ class ViolationAnalysisController extends Controller
         $summary = [
             'total' => $totalReports,
             'automatic' => $automaticReports,
-            'manual' => max($totalReports - $automaticReports, 0),
             'automatic_ratio' => $totalReports > 0 ? round(($automaticReports / $totalReports) * 100, 1) : 0,
-            'manual_ratio' => $totalReports > 0 ? round(((max($totalReports - $automaticReports, 0)) / $totalReports) * 100, 1) : 0,
             'verified' => $verifiedReports,
             'high_priority' => $highPriorityReports,
             'reviewed' => $reviewedReports,
