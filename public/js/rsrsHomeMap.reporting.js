@@ -190,6 +190,41 @@
         return true;
     }
 
+    function clearCountdownEvaluationTimer() {
+        if (state.countdownEvaluationTimerId) {
+            window.clearTimeout(state.countdownEvaluationTimerId);
+        }
+
+        state.countdownEvaluationTimerId = null;
+        state.autoCountdownActive = false;
+    }
+
+    function scheduleEvaluationAfterCountdown(seconds) {
+        if (state.countdownEvaluationTimerId) {
+            window.clearTimeout(state.countdownEvaluationTimerId);
+        }
+
+        const safeSeconds = Math.max(0, Number(seconds) || 0);
+        state.autoCountdownActive = true;
+
+        state.countdownEvaluationTimerId = window.setTimeout(() => {
+            state.countdownEvaluationTimerId = null;
+            state.autoCountdownActive = false;
+
+            if (!state.lastAutoReportPosition || state.autoEvaluationInFlight || state.autoReportInFlight) {
+                return;
+            }
+
+            evaluateAutoReporting(
+                state.lastAutoReportPosition,
+                state.lastAutoReportSpeedKmh,
+                Date.now(),
+                state.lastAutoReportContext || {},
+                { force: true }
+            );
+        }, Math.max(150, safeSeconds * 1000 + 150));
+    }
+
     function continueRecentlySubmittedPassengerReport(evaluation, sample, popupOptions) {
         if (evaluation?.report_mode !== 'passenger_recently_submitted') {
             return false;
@@ -258,6 +293,8 @@
         resetReportedRuleIfSafe(evaluation);
 
         if (!evaluation?.matched) {
+            clearCountdownEvaluationTimer();
+
             if (sample.speed_kmh >= 1) {
                 app.ui.updateSpeedDisplay(sample.speed_kmh, 'No monitored speed rule nearby', true);
             }
@@ -288,6 +325,7 @@
             const remainingSeconds = Math.max(0, requiredSeconds - parkedSeconds);
 
             if (!evaluation.exceeded) {
+                clearCountdownEvaluationTimer();
                 app.ui.updateSpeedDisplay(sample.speed_kmh, 'No parking rule active', sample.speed_kmh >= 1);
                 app.ui.updateSpeedAlert({
                     state: 'info',
@@ -308,9 +346,11 @@
                     countdownSeconds: remainingSeconds,
                     popupTitle: 'No parking warning',
                 });
+                scheduleEvaluationAfterCountdown(remainingSeconds);
                 return;
             }
 
+            clearCountdownEvaluationTimer();
             const noParkingPopupOptions = {
                 location: segmentName,
                 ruleLabel: 'RULE',
@@ -349,6 +389,7 @@
         }
 
         if (evaluation.has_speed_rule === false) {
+            clearCountdownEvaluationTimer();
             const displayRule = evaluation.rule?.display || evaluation.rule?.name || 'NOT CONFIGURED';
 
             app.ui.updateSpeedDisplay(sample.speed_kmh, 'Segment detected without speed rule', sample.speed_kmh >= 1);
@@ -362,6 +403,7 @@
         }
 
         if (!evaluation.exceeded) {
+            clearCountdownEvaluationTimer();
             app.ui.updateSpeedDisplay(sample.speed_kmh, `Speed limit ${limitText} active`, sample.speed_kmh >= 1);
             app.ui.updateSpeedAlert({
                 state: 'info',
@@ -384,9 +426,11 @@
                 countdownSeconds: remainingSeconds,
                 popupTitle: 'Speed warning',
             });
+            scheduleEvaluationAfterCountdown(remainingSeconds);
             return;
         }
 
+        clearCountdownEvaluationTimer();
         const speedPopupOptions = {
             location: segmentName,
             ruleLabel: 'SPEED RULE',
@@ -422,13 +466,18 @@
         submitAutoReport(evaluation, sample);
     }
 
-    function evaluateAutoReporting(position, speedKmh, now, context = {}) {
+    function evaluateAutoReporting(position, speedKmh, now, context = {}, options = {}) {
         const config = getAutoReportingConfig();
+
+        state.lastAutoReportPosition = position;
+        state.lastAutoReportSpeedKmh = speedKmh;
+        state.lastAutoReportContext = { ...context };
 
         if (
             !config ||
             state.autoEvaluationInFlight ||
-            now - state.lastAutoEvaluationAt < constants.AUTO_EVALUATION_INTERVAL_MS
+            (state.autoCountdownActive && !options.force) ||
+            (!options.force && now - state.lastAutoEvaluationAt < constants.AUTO_EVALUATION_INTERVAL_MS)
         ) {
             return;
         }
