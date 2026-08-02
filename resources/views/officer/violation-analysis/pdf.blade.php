@@ -13,6 +13,7 @@
     $periodText = (!empty($filters['date_from']) || !empty($filters['date_to']))
         ? (($filters['date_from'] ?? 'Start') . ' to ' . ($filters['date_to'] ?? 'Today'))
         : 'All available records';
+    $segmentText = $selectedSegment?->segment_name ?? 'All segments';
 
     $statusLabel = static fn (?string $value) => str($value ?: 'unknown')->replace(['_', '-'], ' ')->title();
     $segmentMax = max((int) $topSegments->max('value'), 1);
@@ -110,6 +111,11 @@
         thead th {
             font-weight: bold;
             text-transform: uppercase;
+            text-align: center;
+        }
+
+        thead th.left-col {
+            text-align: center;
         }
 
         .section-title {
@@ -119,6 +125,7 @@
             border-bottom: 2px solid #000;
             padding-bottom: 3px;
             text-transform: uppercase;
+            text-align: center;
         }
 
         .left-col {
@@ -185,6 +192,7 @@
                         <div class="report-title">Violation Analysis Report</div>
                         <div class="meta">
                             PERIOD: {{ $periodText }}
+                            | SEGMENT: {{ $segmentText }}
                             | GENERATED: {{ $generatedAt->format('d M Y, H:i') }}
                             | BY: {{ $generatedBy }}
                         </div>
@@ -247,7 +255,7 @@
                     <td>
                         <div class="system-title">Road Safety Reporting System</div>
                         <div class="report-title">Recent Violation Reports</div>
-                        <div class="meta">PERIOD: {{ $periodText }} | GENERATED: {{ $generatedAt->format('d M Y, H:i') }}</div>
+                        <div class="meta">PERIOD: {{ $periodText }} | SEGMENT: {{ $segmentText }} | GENERATED: {{ $generatedAt->format('d M Y, H:i') }}</div>
                     </td>
                     <td style="width: 70px; text-align: right;"><img src="{{ $logoSrc }}" alt="RSRS Logo" class="logo"></td>
                 </tr>
@@ -261,7 +269,7 @@
                     <th>No.</th>
                     <th>Reference</th>
                     <th class="left-col">Violation Type</th>
-                    <th class="left-col">Location / Segment</th>
+                    <th class="left-col">Segment Name</th>
                     <th>Status</th>
                     <th>Priority</th>
                     <th>Date & Time</th>

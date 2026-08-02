@@ -47,7 +47,16 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-12 col-md-4 col-xl-3 d-flex gap-2">
+            <div class="col-12 col-md-4 col-xl-2">
+                <label class="form-label" for="segment_id">Segment</label>
+                <select class="form-select" id="segment_id" name="segment_id" data-analysis-auto-filter>
+                    <option value="">All segments</option>
+                    @foreach ($roadSegments as $segment)
+                        <option value="{{ $segment->id }}" @selected((string) ($filters['segment_id'] ?? '') === (string) $segment->id)>{{ $segment->segment_name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-12 col-md-4 col-xl-1 d-flex gap-2">
                 <a href="{{ route('officer.violation-analysis.index') }}" class="btn btn-outline-secondary flex-fill d-inline-flex align-items-center justify-content-center gap-2">
                     <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                     <span>Reset</span>
@@ -128,6 +137,7 @@
                     <tr>
                         <th>Reference</th>
                         <th>Violation</th>
+                        <th>Segment</th>
                         <th>Reporter / vehicle</th>
                         <th>Status</th>
                         <th>Priority</th>
@@ -136,9 +146,13 @@
                 </thead>
                 <tbody>
                     @forelse ($recentReports as $report)
+                        @php
+                            $segmentName = $report->ruleViolations->pluck('segment.segment_name')->filter()->first();
+                        @endphp
                         <tr>
                             <td>{{ $report->reference_no ?: 'Report #' . $report->id }}</td>
                             <td>{{ $report->violationType?->name ?? 'Unassigned' }}</td>
+                            <td>{{ $segmentName ?: ($report->location_name ?: 'N/A') }}</td>
                             <td>{{ $report->driver?->name ?? $report->bus_operator ?? $report->reporter_type ?? 'N/A' }}</td>
                             <td><span class="officer-analysis-badge">{{ $statusLabel($report->status) }}</span></td>
                             <td>{{ $statusLabel($report->priority) }}</td>
@@ -146,7 +160,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-4">No reports match the selected filters.</td>
+                            <td colspan="7" class="text-center text-muted py-4">No reports match the selected filters.</td>
                         </tr>
                     @endforelse
                 </tbody>

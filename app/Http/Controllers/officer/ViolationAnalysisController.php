@@ -4,6 +4,7 @@ namespace App\Http\Controllers\officer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Report;
+use App\Models\RoadSegment;
 use App\Models\ViolationType;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
@@ -48,6 +49,7 @@ class ViolationAnalysisController extends Controller
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
             'status' => ['nullable', Rule::in(self::STATUSES)],
             'violation_type_id' => ['nullable', 'integer', 'exists:violation_types,id'],
+            'segment_id' => ['nullable', 'integer', 'exists:road_segments,id'],
         ]);
 
         $baseQuery = $this->filteredReports($filters);
@@ -151,6 +153,11 @@ class ViolationAnalysisController extends Controller
             ->limit(12)
             ->get();
 
+        $roadSegments = RoadSegment::query()
+            ->orderBy('segment_name')
+            ->get(['id', 'segment_name']);
+        $selectedSegment = $roadSegments->firstWhere('id', (int) ($filters['segment_id'] ?? 0));
+
         return [
             'filters' => $filters,
             'statuses' => self::STATUSES,
@@ -158,6 +165,8 @@ class ViolationAnalysisController extends Controller
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name']),
+            'roadSegments' => $roadSegments,
+            'selectedSegment' => $selectedSegment,
             'summary' => $summary,
             'topSegments' => $topSegments,
             'dailyTrend' => $dailyTrend,
@@ -182,6 +191,9 @@ class ViolationAnalysisController extends Controller
                 ]);
             })
             ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status))
-            ->when($filters['violation_type_id'] ?? null, fn (Builder $query, int $typeId) => $query->where('violation_type_id', $typeId));
+            ->when($filters['violation_type_id'] ?? null, fn (Builder $query, int $typeId) => $query->where('violation_type_id', $typeId))
+            ->when($filters['segment_id'] ?? null, function (Builder $query, int $segmentId) {
+                $query->whereHas('ruleViolations', fn (Builder $ruleQuery) => $ruleQuery->where('segment_id', $segmentId));
+            });
     }
 }
